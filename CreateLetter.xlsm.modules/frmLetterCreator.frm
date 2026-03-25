@@ -1115,14 +1115,7 @@ Private Sub UpdateSummaryInfo()
     
     If Not txtFinalAttachments Is Nothing Then
         Dim attachmentText As String
-        attachmentText = ""
-        
-        Dim i As Long
-        For i = 1 To documentsList.count
-            If i > 1 Then attachmentText = attachmentText & vbCrLf
-            attachmentText = attachmentText & i & ". " & FormatDocumentNameWithSum(documentsList(i)) & ";"
-        Next i
-        
+        attachmentText = BuildSummaryAttachmentsText(documentsList)
         txtFinalAttachments.Value = attachmentText
     End If
     
@@ -1192,75 +1185,6 @@ Private Function CreateAddressArray() As Variant
     
     CreateAddressArray = arr
 End Function
-
-'=====================================================================
-'  NEW FUNCTIONS FOR WORKING WITH DOCUMENT SUM
-'=====================================================================
-Public Function CreateDocumentArrayWithSum(docName As String, docNumber As String, docDate As String, docCopies As String, docSheets As String, docSum As String) As Variant
-    Dim docArray(5) As String
-    docArray(0) = Trim(docName)
-    docArray(1) = Trim(docNumber)
-    docArray(2) = Trim(docDate)
-    docArray(3) = Trim(docCopies)
-    docArray(4) = Trim(docSheets)
-    docArray(5) = Trim(docSum)
-    
-    CreateDocumentArrayWithSum = docArray
-End Function
-
-Public Function FormatDocumentNameWithSum(docArray As Variant) As String
-    If Not IsArray(docArray) Then
-        FormatDocumentNameWithSum = "Error: invalid data format"
-        Exit Function
-    End If
-    
-    Dim result As String
-    result = docArray(0)
-    
-    result = result & " No."
-    If Len(Trim(docArray(1))) > 0 Then
-        result = result & docArray(1)
-    Else
-        result = result & "    "
-    End If
-    
-    result = result & " dated "
-    If Len(Trim(docArray(2))) > 0 Then
-        result = result & docArray(2)
-    Else
-        result = result & "        "
-    End If
-    
-    ' FIXED: Check array size before accessing the sum element
-    If UBound(docArray) >= 5 And Len(Trim(docArray(5))) > 0 Then
-        If IsNumeric(docArray(5)) Then
-            ' FIXED: Removing thousands separators to prevent non-breaking spaces
-            result = result & " for the amount of " & CStr(CLng(CDbl(docArray(5)))) & " rub."
-        Else
-            result = result & " (" & docArray(5) & ")"
-        End If
-    End If
-    
-    result = result & " ("
-    
-    If Len(Trim(docArray(3))) > 0 Then
-        result = result & docArray(3) & " copies"
-    Else
-        result = result & "  copies"
-    End If
-    
-    result = result & ", "
-    If Len(Trim(docArray(4))) > 0 Then
-        result = result & docArray(4) & " sheets"
-    Else
-        result = result & "   sheets"
-    End If
-    
-    result = result & ")"
-    
-    FormatDocumentNameWithSum = result
-End Function
-
 
 '=====================================================================
 '      CREATING LETTER IN WORD
@@ -1359,7 +1283,7 @@ Private Sub FillWordTemplate(wordDoc As Object)
     SafeReplaceInWord wordDoc, "ExecutorPhone", phoneText
     SafeReplaceInWord wordDoc, "LetterText", letterText
     
-    ReplaceAttachmentsInTemplateWithFontAndSum wordDoc, 10
+    ReplaceAttachmentsInTemplateWithFontAndSum wordDoc, documentsList, 10
     
     Exit Sub
     
@@ -1392,120 +1316,13 @@ Private Sub CreateLetterFromScratch(wordDoc As Object)
     
     wordDoc.content.Text = content
     
-    AppendAttachmentsToDocumentWithFontAndSum wordDoc, 10
+    AppendAttachmentsToDocumentWithFontAndSum wordDoc, documentsList, 10
     
     Exit Sub
     
 ScratchError:
     MsgBox "Letter creation error: " & Err.description, vbCritical
 End Sub
-
-'=====================================================================
-'  NEW FUNCTIONS FOR WORKING WITH ATTACHMENTS AND SUM IN WORD
-'=====================================================================
-Private Sub ReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, fontSize As Integer)
-    On Error Resume Next
-    
-    Dim rng As Object
-    Set rng = wordDoc.content
-    
-    With rng.Find
-        .ClearFormatting
-        .Forward = True
-        .Wrap = 1
-        .Text = "AttachmentsList"
-        
-        If .Execute Then
-            Dim startPos As Long
-            startPos = rng.Start
-            
-            rng.Delete
-            
-            Dim attachmentFragments As Collection
-            Set attachmentFragments = FormatAttachmentsListForWordWithSum(documentsList)
-            
-            Dim i As Long
-            For i = 1 To attachmentFragments.count
-                If i > 1 Then rng.InsertAfter vbCrLf
-                rng.InsertAfter CStr(attachmentFragments(i))
-                rng.Collapse 0
-            Next i
-            
-            Dim attachmentRange As Object
-            Set attachmentRange = wordDoc.Range(startPos, rng.End)
-            
-            FormatAttachmentsInWord attachmentRange, fontSize
-        End If
-    End With
-    
-    On Error GoTo 0
-End Sub
-
-Private Sub AppendAttachmentsToDocumentWithFontAndSum(wordDoc As Object, fontSize As Integer)
-    On Error Resume Next
-    
-    Dim rng As Object
-    Set rng = wordDoc.content
-    rng.Collapse 0
-    
-    rng.InsertAfter "Attachment: "
-    
-    Dim attachmentFragments As Collection
-    Set attachmentFragments = FormatAttachmentsListForWordWithSum(documentsList)
-    
-    Dim startPos As Long
-    startPos = rng.End
-    
-    Dim i As Long
-    For i = 1 To attachmentFragments.count
-        If i > 1 Then rng.InsertAfter vbCrLf
-        rng.InsertAfter CStr(attachmentFragments(i))
-        rng.Collapse 0
-    Next i
-    
-    Dim attachmentRange As Object
-    Set attachmentRange = wordDoc.Range(startPos, rng.End)
-    
-    FormatAttachmentsInWord attachmentRange, fontSize
-    
-    rng.InsertAfter vbCrLf & vbCrLf
-    
-    On Error GoTo 0
-End Sub
-
-Public Function FormatAttachmentsListForWordWithSum(documentsList As Collection) As Collection
-    Set FormatAttachmentsListForWordWithSum = New Collection
-    
-    If documentsList Is Nothing Or documentsList.count = 0 Then
-        FormatAttachmentsListForWordWithSum.Add "documents not specified;"
-        Exit Function
-    End If
-    
-    Dim currentFragment As String
-    Dim i As Long
-    Dim docText As String
-    
-    For i = 1 To documentsList.count
-        docText = i & "). " & FormatDocumentNameWithSum(documentsList(i)) & ";"
-        
-        If Len(currentFragment & vbCrLf & docText) > 180 Then
-            If Len(currentFragment) > 0 Then
-                FormatAttachmentsListForWordWithSum.Add currentFragment
-                currentFragment = ""
-            End If
-        End If
-        
-        If Len(currentFragment) > 0 Then
-            currentFragment = currentFragment & vbCrLf
-        End If
-        
-        currentFragment = currentFragment & docText
-    Next i
-    
-    If Len(currentFragment) > 0 Then
-        FormatAttachmentsListForWordWithSum.Add currentFragment
-    End If
-End Function
 
 '=====================================================================
 '      SAVING TO DATABASE WITH SUM
@@ -1658,49 +1475,6 @@ Private Sub SafeSetFocus(controlName As String)
     End If
     On Error GoTo 0
 End Sub
-
-'=====================================================================
-'      LOCAL FUNCTIONS
-'=====================================================================
-Public Function TryParseDate(rawText As String, ByRef outDate As Date) As Boolean
-    Dim t As String, d As Date, ok As Boolean
-    TryParseDate = False
-    
-    If Len(Trim(rawText)) = 0 Then Exit Function
-    
-    If IsDate(rawText) Then
-        outDate = CDate(rawText)
-        TryParseDate = True
-        Exit Function
-    End If
-    
-    t = Replace(rawText, "/", ".")
-    
-    Dim clean As String, i As Long, ch As String
-    For i = 1 To Len(t)
-        ch = Mid(t, i, 1)
-        If IsNumeric(ch) Then clean = clean & ch
-    Next i
-    
-    Select Case Len(clean)
-        Case 8
-            ok = IsDate(Left(clean, 2) & "." & Mid(clean, 3, 2) & "." & Right(clean, 4))
-            If ok Then outDate = CDate(Left(clean, 2) & "." & Mid(clean, 3, 2) & "." & Right(clean, 4))
-        Case 6
-            ok = IsDate(Left(clean, 2) & "." & Mid(clean, 3, 2) & ".20" & Right(clean, 2))
-            If ok Then outDate = CDate(Left(clean, 2) & "." & Mid(clean, 3, 2) & ".20" & Right(clean, 2))
-        Case 5
-            ok = IsDate(Left(clean, 1) & "." & Mid(clean, 2, 2) & ".20" & Right(clean, 2))
-            If ok Then outDate = CDate(Left(clean, 1) & "." & Mid(clean, 2, 2) & ".20" & Right(clean, 2))
-        Case 4
-            ok = IsDate(Left(clean, 2) & "." & Right(clean, 2) & "." & Year(Date))
-            If ok Then outDate = CDate(Left(clean, 2) & "." & Right(clean, 2) & "." & Year(Date))
-        Case Else
-            ok = False
-    End Select
-    
-    TryParseDate = ok
-End Function
 
 '=====================================================================
 '  CANCEL AND CLOSE BUTTONS
