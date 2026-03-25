@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-   Caption         =   "Letter Builder v1.6.2"
+   Caption         =   "Letter Builder v1.6.3"
    ClientHeight    =   10155
    ClientLeft      =   120
    ClientTop       =   465
@@ -14,8 +14,8 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.2 - Thin-shell MultiPage wizard for letter creation
-' Version : 1.6.2 - 26.03.2026
+' Form    : frmLetterCreator v1.6.3 - Thin-shell MultiPage wizard for letter creation
+' Version : 1.6.3 - 26.03.2026
 ' Author  : Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose : UI orchestration for letter creation, address entry, attachments, and summary flow
 ' ======================================================================
@@ -305,7 +305,7 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = "Letter Builder v1.6.2"
+    Me.Caption = "Letter Builder v1.6.3"
     
     On Error Resume Next
     
@@ -659,28 +659,17 @@ Private Sub lstAddresses_Click()
     If lstAddresses Is Nothing Or lstAddresses.ListIndex < 0 Then Exit Sub
     
     Dim itm As String, parts As Variant
+    Dim rowNumber As Long
+    Dim errorMessage As String
     itm = lstAddresses.List(lstAddresses.ListIndex)
     
-    If InStr(itm, " | ") = 0 Then
-        MsgBox "Invalid address record format.", vbExclamation
+    If Not TryParseAddressListItem(itm, parts, rowNumber, errorMessage) Then
+        MsgBox errorMessage, vbExclamation
         Exit Sub
     End If
     
-    parts = Split(itm, " | ")
-    If UBound(parts) < 7 Then
-        MsgBox "Address data is incomplete.", vbExclamation
-        Exit Sub
-    End If
-    
-    Me.Controls("txtAddressee").Value = parts(0)
-    Me.Controls("txtStreet").Value = parts(1)
-    Me.Controls("txtCity").Value = parts(2)
-    Me.Controls("txtDistrict").Value = parts(3)
-    Me.Controls("txtRegion").Value = parts(4)
-    Me.Controls("txtPostalCode").Value = parts(5)
-    Me.Controls("txtAddresseePhone").Value = parts(6)
-    
-    selectedAddressRow = CLng(parts(7))
+    ApplyAddressPartsToControls parts
+    selectedAddressRow = rowNumber
     
     If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Enabled = False
     
@@ -692,17 +681,18 @@ End Sub
 
 Private Sub btnSaveNewAddress_Click()
     On Error Resume Next
-    If txtAddressee Is Nothing Or Trim(txtAddressee.Value) = "" Then
-        MsgBox "Enter the addressee name.", vbExclamation
+
+    Dim addressArray As Variant
+    Dim validationMessage As String
+    
+    addressArray = CreateAddressArray()
+    validationMessage = ValidateAddressCreateRequest(GetControlText("txtAddressee"), IsAddressDuplicate(addressArray))
+    If Len(validationMessage) > 0 Then
+        MsgBox validationMessage, vbExclamation
         Exit Sub
     End If
     
-    If IsAddressDuplicate(CreateAddressArray) Then
-        MsgBox "This address already exists.", vbExclamation
-        Exit Sub
-    End If
-    
-    SaveNewAddress CreateAddressArray
+    SaveNewAddress addressArray
     MsgBox "Address saved.", vbInformation
     
     ClearAddressCache
@@ -716,18 +706,15 @@ End Sub
 Private Sub btnEditAddress_Click()
     On Error Resume Next
     
-    If selectedAddressRow <= 1 Then
-        MsgBox "Select an address to edit.", vbExclamation
-        Exit Sub
-    End If
-    
     ValidateAndUpdateSelectedAddress
     
     Dim addressArray As Variant
+    Dim validationMessage As String
     addressArray = CreateAddressArray()
     
-    If IsAddressDuplicate(addressArray, selectedAddressRow) Then
-        MsgBox "An address with the same data already exists.", vbExclamation
+    validationMessage = ValidateAddressEditRequest(selectedAddressRow, IsAddressDuplicate(addressArray, selectedAddressRow))
+    If Len(validationMessage) > 0 Then
+        MsgBox validationMessage, vbExclamation
         Exit Sub
     End If
     
@@ -743,8 +730,11 @@ End Sub
 Private Sub btnDeleteAddress_Click()
     On Error GoTo DeleteError
     
-    If selectedAddressRow = 0 Then
-        MsgBox "Select an address to delete.", vbExclamation
+    Dim validationMessage As String
+    validationMessage = ValidateAddressDeleteRequest(selectedAddressRow)
+    
+    If Len(validationMessage) > 0 Then
+        MsgBox validationMessage, vbExclamation
         Exit Sub
     End If
     
@@ -1080,6 +1070,16 @@ Private Function CreateAddressArray() As Variant
     CreateAddressArray = arr
 End Function
 
+Private Sub ApplyAddressPartsToControls(addressParts As Variant)
+    Me.Controls("txtAddressee").Value = addressParts(0)
+    Me.Controls("txtStreet").Value = addressParts(1)
+    Me.Controls("txtCity").Value = addressParts(2)
+    Me.Controls("txtDistrict").Value = addressParts(3)
+    Me.Controls("txtRegion").Value = addressParts(4)
+    Me.Controls("txtPostalCode").Value = addressParts(5)
+    Me.Controls("txtAddresseePhone").Value = addressParts(6)
+End Sub
+
 Private Function GetControlText(controlName As String) As String
     On Error Resume Next
     GetControlText = Trim(CStr(Me.Controls(controlName).Value))
@@ -1159,12 +1159,7 @@ Private Sub ValidateAndUpdateSelectedAddress()
     On Error Resume Next
     
     If selectedAddressRow > 1 Then
-        Dim city As String, region As String, postal As String
-        city = Trim(Me.Controls("txtCity").Value)
-        region = Trim(Me.Controls("txtRegion").Value)
-        postal = Trim(Me.Controls("txtPostalCode").Value)
-        
-        If Len(city) > 0 And Len(region) > 0 And Len(postal) > 0 Then
+        If IsAddressReadyForAutoUpdate(GetControlText("txtCity"), GetControlText("txtRegion"), GetControlText("txtPostalCode")) Then
             AutoUpdateAddressIfChanged
         End If
     End If

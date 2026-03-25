@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.2 — 26.03.2026
+' Version: 1.6.3 — 26.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.2
+'                    NEW FUNCTIONS v1.6.3
 ' ======================================================================
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
@@ -323,6 +323,71 @@ Public Function SearchAddresses(searchTerm As String) As Collection
     
 SearchError:
     Debug.Print "Address search error: " & Err.description
+End Function
+
+Public Function TryParseAddressListItem(addressItem As String, ByRef addressParts As Variant, ByRef rowNumber As Long, ByRef errorMessage As String) As Boolean
+    errorMessage = ""
+    rowNumber = 0
+    TryParseAddressListItem = False
+    
+    If InStr(addressItem, " | ") = 0 Then
+        errorMessage = "Invalid address record format."
+        Exit Function
+    End If
+    
+    addressParts = Split(addressItem, " | ")
+    If UBound(addressParts) < 7 Then
+        errorMessage = "Address data is incomplete."
+        Exit Function
+    End If
+    
+    If Not IsNumeric(addressParts(7)) Then
+        errorMessage = "Address row reference is invalid."
+        Exit Function
+    End If
+    
+    rowNumber = CLng(addressParts(7))
+    TryParseAddressListItem = True
+End Function
+
+Public Function ValidateAddressCreateRequest(addressee As String, isDuplicate As Boolean) As String
+    If Len(Trim(addressee)) = 0 Then
+        ValidateAddressCreateRequest = "Enter the addressee name."
+        Exit Function
+    End If
+    
+    If isDuplicate Then
+        ValidateAddressCreateRequest = "This address already exists."
+        Exit Function
+    End If
+    
+    ValidateAddressCreateRequest = ""
+End Function
+
+Public Function ValidateAddressEditRequest(selectedRow As Long, isDuplicate As Boolean) As String
+    If selectedRow <= 1 Then
+        ValidateAddressEditRequest = "Select an address to edit."
+        Exit Function
+    End If
+    
+    If isDuplicate Then
+        ValidateAddressEditRequest = "An address with the same data already exists."
+        Exit Function
+    End If
+    
+    ValidateAddressEditRequest = ""
+End Function
+
+Public Function ValidateAddressDeleteRequest(selectedRow As Long) As String
+    If selectedRow = 0 Then
+        ValidateAddressDeleteRequest = "Select an address to delete."
+    Else
+        ValidateAddressDeleteRequest = ""
+    End If
+End Function
+
+Public Function IsAddressReadyForAutoUpdate(city As String, region As String, postalCode As String) As Boolean
+    IsAddressReadyForAutoUpdate = (Len(Trim(city)) > 0 And Len(Trim(region)) > 0 And Len(Trim(postalCode)) > 0)
 End Function
 
 Public Function SearchAttachments(searchTerm As String) As Collection
