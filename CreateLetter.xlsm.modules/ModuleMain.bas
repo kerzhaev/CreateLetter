@@ -640,6 +640,125 @@ Public Function BuildSummaryAttachmentsText(documentsList As Collection) As Stri
     BuildSummaryAttachmentsText = attachmentText
 End Function
 
+Public Sub CreateLetterDocument(addressee As String, addressArray As Variant, letterNumber As String, letterDateRaw As String, executor As String, documentType As String, useAlternateTemplate As Boolean, documentsList As Collection)
+    Dim wordApp As Object
+    Dim wordDoc As Object
+    
+    On Error GoTo ErrorHandler
+    
+    On Error Resume Next
+    Set wordApp = GetObject(, "Word.Application")
+    On Error GoTo ErrorHandler
+    
+    If wordApp Is Nothing Then
+        Set wordApp = CreateObject("Word.Application")
+    End If
+    
+    If wordApp Is Nothing Then
+        Err.Raise 429, "CreateLetterDocument", "Failed to create Word.Application object"
+    End If
+    
+    wordApp.Visible = True
+    
+    Dim templatePath As String
+    templatePath = GetLetterTemplatePath(useAlternateTemplate)
+    
+    If Dir(templatePath) <> "" Then
+        Set wordDoc = wordApp.Documents.Open(templatePath)
+        If Not wordDoc Is Nothing Then
+            FillWordTemplateData wordDoc, addressee, addressArray, letterNumber, letterDateRaw, executor, documentType, documentsList
+            GoTo SaveDocument
+        End If
+    End If
+    
+    Set wordDoc = wordApp.Documents.Add
+    CreateLetterDocumentFromScratch wordDoc, addressee, addressArray, letterNumber, letterDateRaw, executor, documentType, documentsList
+    
+SaveDocument:
+    Dim fileName As String
+    fileName = GenerateFileNameWithExecutor(IIf(Len(Trim(addressee)) = 0, "Letter", addressee), letterNumber, executor)
+    
+    wordDoc.SaveAs fileName
+    Debug.Print "File saved: " & fileName
+    
+    On Error Resume Next
+    ThisWorkbook.Save
+    Debug.Print "Excel workbook saved"
+    On Error GoTo ErrorHandler
+    
+    wordApp.Visible = True
+    wordDoc.Activate
+    
+    Set wordDoc = Nothing
+    Set wordApp = Nothing
+    Exit Sub
+    
+ErrorHandler:
+    MsgBox "Error creating letter: " & Err.Description, vbCritical
+    On Error Resume Next
+    If Not wordDoc Is Nothing Then wordDoc.Close False
+    Set wordDoc = Nothing
+    Set wordApp = Nothing
+End Sub
+
+Public Sub FillWordTemplateData(wordDoc As Object, addresseeText As String, addressArray As Variant, numberText As String, rawDateText As String, executorText As String, documentType As String, documentsList As Collection)
+    On Error GoTo TemplateError
+    
+    Dim addressText As String
+    Dim dateText As String
+    Dim phoneText As String
+    Dim letterText As String
+    
+    addressText = FormatRecipientAddress(addressArray)
+    dateText = FormatLetterDate(rawDateText)
+    Debug.Print "Formatted date: " & dateText
+    
+    phoneText = GetExecutorPhone(executorText)
+    letterText = GetDocumentTypeText(documentType)
+    
+    SafeReplaceInWord wordDoc, "RecipientName", addresseeText
+    SafeReplaceInWord wordDoc, "RecipientAddress", addressText
+    SafeReplaceInWord wordDoc, "OutgoingNumber", numberText
+    SafeReplaceInWord wordDoc, "OutgoingDate", dateText
+    SafeReplaceInWord wordDoc, "ExecutorName", executorText
+    SafeReplaceInWord wordDoc, "ExecutorPhone", phoneText
+    SafeReplaceInWord wordDoc, "LetterText", letterText
+    
+    ReplaceAttachmentsInTemplateWithFontAndSum wordDoc, documentsList, 10
+    Exit Sub
+    
+TemplateError:
+    MsgBox "Template filling error: " & Err.Description, vbCritical
+End Sub
+
+Public Sub CreateLetterDocumentFromScratch(wordDoc As Object, addresseeText As String, addressArray As Variant, numberText As String, rawDateText As String, executorText As String, documentType As String, documentsList As Collection)
+    On Error GoTo ScratchError
+    
+    Dim content As String
+    Dim addressText As String
+    Dim letterText As String
+    Dim dateText As String
+    
+    addressText = FormatRecipientAddress(addressArray)
+    letterText = GetDocumentTypeText(documentType)
+    dateText = FormatLetterDate(rawDateText)
+    
+    content = "To the Commander of military unit " & addresseeText & vbCrLf & vbCrLf
+    content = content & addressText & vbCrLf & vbCrLf & vbCrLf
+    content = content & letterText & vbCrLf & vbCrLf
+    content = content & "Executor: " & executorText & vbCrLf
+    content = content & "Phone: " & GetExecutorPhone(executorText) & vbCrLf
+    content = content & "Ref. No.: " & numberText & vbCrLf
+    content = content & "Date: " & dateText & vbCrLf & vbCrLf
+    
+    wordDoc.Content.Text = content
+    AppendAttachmentsToDocumentWithFontAndSum wordDoc, documentsList, 10
+    Exit Sub
+    
+ScratchError:
+    MsgBox "Letter creation error: " & Err.Description, vbCritical
+End Sub
+
 Public Sub ReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
     On Error Resume Next
     
@@ -842,6 +961,36 @@ Public Function TryParseDate(rawText As String, ByRef outDate As Date) As Boolea
     End Select
     
     TryParseDate = ok
+End Function
+
+Public Function HasAddressDataChanged(rowNumber As Long, newAddressArray As Variant) As Boolean
+    HasAddressDataChanged = False
+    
+    On Error GoTo CompareError
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("Addresses")
+    
+    Dim i As Long
+    For i = 0 To UBound(newAddressArray)
+        Dim sheetValue As String
+        Dim formValue As String
+        
+        sheetValue = UCase(Trim(CStr(ws.Cells(rowNumber, i + 1).Value)))
+        formValue = UCase(Trim(CStr(newAddressArray(i))))
+        
+        If sheetValue <> formValue Then
+            Debug.Print "Change in column " & (i + 1) & ": '" & ws.Cells(rowNumber, i + 1).Value & "' -> '" & newAddressArray(i) & "'"
+            HasAddressDataChanged = True
+            Exit Function
+        End If
+    Next i
+    
+    Exit Function
+    
+CompareError:
+    Debug.Print "Error comparing address data: " & Err.Description
+    HasAddressDataChanged = False
 End Function
 
 Public Function FormatLetterDate(dateValue As String) As String
@@ -1138,6 +1287,14 @@ Public Function GenerateFileNameWithExecutor(addressee As String, letterNumber A
     
     GenerateFileNameWithExecutor = ThisWorkbook.Path & "\" & cleanAddressee & "_" & _
                                   cleanNumber & "_" & currentDate & "_" & cleanExecutor & ".docx"
+End Function
+
+Private Function GetLetterTemplatePath(useAlternateTemplate As Boolean) As String
+    If useAlternateTemplate Then
+        GetLetterTemplatePath = ThisWorkbook.Path & "\LetterTemplateFOU.docx"
+    Else
+        GetLetterTemplatePath = ThisWorkbook.Path & "\LetterTemplate.docx"
+    End If
 End Function
 
 Public Function CleanFileName(inputName As String) As String

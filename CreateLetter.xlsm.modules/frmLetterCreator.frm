@@ -1190,138 +1190,21 @@ End Function
 '      CREATING LETTER IN WORD
 '=====================================================================
 Private Sub CreateWordLetter()
-    Dim wordApp As Object
-    Dim wordDoc As Object
-    
     On Error GoTo ErrorHandler
     
-    On Error Resume Next
-    Set wordApp = GetObject(, "Word.Application")
-    On Error GoTo ErrorHandler
-    
-    If wordApp Is Nothing Then
-        Set wordApp = CreateObject("Word.Application")
-    End If
-    
-    If wordApp Is Nothing Then
-        Err.Raise 429, "CreateWordLetter", "Failed to create Word.Application object"
-    End If
-    
-    wordApp.Visible = True
-    
-    Dim templatePath As String
-    If Not cmbLetterType Is Nothing And cmbLetterType.ListIndex = 1 Then
-        templatePath = ThisWorkbook.Path & "\LetterTemplateFOU.docx"
-    Else
-        templatePath = ThisWorkbook.Path & "\LetterTemplate.docx"
-    End If
-    
-    If dir(templatePath) <> "" Then
-        Set wordDoc = wordApp.documents.Open(templatePath)
-        If Not wordDoc Is Nothing Then
-            FillWordTemplate wordDoc
-            GoTo SaveDocument
-        End If
-    End If
-    
-    Set wordDoc = wordApp.documents.Add
-    CreateLetterFromScratch wordDoc
-    
-SaveDocument:
-    Dim fileName As String
-    fileName = GenerateFileNameWithExecutor( _
-        IIf(txtAddressee Is Nothing, "Letter", txtAddressee.Value), _
+    CreateLetterDocument _
+        IIf(txtAddressee Is Nothing, "", txtAddressee.Value), _
+        CreateAddressArray(), _
         IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.Value), _
-        IIf(cmbExecutor Is Nothing, "", cmbExecutor.Value))
-    
-    wordDoc.SaveAs fileName
-    Debug.Print "File saved: " & fileName
-    
-    On Error Resume Next
-    ThisWorkbook.Save
-    Debug.Print "Excel workbook saved"
-    On Error GoTo ErrorHandler
-    
-    wordApp.Visible = True
-    wordDoc.Activate
-    
-    Set wordDoc = Nothing
-    Set wordApp = Nothing
+        IIf(txtLetterDate Is Nothing, "", txtLetterDate.Value), _
+        IIf(cmbExecutor Is Nothing, "", cmbExecutor.Value), _
+        IIf(cmbDocumentType Is Nothing, "", cmbDocumentType.Value), _
+        (Not cmbLetterType Is Nothing And cmbLetterType.ListIndex = 1), _
+        documentsList
     Exit Sub
-    
+
 ErrorHandler:
-    MsgBox "Error creating letter: " & Err.description, vbCritical
-    On Error Resume Next
-    If Not wordDoc Is Nothing Then wordDoc.Close False
-    Set wordDoc = Nothing
-    Set wordApp = Nothing
-End Sub
-
-Private Sub FillWordTemplate(wordDoc As Object)
-    On Error GoTo TemplateError
-    
-    Dim addresseeText As String, addressText As String, numberText As String
-    Dim dateText As String, executorText As String, phoneText As String
-    Dim letterText As String
-    
-    addresseeText = IIf(txtAddressee Is Nothing, "", txtAddressee.Value)
-    addressText = FormatRecipientAddress(CreateAddressArray())
-    numberText = IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.Value)
-    
-    dateText = FormatLetterDate(IIf(txtLetterDate Is Nothing, "", txtLetterDate.Value))
-    Debug.Print "Formatted date: " & dateText
-    
-    executorText = IIf(cmbExecutor Is Nothing, "", cmbExecutor.Value)
-    phoneText = GetExecutorPhone(executorText)
-    letterText = GetDocumentTypeText(IIf(cmbDocumentType Is Nothing, "", cmbDocumentType.Value))
-    
-    SafeReplaceInWord wordDoc, "RecipientName", addresseeText
-    SafeReplaceInWord wordDoc, "RecipientAddress", addressText
-    SafeReplaceInWord wordDoc, "OutgoingNumber", numberText
-    SafeReplaceInWord wordDoc, "OutgoingDate", dateText
-    SafeReplaceInWord wordDoc, "ExecutorName", executorText
-    SafeReplaceInWord wordDoc, "ExecutorPhone", phoneText
-    SafeReplaceInWord wordDoc, "LetterText", letterText
-    
-    ReplaceAttachmentsInTemplateWithFontAndSum wordDoc, documentsList, 10
-    
-    Exit Sub
-    
-TemplateError:
-    MsgBox "Template filling error: " & Err.description, vbCritical
-End Sub
-
-Private Sub CreateLetterFromScratch(wordDoc As Object)
-    On Error GoTo ScratchError
-    
-    Dim content As String
-    Dim letterText As String
-    Dim addresseeText As String, addressText As String
-    Dim numberText As String, dateText As String, executorText As String
-    
-    addresseeText = IIf(txtAddressee Is Nothing, "", txtAddressee.Value)
-    addressText = FormatRecipientAddress(CreateAddressArray())
-    numberText = IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.Value)
-    dateText = IIf(txtLetterDate Is Nothing, "", txtLetterDate.Value)
-    executorText = IIf(cmbExecutor Is Nothing, "", cmbExecutor.Value)
-    letterText = GetDocumentTypeText(IIf(cmbDocumentType Is Nothing, "", cmbDocumentType.Value))
-    
-    content = "To the Commander of military unit " & addresseeText & vbCrLf & vbCrLf
-    content = content & addressText & vbCrLf & vbCrLf & vbCrLf
-    content = content & letterText & vbCrLf & vbCrLf
-    content = content & "Executor: " & executorText & vbCrLf
-    content = content & "Phone: " & GetExecutorPhone(executorText) & vbCrLf
-    content = content & "Ref. No.: " & numberText & vbCrLf
-    content = content & "Date: " & dateText & vbCrLf & vbCrLf
-    
-    wordDoc.content.Text = content
-    
-    AppendAttachmentsToDocumentWithFontAndSum wordDoc, documentsList, 10
-    
-    Exit Sub
-    
-ScratchError:
-    MsgBox "Letter creation error: " & Err.description, vbCritical
+    MsgBox "Error creating letter: " & Err.Description, vbCritical
 End Sub
 
 '=====================================================================
@@ -1359,7 +1242,7 @@ Private Sub AutoUpdateAddressIfChanged()
     Dim currentAddress As Variant
     currentAddress = CreateAddressArray()
     
-    If AddressDataHasChanges(selectedAddressRow, currentAddress) Then
+    If HasAddressDataChanged(selectedAddressRow, currentAddress) Then
         UpdateExistingAddress selectedAddressRow, currentAddress
         Debug.Print "Address automatically updated in row " & selectedAddressRow
         ClearAddressCache
@@ -1367,34 +1250,6 @@ Private Sub AutoUpdateAddressIfChanged()
     
     On Error GoTo 0
 End Sub
-
-Private Function AddressDataHasChanges(rowNumber As Long, newAddressArray As Variant) As Boolean
-    AddressDataHasChanges = False
-    
-    On Error GoTo CompareError
-    
-    Dim ws As Worksheet
-    Set ws = ThisWorkbook.Worksheets("Addresses")
-    
-    Dim i As Long, matchCount As Integer
-    For i = 0 To UBound(newAddressArray)
-        Dim sheetValue As String, formValue As String
-        sheetValue = UCase(Trim(CStr(ws.Cells(rowNumber, i + 1).Value)))
-        formValue = UCase(Trim(CStr(newAddressArray(i))))
-        
-        If sheetValue <> formValue Then
-            Debug.Print "Change in column " & (i + 1) & ": '" & ws.Cells(rowNumber, i + 1).Value & "' -> '" & newAddressArray(i) & "'"
-            AddressDataHasChanges = True
-            Exit Function
-        End If
-    Next i
-    
-    Exit Function
-    
-CompareError:
-    Debug.Print "Error comparing address data: " & Err.description
-    AddressDataHasChanges = False
-End Function
 
 Private Sub ValidateAndUpdateSelectedAddress()
     On Error Resume Next
