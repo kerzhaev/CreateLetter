@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.1 — 26.03.2026
+' Version: 1.6.2 — 26.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.1
+'                    NEW FUNCTIONS v1.6.2
 ' ======================================================================
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
@@ -762,6 +762,66 @@ Public Function BuildSummaryAttachmentsText(documentsList As Collection) As Stri
     
     BuildSummaryAttachmentsText = attachmentText
 End Function
+
+Public Function GetDocumentDisplayItems(documentsList As Collection) As Collection
+    Set GetDocumentDisplayItems = New Collection
+    
+    If documentsList Is Nothing Then Exit Function
+    
+    Dim i As Long
+    For i = 1 To documentsList.count
+        GetDocumentDisplayItems.Add FormatDocumentNameWithSum(documentsList(i))
+    Next i
+End Function
+
+Public Function DuplicateDocumentArray(sourceItem As Variant) As Variant
+    Dim sourceName As String
+    Dim sourceDate As String
+    Dim sourceCopies As String
+    Dim sourceSheets As String
+    Dim sourceSum As String
+    
+    sourceName = ""
+    sourceDate = ""
+    sourceCopies = ""
+    sourceSheets = ""
+    sourceSum = ""
+    
+    If IsArray(sourceItem) Then
+        If UBound(sourceItem) >= 4 Then
+            sourceName = CStr(sourceItem(0))
+            sourceDate = CStr(sourceItem(2))
+            sourceCopies = CStr(sourceItem(3))
+            sourceSheets = CStr(sourceItem(4))
+        End If
+        
+        If UBound(sourceItem) >= 5 Then
+            sourceSum = CStr(sourceItem(5))
+        End If
+    End If
+    
+    DuplicateDocumentArray = CreateDocumentArrayWithSum(sourceName, "", sourceDate, sourceCopies, sourceSheets, sourceSum)
+End Function
+
+Public Sub MoveDocumentCollectionItemUp(documentsList As Collection, oneBasedIndex As Long)
+    If documentsList Is Nothing Then Exit Sub
+    If oneBasedIndex <= 1 Or oneBasedIndex > documentsList.count Then Exit Sub
+    
+    Dim tempDoc As Variant
+    tempDoc = documentsList(oneBasedIndex - 1)
+    documentsList.Remove oneBasedIndex - 1
+    documentsList.Add tempDoc, , oneBasedIndex - 1
+End Sub
+
+Public Sub MoveDocumentCollectionItemDown(documentsList As Collection, oneBasedIndex As Long)
+    If documentsList Is Nothing Then Exit Sub
+    If oneBasedIndex < 1 Or oneBasedIndex >= documentsList.count Then Exit Sub
+    
+    Dim tempDoc As Variant
+    tempDoc = documentsList(oneBasedIndex + 1)
+    documentsList.Remove oneBasedIndex + 1
+    documentsList.Add tempDoc, , oneBasedIndex
+End Sub
 
 Public Sub CreateLetterDocument(addressee As String, addressArray As Variant, letterNumber As String, letterDateRaw As String, executor As String, documentType As String, useAlternateTemplate As Boolean, documentsList As Collection)
     Dim wordApp As Object

@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-   Caption         =   "Letter Builder v1.6.1"
+   Caption         =   "Letter Builder v1.6.2"
    ClientHeight    =   10155
    ClientLeft      =   120
    ClientTop       =   465
@@ -14,8 +14,8 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.1 - Thin-shell MultiPage wizard for letter creation
-' Version : 1.6.1 - 26.03.2026
+' Form    : frmLetterCreator v1.6.2 - Thin-shell MultiPage wizard for letter creation
+' Version : 1.6.2 - 26.03.2026
 ' Author  : Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose : UI orchestration for letter creation, address entry, attachments, and summary flow
 ' ======================================================================
@@ -305,7 +305,7 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = "Letter Builder v1.6.1"
+    Me.Caption = "Letter Builder v1.6.2"
     
     On Error Resume Next
     
@@ -830,14 +830,7 @@ Private Sub btnAddAttachment_Click()
         Trim(IIf(txtDocumentSum Is Nothing, "", txtDocumentSum.Value)))
     
     documentsList.Add docArr
-    
-    If Not lstSelectedAttachments Is Nothing Then
-        lstSelectedAttachments.AddItem FormatDocumentNameWithSum(docArr)
-    End If
-    
-    If Not lblAttachmentsCount Is Nothing Then
-        lblAttachmentsCount.Caption = "Selected documents: " & documentsList.count
-    End If
+    SyncSelectedAttachmentsList
     
     ClearDocumentFields
     On Error GoTo 0
@@ -856,16 +849,7 @@ Private Sub btnRemoveAttachment_Click()
     
     If selectedIndex + 1 <= documentsList.count Then
         documentsList.Remove selectedIndex + 1
-        
-        lstSelectedAttachments.Clear
-        Dim i As Long
-        For i = 1 To documentsList.count
-            lstSelectedAttachments.AddItem FormatDocumentNameWithSum(documentsList(i))
-        Next i
-    End If
-    
-    If Not lblAttachmentsCount Is Nothing Then
-        lblAttachmentsCount.Caption = "Selected documents: " & documentsList.count
+        SyncSelectedAttachmentsList
     End If
     
     On Error GoTo 0
@@ -936,41 +920,14 @@ Public Sub DuplicateDocument()
     On Error GoTo DuplicateError
     
     If contextMenuSelectedIndex >= 0 And contextMenuSelectedIndex < documentsList.count Then
-        Dim docIndex As Long
-        docIndex = contextMenuSelectedIndex + 1
-        
-        Dim sourceName As String, sourceDate As String, sourceCopies As String, sourceSheets As String, sourceSum As String
-        sourceName = ""
-        sourceDate = ""
-        sourceCopies = ""
-        sourceSheets = ""
-        sourceSum = ""
-        
         Dim sourceItem As Variant
-        sourceItem = documentsList.item(docIndex)
-        
-        If IsArray(sourceItem) Then
-            If UBound(sourceItem) >= 4 Then
-                sourceName = CStr(sourceItem(0))
-                sourceDate = CStr(sourceItem(2))
-                sourceCopies = CStr(sourceItem(3))
-                sourceSheets = CStr(sourceItem(4))
-            End If
-            
-            If UBound(sourceItem) >= 5 Then
-                sourceSum = CStr(sourceItem(5))
-            End If
-        End If
+        sourceItem = documentsList.item(contextMenuSelectedIndex + 1)
         
         Dim duplicateDoc As Variant
-        duplicateDoc = CreateDocumentArrayWithSum(sourceName, "", sourceDate, sourceCopies, sourceSheets, sourceSum)
+        duplicateDoc = DuplicateDocumentArray(sourceItem)
         
         documentsList.Add duplicateDoc
-        lstSelectedAttachments.AddItem FormatDocumentNameWithSum(duplicateDoc)
-        
-        If Not lblAttachmentsCount Is Nothing Then
-            lblAttachmentsCount.Caption = "Selected documents: " & documentsList.count
-        End If
+        SyncSelectedAttachmentsList
     End If
     Exit Sub
     
@@ -983,11 +940,7 @@ Public Sub RemoveSelectedDocument()
     
     If contextMenuSelectedIndex >= 0 And contextMenuSelectedIndex < documentsList.count Then
         documentsList.Remove contextMenuSelectedIndex + 1
-        lstSelectedAttachments.RemoveItem contextMenuSelectedIndex
-        
-        If Not lblAttachmentsCount Is Nothing Then
-            lblAttachmentsCount.Caption = "Selected documents: " & documentsList.count
-        End If
+        SyncSelectedAttachmentsList
     End If
     Exit Sub
     
@@ -998,11 +951,7 @@ Public Sub MoveDocumentUp()
     On Error GoTo MoveUpError
     
     If contextMenuSelectedIndex > 0 Then
-        Dim tempDoc As Variant
-        tempDoc = documentsList(contextMenuSelectedIndex)
-        documentsList.Remove contextMenuSelectedIndex
-        documentsList.Add tempDoc, , contextMenuSelectedIndex
-        
+        MoveDocumentCollectionItemUp documentsList, contextMenuSelectedIndex + 1
         RefreshDocumentsList
         lstSelectedAttachments.ListIndex = contextMenuSelectedIndex - 1
     End If
@@ -1015,11 +964,7 @@ Public Sub MoveDocumentDown()
     On Error GoTo MoveDownError
     
     If contextMenuSelectedIndex < documentsList.count - 1 Then
-        Dim tempDoc As Variant
-        tempDoc = documentsList(contextMenuSelectedIndex + 2)
-        documentsList.Remove contextMenuSelectedIndex + 2
-        documentsList.Add tempDoc, , contextMenuSelectedIndex + 1
-        
+        MoveDocumentCollectionItemDown documentsList, contextMenuSelectedIndex + 1
         RefreshDocumentsList
         lstSelectedAttachments.ListIndex = contextMenuSelectedIndex + 1
     End If
@@ -1029,11 +974,27 @@ MoveDownError:
 End Sub
 
 Private Sub RefreshDocumentsList()
+    SyncSelectedAttachmentsList
+End Sub
+
+Private Sub SyncSelectedAttachmentsList()
     lstSelectedAttachments.Clear
+    
+    Dim displayItems As Collection
     Dim i As Long
-    For i = 1 To documentsList.count
-        lstSelectedAttachments.AddItem FormatDocumentNameWithSum(documentsList(i))
+    
+    Set displayItems = GetDocumentDisplayItems(documentsList)
+    For i = 1 To displayItems.count
+        lstSelectedAttachments.AddItem displayItems(i)
     Next i
+    
+    UpdateSelectedDocumentsCaption
+End Sub
+
+Private Sub UpdateSelectedDocumentsCaption()
+    If Not lblAttachmentsCount Is Nothing Then
+        lblAttachmentsCount.Caption = "Selected documents: " & documentsList.count
+    End If
 End Sub
 
 '=====================================================================
