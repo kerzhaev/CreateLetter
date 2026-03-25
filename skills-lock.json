@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "vbaExcel": {
+      "source": "lunasoft2001/github-copilot-excel-analyzer",
+      "sourceType": "github",
+      "computedHash": "3ba836da737a5b092d78ce91a74a5bec92fdec4d88479543c6e1d9792a23f2d9"
+    },
+    "xlsx": {
+      "source": "tfriedel/claude-office-skills",
+      "sourceType": "github",
+      "computedHash": "caf8f7b57d32d44eef9e4bd68f5201775ac42f6d7311935606cf75ff0cbba1b1"
+    }
+  }
+}

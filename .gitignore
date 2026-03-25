@@ -1,0 +1,18 @@
+# Временные файлы Excel (мусор, который появляется при открытии книги)
+~$*
+*.tmp
+*.xlsx
+
+# Системные файлы
+thumbs.db
+desktop.ini
+.DS_Store
+
+# Папка с историей чатов Cursor (она может быть огромной, нам она в гите не нужна)
+.cursor/
+
+# Если ты не хочешь хранить архив в гите (так как файлы большие), можно раскомментировать строку ниже:
+# _Archive/
+
+# Restore points are local safety artifacts, not project history.
+filesarchive/restore-point-*/
