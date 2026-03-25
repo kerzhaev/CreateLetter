@@ -36,6 +36,129 @@ Public Function ValidateRequiredFields(addressee As String, city As String, regi
     ValidateRequiredFields = ""
 End Function
 
+Public Function ValidateCreatorPage(pageIndex As Integer, addressee As String, city As String, region As String, postalCode As String, phoneNumber As String, letterNumber As String, letterDateText As String, executor As String, documentsCount As Long, ByRef focusControlName As String) As String
+    focusControlName = ""
+    ValidateCreatorPage = ""
+    
+    Select Case pageIndex
+        Case 0
+            If Len(Trim(addressee)) = 0 Then
+                focusControlName = "txtAddressee"
+                ValidateCreatorPage = "Fill in the 'Addressee' field."
+                Exit Function
+            End If
+            
+            If Len(Trim(city)) = 0 Then
+                focusControlName = "txtCity"
+                ValidateCreatorPage = "Fill in the 'City' field. This field is required."
+                Exit Function
+            End If
+            
+            If Len(Trim(region)) = 0 Then
+                focusControlName = "txtRegion"
+                ValidateCreatorPage = "Fill in the 'Region' field. This field is required."
+                Exit Function
+            End If
+            
+            If Len(Trim(postalCode)) = 0 Then
+                focusControlName = "txtPostalCode"
+                ValidateCreatorPage = "Fill in the 'Postal code' field. This field is required."
+                Exit Function
+            End If
+            
+            If Len(Trim(phoneNumber)) > 0 And Not IsPhoneNumberValid(phoneNumber) Then
+                focusControlName = "txtAddresseePhone"
+                ValidateCreatorPage = "Enter a valid addressee phone number."
+                Exit Function
+            End If
+            
+        Case 1
+            If Len(Trim(letterNumber)) = 0 Then
+                focusControlName = "txtLetterNumber"
+                ValidateCreatorPage = "Enter the outgoing letter number."
+                Exit Function
+            End If
+            
+            If Len(Trim(letterDateText)) = 0 Then
+                focusControlName = "txtLetterDate"
+                ValidateCreatorPage = "Enter the letter date."
+                Exit Function
+            End If
+            
+            If Len(Trim(executor)) = 0 Then
+                focusControlName = "cmbExecutor"
+                ValidateCreatorPage = "Select an executor. This field is required."
+                Exit Function
+            End If
+            
+            Dim parsedDate As Date
+            If Not TryParseDate(letterDateText, parsedDate) Then
+                focusControlName = "txtLetterDate"
+                ValidateCreatorPage = "Invalid letter date format."
+                Exit Function
+            End If
+            
+        Case 2
+            If documentsCount = 0 Then
+                ValidateCreatorPage = "Add at least one attachment document."
+                Exit Function
+            End If
+    End Select
+End Function
+
+Public Function ValidateCreatorSubmission(addressee As String, city As String, region As String, postalCode As String, letterNumber As String, letterDateText As String, executor As String, documentsCount As Long, ByRef focusControlName As String) As String
+    focusControlName = ""
+    ValidateCreatorSubmission = ""
+    
+    If Len(Trim(addressee)) = 0 Then
+        focusControlName = "txtAddressee"
+        ValidateCreatorSubmission = "Addressee is not filled in."
+        Exit Function
+    End If
+    
+    If Len(Trim(city)) = 0 Then
+        focusControlName = "txtCity"
+        ValidateCreatorSubmission = "City is not filled in."
+        Exit Function
+    End If
+    
+    If Len(Trim(region)) = 0 Then
+        focusControlName = "txtRegion"
+        ValidateCreatorSubmission = "Region is not filled in."
+        Exit Function
+    End If
+    
+    If Len(Trim(postalCode)) = 0 Then
+        focusControlName = "txtPostalCode"
+        ValidateCreatorSubmission = "Postal code is not filled in."
+        Exit Function
+    End If
+    
+    If Len(Trim(letterNumber)) = 0 Then
+        focusControlName = "txtLetterNumber"
+        ValidateCreatorSubmission = "Letter number is not filled in."
+        Exit Function
+    End If
+    
+    If Len(Trim(letterDateText)) = 0 Then
+        focusControlName = "txtLetterDate"
+        ValidateCreatorSubmission = "Letter date is not filled in."
+        Exit Function
+    End If
+    
+    If Len(Trim(executor)) = 0 Then
+        focusControlName = "cmbExecutor"
+        ValidateCreatorSubmission = "Executor is not selected."
+        Exit Function
+    End If
+    
+    If documentsCount = 0 Then
+        focusControlName = "txtAttachmentSearch"
+        ValidateCreatorSubmission = "Add at least one document."
+        Exit Function
+    End If
+End Function
+
 Public Function FormatPhoneNumber(phoneInput As String) As String
     If Len(Trim(phoneInput)) = 0 Then
         FormatPhoneNumber = ""
@@ -961,6 +1084,25 @@ Public Function TryParseDate(rawText As String, ByRef outDate As Date) As Boolea
     End Select
     
     TryParseDate = ok
+End Function
+
+Public Function ResolveLetterDateOrToday(rawText As String) As Date
+    If Len(Trim(rawText)) = 0 Then
+        ResolveLetterDateOrToday = Date
+        Exit Function
+    End If
+    
+    If IsDate(rawText) Then
+        ResolveLetterDateOrToday = CDate(rawText)
+        Exit Function
+    End If
+    
+    Dim parsedDate As Date
+    If TryParseDate(rawText, parsedDate) Then
+        ResolveLetterDateOrToday = parsedDate
+    Else
+        ResolveLetterDateOrToday = Date
+    End If
 End Function
 
 Public Function HasAddressDataChanged(rowNumber As Long, newAddressArray As Variant) As Boolean

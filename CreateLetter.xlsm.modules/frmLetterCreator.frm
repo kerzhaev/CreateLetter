@@ -534,82 +534,31 @@ End Sub
 '=====================================================================
 Private Function ValidatePage(pg As Integer) As Boolean
     ValidatePage = False
-    
-    Select Case pg
-        Case 0
-            On Error Resume Next
-            
-            If Trim(Me.Controls("txtAddressee").Value) = "" Then
-                MsgBox "Fill in the 'Addressee' field.", vbExclamation
-                Me.Controls("txtAddressee").SetFocus
-                On Error GoTo 0: Exit Function
-            End If
-            
-            If Trim(Me.Controls("txtCity").Value) = "" Then
-                MsgBox "Fill in the 'City' field. This field is required.", vbExclamation
-                Me.Controls("txtCity").SetFocus
-                On Error GoTo 0: Exit Function
-            End If
-            
-            If Trim(Me.Controls("txtRegion").Value) = "" Then
-                MsgBox "Fill in the 'Region' field. This field is required.", vbExclamation
-                Me.Controls("txtRegion").SetFocus
-                On Error GoTo 0: Exit Function
-            End If
-            
-            If Trim(Me.Controls("txtPostalCode").Value) = "" Then
-                MsgBox "Fill in the 'Postal code' field. This field is required.", vbExclamation
-                Me.Controls("txtPostalCode").SetFocus
-                On Error GoTo 0: Exit Function
-            End If
-            
-            If Len(Trim(Me.Controls("txtAddresseePhone").Value)) > 0 Then
-                If Not IsPhoneNumberValid(Me.Controls("txtAddresseePhone").Value) Then
-                    MsgBox "Enter a valid addressee phone number.", vbExclamation
-                    Me.Controls("txtAddresseePhone").SetFocus
-                    On Error GoTo 0: Exit Function
-                End If
-            End If
-            
-            On Error GoTo 0
-            ValidateAndUpdateSelectedAddress
-            
-        Case 1
-            On Error Resume Next
-            
-            If Trim(Me.Controls("txtLetterNumber").Value) = "" Then
-                MsgBox "Enter the outgoing letter number.", vbExclamation
-                Me.Controls("txtLetterNumber").SetFocus
-                On Error GoTo 0: Exit Function
-            End If
-            
-            If Trim(Me.Controls("txtLetterDate").Value) = "" Then
-                MsgBox "Enter the letter date.", vbExclamation
-                Me.Controls("txtLetterDate").SetFocus
-                On Error GoTo 0: Exit Function
-            End If
-            
-            If Me.Controls("cmbExecutor").ListIndex < 0 Or Len(Trim(Me.Controls("cmbExecutor").Value)) = 0 Then
-                MsgBox "Select an executor. This field is required.", vbExclamation
-                Me.Controls("cmbExecutor").SetFocus
-                On Error GoTo 0: Exit Function
-            End If
-            
-            Dim d As Date
-            If Not TryParseDate(Me.Controls("txtLetterDate").Value, d) Then
-                MsgBox "Invalid letter date format.", vbExclamation
-                Me.Controls("txtLetterDate").SetFocus
-                On Error GoTo 0: Exit Function
-            End If
-            
-            On Error GoTo 0
-            
-        Case 2
-            If documentsList.count = 0 Then
-                MsgBox "Add at least one attachment document.", vbExclamation
-                Exit Function
-            End If
-    End Select
+
+    Dim focusControlName As String
+    Dim validationMessage As String
+
+    validationMessage = ValidateCreatorPage( _
+        pg, _
+        GetControlText("txtAddressee"), _
+        GetControlText("txtCity"), _
+        GetControlText("txtRegion"), _
+        GetControlText("txtPostalCode"), _
+        GetControlText("txtAddresseePhone"), _
+        GetControlText("txtLetterNumber"), _
+        GetControlText("txtLetterDate"), _
+        GetControlText("cmbExecutor"), _
+        documentsList.count, _
+        focusControlName)
+
+    If Len(validationMessage) > 0 Then
+        ShowValidationFailure validationMessage, focusControlName
+        Exit Function
+    End If
+
+    If pg = 0 Then
+        ValidateAndUpdateSelectedAddress
+    End If
     
     ValidatePage = True
 End Function
@@ -1127,42 +1076,26 @@ End Sub
 '=====================================================================
 Private Function ValidateForm() As Boolean
     ValidateForm = False
-    
-    On Error Resume Next
-    
-    If txtAddressee Is Nothing Or Trim(txtAddressee.Value) = "" Then
-        MsgBox "Addressee is not filled in.", vbExclamation: SwitchToPage 0: Exit Function
+
+    Dim focusControlName As String
+    Dim validationMessage As String
+
+    validationMessage = ValidateCreatorSubmission( _
+        GetControlText("txtAddressee"), _
+        GetControlText("txtCity"), _
+        GetControlText("txtRegion"), _
+        GetControlText("txtPostalCode"), _
+        GetControlText("txtLetterNumber"), _
+        GetControlText("txtLetterDate"), _
+        GetControlText("cmbExecutor"), _
+        documentsList.count, _
+        focusControlName)
+
+    If Len(validationMessage) > 0 Then
+        SwitchToPage GetPageIndexForControl(focusControlName)
+        ShowValidationFailure validationMessage, focusControlName
+        Exit Function
     End If
-    
-    If txtCity Is Nothing Or Trim(txtCity.Value) = "" Then
-        MsgBox "City is not filled in.", vbExclamation: SwitchToPage 0: Exit Function
-    End If
-    
-    If txtRegion Is Nothing Or Trim(txtRegion.Value) = "" Then
-        MsgBox "Region is not filled in.", vbExclamation: SwitchToPage 0: Exit Function
-    End If
-    
-    If txtPostalCode Is Nothing Or Trim(txtPostalCode.Value) = "" Then
-        MsgBox "Postal code is not filled in.", vbExclamation: SwitchToPage 0: Exit Function
-    End If
-    
-    If txtLetterNumber Is Nothing Or Trim(txtLetterNumber.Value) = "" Then
-        MsgBox "Letter number is not filled in.", vbExclamation: SwitchToPage 1: Exit Function
-    End If
-    
-    If txtLetterDate Is Nothing Or Trim(txtLetterDate.Value) = "" Then
-        MsgBox "Letter date is not filled in.", vbExclamation: SwitchToPage 1: Exit Function
-    End If
-    
-    If cmbExecutor Is Nothing Or cmbExecutor.ListIndex < 0 Or Len(Trim(cmbExecutor.Value)) = 0 Then
-        MsgBox "Executor is not selected.", vbExclamation: SwitchToPage 1: Exit Function
-    End If
-    
-    If documentsList.count = 0 Then
-        MsgBox "Add at least one document.", vbExclamation: SwitchToPage 2: Exit Function
-    End If
-    
-    On Error GoTo 0
     
     ValidateForm = True
 End Function
@@ -1184,6 +1117,28 @@ Private Function CreateAddressArray() As Variant
     On Error GoTo 0
     
     CreateAddressArray = arr
+End Function
+
+Private Function GetControlText(controlName As String) As String
+    On Error Resume Next
+    GetControlText = Trim(CStr(Me.Controls(controlName).Value))
+    On Error GoTo 0
+End Function
+
+Private Sub ShowValidationFailure(messageText As String, focusControlName As String)
+    MsgBox messageText, vbExclamation
+    SafeSetFocus focusControlName
+End Sub
+
+Private Function GetPageIndexForControl(controlName As String) As Integer
+    Select Case controlName
+        Case "txtAddressee", "txtCity", "txtRegion", "txtPostalCode", "txtAddresseePhone"
+            GetPageIndexForControl = 0
+        Case "txtLetterNumber", "txtLetterDate", "cmbExecutor"
+            GetPageIndexForControl = 1
+        Case Else
+            GetPageIndexForControl = 2
+    End Select
 End Function
 
 '=====================================================================
@@ -1211,21 +1166,9 @@ End Sub
 '      SAVING TO DATABASE WITH SUM
 '=====================================================================
 Private Sub SaveLetterToDatabase()
-    Dim letterDate As Date
-    
-    On Error Resume Next
-    If txtLetterDate Is Nothing Then
-        letterDate = Date
-    ElseIf IsDate(txtLetterDate.Value) Then
-        letterDate = CDate(txtLetterDate.Value)
-    Else
-        letterDate = Date
-    End If
-    On Error GoTo 0
-    
     SaveLetterInfoWithSum IIf(txtAddressee Is Nothing, "", txtAddressee.Value), _
                           IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.Value), _
-                          letterDate, documentsList, _
+                          ResolveLetterDateOrToday(GetControlText("txtLetterDate")), documentsList, _
                           IIf(cmbExecutor Is Nothing, "", cmbExecutor.Value), _
                           IIf(cmbDocumentType Is Nothing, "", _
                               IIf(cmbDocumentType.ListIndex >= 0, cmbDocumentType.Value, ""))
