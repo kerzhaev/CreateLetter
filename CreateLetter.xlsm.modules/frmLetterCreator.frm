@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-   Caption         =   "Letter Builder v1.6.0"
+   Caption         =   "Letter Builder v1.6.1"
    ClientHeight    =   10155
    ClientLeft      =   120
    ClientTop       =   465
@@ -14,10 +14,10 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.0 - MultiPage-wizard with document sum
-' Version : 1.6.0 - 14.09.2025
+' Form    : frmLetterCreator v1.6.1 - Thin-shell MultiPage wizard for letter creation
+' Version : 1.6.1 - 26.03.2026
 ' Author  : Kerzhaev Evgeniy, FKU "95 FES" MO RF
-' Purpose : Creation of letters with attachments and document sums
+' Purpose : UI orchestration for letter creation, address entry, attachments, and summary flow
 ' ======================================================================
 
 Option Explicit
@@ -305,7 +305,7 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = "Letter Builder v1.6.0"
+    Me.Caption = "Letter Builder v1.6.1"
     
     On Error Resume Next
     

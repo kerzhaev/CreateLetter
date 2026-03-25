@@ -13,3 +13,4 @@
 - New internal identifiers, module names, constants, sheet keys, and placeholder keys must use English ASCII only.
 - User-facing Russian text must come from localization data, not from new hardcoded literals in business logic.
 - Do not start the next migration stage until the previous stage passes a manual smoke test in Excel.
+- Every VBA module or form edited during an iteration must have its top header metadata updated: keep the module/form description accurate, bump the visible version number, and refresh the change date.

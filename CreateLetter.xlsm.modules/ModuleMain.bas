@@ -2,14 +2,14 @@ Attribute VB_Name = "ModuleMain"
 ' ======================================================================
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
-' Purpose: Core functions for working with documents and data
-' Version: 1.6.0 — 13.09.2025
+' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
+' Version: 1.6.1 — 26.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.0
+'                    NEW FUNCTIONS v1.6.1
 ' ======================================================================
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
