@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.3 — 26.03.2026
+' Version: 1.6.4 — 26.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.3
+'                    NEW FUNCTIONS v1.6.4
 ' ======================================================================
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
@@ -388,6 +388,242 @@ End Function
 
 Public Function IsAddressReadyForAutoUpdate(city As String, region As String, postalCode As String) As Boolean
     IsAddressReadyForAutoUpdate = (Len(Trim(city)) > 0 And Len(Trim(region)) > 0 And Len(Trim(postalCode)) > 0)
+End Function
+
+Public Function LoadLetterHistoryData() As Collection
+    Set LoadLetterHistoryData = New Collection
+    
+    On Error GoTo LoadError
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("Letters")
+    
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.count, "A").End(xlUp).Row
+    If lastRow < 2 Then Exit Function
+    
+    Dim i As Long
+    For i = 2 To lastRow
+        LoadLetterHistoryData.Add BuildLetterHistoryRecord(ws, i)
+    Next i
+    
+    Exit Function
+    
+LoadError:
+    Set LoadLetterHistoryData = New Collection
+End Function
+
+Public Function FilterLetterHistoryRecords(allLettersData As Collection, searchText As String) As Collection
+    Set FilterLetterHistoryRecords = New Collection
+    
+    If allLettersData Is Nothing Then Exit Function
+    
+    Dim normalizedSearch As String
+    normalizedSearch = Trim(searchText)
+    
+    Dim i As Long
+    For i = 1 To allLettersData.count
+        Dim letterData As String
+        letterData = CStr(allLettersData(i))
+        
+        If Len(normalizedSearch) = 0 Or LetterHistoryRecordMatches(letterData, normalizedSearch) Then
+            FilterLetterHistoryRecords.Add letterData
+        End If
+    Next i
+End Function
+
+Public Function FormatLetterHistoryDisplay(letterData As String) As String
+    Dim parts() As String
+    parts = Split(letterData, "|")
+    
+    If UBound(parts) < 8 Then
+        FormatLetterHistoryDisplay = letterData
+        Exit Function
+    End If
+    
+    Dim formattedDate As String
+    formattedDate = FormatHistoryDateForDisplay(parts(2))
+    
+    Dim formattedSum As String
+    formattedSum = FormatHistoryDocumentSum(parts(4))
+    
+    Dim statusText As String
+    statusText = BuildHistoryStatusLabel(parts(5))
+    
+    Dim addressee As String
+    Dim attachments As String
+    addressee = Left(parts(0), 25) & IIf(Len(parts(0)) > 25, "...", "")
+    attachments = Left(parts(3), 30) & IIf(Len(parts(3)) > 30, "...", "")
+    
+    FormatLetterHistoryDisplay = addressee & " | " & _
+                                 parts(1) & " | " & _
+                                 formattedDate & " | " & _
+                                 attachments & " | " & _
+                                 formattedSum & " | " & _
+                                 statusText & " | " & _
+                                 parts(6) & " | " & _
+                                 parts(7)
+End Function
+
+Public Function TryParseLetterHistoryRecord(letterData As String, ByRef parts As Variant) As Boolean
+    parts = Split(letterData, "|")
+    TryParseLetterHistoryRecord = (UBound(parts) >= 8)
+End Function
+
+Public Function BuildLetterReturnStatus(isReceived As Boolean, returnDateText As String) As String
+    If isReceived Then
+        BuildLetterReturnStatus = Format(ResolveLetterDateOrToday(returnDateText), "dd.mm.yyyy") & " received"
+    Else
+        BuildLetterReturnStatus = "not received"
+    End If
+End Function
+
+Public Sub UpdateLetterHistoryRow(rowNumber As Long, sumValue As String, returnStatus As String)
+    On Error GoTo UpdateError
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("Letters")
+    
+    If Len(Trim(sumValue)) = 0 Then
+        ws.Cells(rowNumber, 5).Value = ""
+    ElseIf IsNumeric(sumValue) Then
+        ws.Cells(rowNumber, 5).Value = CDbl(sumValue)
+    Else
+        ws.Cells(rowNumber, 5).Value = sumValue
+    End If
+    
+    ws.Cells(rowNumber, 6).Value = returnStatus
+    Exit Sub
+    
+UpdateError:
+    Err.Raise Err.Number, "UpdateLetterHistoryRow", Err.Description
+End Sub
+
+Private Function BuildLetterHistoryRecord(ws As Worksheet, rowNumber As Long) As String
+    BuildLetterHistoryRecord = GetHistoryCellValueSafe(ws, rowNumber, 1) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, 2) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, 3) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, 4) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, 5) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, 6) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, 7) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, 8) & "|" & _
+                               CStr(rowNumber)
+End Function
+
+Private Function LetterHistoryRecordMatches(letterData As String, searchText As String) As Boolean
+    Dim parts() As String
+    parts = Split(letterData, "|")
+    
+    Dim searchPattern As String
+    searchPattern = UCase$(Trim$(searchText))
+    
+    Dim j As Long
+    For j = 0 To UBound(parts) - 1
+        If j = 4 Then
+            If IsNumeric(searchPattern) Then
+                If IsHistoryNumericMatch(parts(j), searchPattern) Then
+                    LetterHistoryRecordMatches = True
+                    Exit Function
+                End If
+            ElseIf InStr(1, UCase$(parts(j)), searchPattern, vbTextCompare) > 0 Then
+                LetterHistoryRecordMatches = True
+                Exit Function
+            End If
+        Else
+            If InStr(1, UCase$(parts(j)), searchPattern, vbTextCompare) > 0 Then
+                LetterHistoryRecordMatches = True
+                Exit Function
+            End If
+        End If
+    Next j
+End Function
+
+Private Function IsHistoryNumericMatch(cellValue As String, searchValue As String) As Boolean
+    Dim cleanCellValue As String
+    Dim cleanSearchValue As String
+    
+    cleanCellValue = ExtractDigitsOnly(cellValue)
+    cleanSearchValue = ExtractDigitsOnly(searchValue)
+    
+    If Len(cleanCellValue) = 0 Or Len(cleanSearchValue) = 0 Then Exit Function
+    If cleanCellValue = cleanSearchValue Then
+        IsHistoryNumericMatch = True
+        Exit Function
+    End If
+    
+    If InStr(1, cleanCellValue, cleanSearchValue, vbTextCompare) > 0 Then
+        IsHistoryNumericMatch = True
+    End If
+End Function
+
+Private Function ExtractDigitsOnly(inputText As String) As String
+    Dim i As Long
+    Dim currentChar As String
+    
+    For i = 1 To Len(inputText)
+        currentChar = Mid$(inputText, i, 1)
+        If currentChar >= "0" And currentChar <= "9" Then
+            ExtractDigitsOnly = ExtractDigitsOnly & currentChar
+        End If
+    Next i
+End Function
+
+Private Function GetHistoryCellValueSafe(ws As Worksheet, rowNumber As Long, columnNumber As Long) As String
+    On Error Resume Next
+    
+    Dim cellValue As Variant
+    cellValue = ws.Cells(rowNumber, columnNumber).Value
+    
+    If columnNumber = 5 Then
+        If IsNumeric(cellValue) And cellValue <> 0 Then
+            If cellValue = Int(cellValue) Then
+                GetHistoryCellValueSafe = CStr(CLng(cellValue))
+            Else
+                GetHistoryCellValueSafe = CStr(cellValue)
+            End If
+        Else
+            GetHistoryCellValueSafe = CStr(cellValue)
+        End If
+    Else
+        GetHistoryCellValueSafe = CStr(cellValue)
+    End If
+    
+    If Err.number <> 0 Then
+        GetHistoryCellValueSafe = ""
+    End If
+    
+    On Error GoTo 0
+End Function
+
+Private Function FormatHistoryDateForDisplay(dateValue As String) As String
+    On Error Resume Next
+    If IsDate(dateValue) Then
+        FormatHistoryDateForDisplay = Format(CDate(dateValue), "dd.mm.yyyy")
+    Else
+        FormatHistoryDateForDisplay = dateValue
+    End If
+    On Error GoTo 0
+End Function
+
+Private Function FormatHistoryDocumentSum(sumText As String) As String
+    If Len(Trim(sumText)) > 0 And IsNumeric(sumText) Then
+        If CDbl(sumText) > 0 Then
+            FormatHistoryDocumentSum = Format(CDbl(sumText), "#,##0.00") & " rub."
+        Else
+            FormatHistoryDocumentSum = "-"
+        End If
+    Else
+        FormatHistoryDocumentSum = "-"
+    End If
+End Function
+
+Private Function BuildHistoryStatusLabel(returnStatus As String) As String
+    If InStr(UCase$(returnStatus), "RECEIVED") > 0 And InStr(UCase$(returnStatus), "NOT RECEIVED") = 0 Then
+        BuildHistoryStatusLabel = "Received " & returnStatus
+    Else
+        BuildHistoryStatusLabel = "Pending " & returnStatus
+    End If
 End Function
 
 Public Function SearchAttachments(searchTerm As String) As Collection

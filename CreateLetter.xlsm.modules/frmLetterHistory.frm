@@ -14,15 +14,14 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 ' ======================================================================
-' Form: frmLetterHistory v1.2.0 - REVISED VERSION
+' Form: frmLetterHistory v1.2.1 - Thin-shell history UI
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
-' Date: 14.09.2025
-' Purpose: History of sent letters with navigation to records
-' Updates v1.2.0:
-' - Reduced document sum field to a compact size
-' - Added navigation to records in the "Letters" sheet on click
-' - Set Russian/European date format for dtpReturnDate
-' - Improved integration with the Excel table
+' Date: 26.03.2026
+' Purpose: History of sent letters with thin-shell UI, navigation, filtering, and status updates
+' Updates v1.2.1:
+' - Moved history data loading, filtering, and formatting logic into ModuleMain
+' - Reduced form responsibility to UI binding and control orchestration
+' - Preserved Russian/European date formatting and record navigation workflow
 ' ======================================================================
 Option Explicit
 
@@ -46,7 +45,7 @@ Private Sub UserForm_Initialize()
     ShowAllLettersOnInit
     InitializeControlValues
     
-    Debug.Print "Letter history form initialized v1.2.0 with improvements"
+    Debug.Print "Letter history form initialized v1.2.1 with thin-shell helpers"
 End Sub
 
 Private Sub ConfigureDateFieldRussianFormat()
@@ -95,7 +94,7 @@ End Sub
 
 Private Sub ApplyFormSettings()
     With Me
-        .Caption = "Letter History v1.2.0"
+        .Caption = "Letter History v1.2.1"
         .backColor = RGB(250, 250, 250)
     End With
 End Sub
@@ -165,41 +164,12 @@ End Sub
 ' DATA LOADING AND PROCESSING (NO CHANGES)
 ' ===============================================================================
 Private Sub LoadAllLettersData()
-    Set allLettersData = New Collection
+    Set allLettersData = LoadLetterHistoryData()
     
-    Dim ws As Worksheet
-    On Error Resume Next
-    Set ws = ThisWorkbook.Worksheets("Letters")
-    On Error GoTo 0
-    
-    If ws Is Nothing Then
-        UpdateSearchInfo "Worksheet 'Letters' not found"
-        Exit Sub
-    End If
-    
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, "A").End(xlUp).Row
-    
-    If lastRow < 2 Then
+    If allLettersData Is Nothing Or allLettersData.count = 0 Then
         UpdateSearchInfo "No data found in worksheet 'Letters'"
         Exit Sub
     End If
-    
-    Dim i As Long
-    For i = 2 To lastRow
-        Dim letterData As String
-        letterData = GetCellValueSafe(ws, i, 1) & "|" & _
-                     GetCellValueSafe(ws, i, 2) & "|" & _
-                     GetCellValueSafe(ws, i, 3) & "|" & _
-                     GetCellValueSafe(ws, i, 4) & "|" & _
-                     GetCellValueSafe(ws, i, 5) & "|" & _
-                     GetCellValueSafe(ws, i, 6) & "|" & _
-                     GetCellValueSafe(ws, i, 7) & "|" & _
-                     GetCellValueSafe(ws, i, 8) & "|" & _
-                     CStr(i)
-        
-        allLettersData.Add letterData
-    Next i
     
     UpdateSearchInfo "Letters loaded: " & allLettersData.count
 End Sub
@@ -209,19 +179,8 @@ End Sub
 Private Sub ShowAllLettersOnInit()
     If lstLetterHistory Is Nothing Then Exit Sub
     
-    Set filteredData = New Collection
-    lstLetterHistory.Clear
-    
-    Dim i As Integer
-    For i = 1 To allLettersData.count
-        Dim letterData As String
-        letterData = allLettersData(i)
-        
-        filteredData.Add letterData
-        Dim displayText As String
-        displayText = FormatLetterForDisplay(letterData)
-        lstLetterHistory.AddItem displayText
-    Next i
+    Set filteredData = FilterLetterHistoryRecords(allLettersData, "")
+    BindHistoryList filteredData
     
     UpdateSearchInfo "Showing all letters: " & allLettersData.count
 End Sub
@@ -253,241 +212,17 @@ Private Sub txtHistorySearch_Change()
         Debug.Print "=================="
     End If
     
-    If lstLetterHistory Is Nothing Then Exit Sub
-    lstLetterHistory.Clear
-    
     If Len(searchText) = 0 Then
         ShowAllLettersOnInit
     Else
-        DisplayFilteredLetters searchText
+        Set filteredData = FilterLetterHistoryRecords(allLettersData, searchText)
+        BindHistoryList filteredData
         
         If IsNumeric(searchText) And Len(searchText) > 2 Then
             UpdateSearchInfo "Searching for number " & searchText & " in document amounts..."
         End If
     End If
 End Sub
-
-
-
-Private Sub DisplayFilteredLetters(searchText As String)
-    Set filteredData = New Collection
-    If lstLetterHistory Is Nothing Then Exit Sub
-    lstLetterHistory.Clear
-    
-    Dim foundCount As Integer
-    foundCount = 0
-    
-    Dim i As Integer
-    For i = 1 To allLettersData.count
-        Dim letterData As String
-        letterData = allLettersData(i)
-        
-        Dim isMatch As Boolean
-        isMatch = False
-        
-        Dim parts() As String
-        parts = Split(letterData, "|")
-        
-        Dim j As Integer
-        For j = 0 To UBound(parts) - 1
-            Dim searchInText As String
-            searchInText = UCase(parts(j))
-            Dim searchPattern As String
-            searchPattern = UCase(searchText)
-            
-            ' FIXED: Special handling for searching by sum (column 4)
-            If j = 4 Then  ' Document sum column
-                If IsNumeric(searchPattern) Then
-                    ' FIXED: Improved search for numbers
-                    If IsNumericMatch(searchInText, searchPattern) Then
-                        isMatch = True
-                        Exit For
-                    End If
-                Else
-                    ' If searching for non-number, search as usual
-                    If InStr(searchInText, searchPattern) > 0 Then
-                        isMatch = True
-                        Exit For
-                    End If
-                End If
-            Else
-                ' Standard search across other columns
-                If InStr(searchInText, searchPattern) > 0 Then
-                    isMatch = True
-                    Exit For
-                End If
-            End If
-        Next j
-        
-        If isMatch Then
-            filteredData.Add letterData
-            Dim displayText As String
-            displayText = FormatLetterForDisplay(letterData)
-            lstLetterHistory.AddItem displayText
-            foundCount = foundCount + 1
-        End If
-    Next i
-    
-    UpdateSearchInfo "Letters found: " & foundCount & " of " & allLettersData.count
-End Sub
-
-' NEW FUNCTION: Improved number comparison
-Private Function IsNumericMatch(cellValue As String, searchValue As String) As Boolean
-    IsNumericMatch = False
-    
-    ' FIXED: More aggressive cleaning of all non-numeric characters
-    Dim cleanCellValue As String
-    cleanCellValue = ExtractOnlyDigits(cellValue)
-    
-    Dim cleanSearchValue As String
-    cleanSearchValue = ExtractOnlyDigits(searchValue)
-    
-    ' If both values are empty after cleaning - no match
-    If Len(cleanCellValue) = 0 Or Len(cleanSearchValue) = 0 Then Exit Function
-    
-    ' 1. Exact digit match
-    If cleanCellValue = cleanSearchValue Then
-        IsNumericMatch = True
-        Exit Function
-    End If
-    
-    ' 2. Partial match (substring search within numbers)
-    If InStr(cleanCellValue, cleanSearchValue) > 0 Then
-        IsNumericMatch = True
-        Exit Function
-    End If
-    
-    Debug.Print "Comparison: '" & cleanCellValue & "' vs '" & cleanSearchValue & "'"
-End Function
-
-' NEW FUNCTION: Extract ONLY digits
-Private Function ExtractOnlyDigits(inputText As String) As String
-    ExtractOnlyDigits = ""
-    
-    If Len(inputText) = 0 Then Exit Function
-    
-    Dim i As Integer
-    For i = 1 To Len(inputText)
-        Dim char As String
-        char = Mid(inputText, i, 1)
-        
-        ' Take ONLY digits, ignore everything else
-        If char >= "0" And char <= "9" Then
-            ExtractOnlyDigits = ExtractOnlyDigits & char
-        End If
-    Next i
-    
-    Debug.Print "Extracted from '" & inputText & "': '" & ExtractOnlyDigits & "'"
-End Function
-
-
-
-' FIXED FUNCTION: More reliable digit extraction
-Private Function ExtractNumbersOnly(inputText As String) As String
-    ExtractNumbersOnly = ""
-    
-    If Len(inputText) = 0 Then Exit Function
-    
-    Dim i As Integer
-    For i = 1 To Len(inputText)
-        Dim char As String
-        char = Mid(inputText, i, 1)
-        
-        ' FIXED: Accounting for all types of spaces and separators
-        If char >= "0" And char <= "9" Then
-            ExtractNumbersOnly = ExtractNumbersOnly & char
-        ElseIf char = " " Or char = Chr(160) Or char = "," Or char = "." Then
-            ' Ignore spaces (regular and non-breaking), commas, and dots
-            ' Chr(160) is a non-breaking space
-        End If
-    Next i
-End Function
-
-
-' ADDITIONAL FUNCTION: Improved data loading with correct formatting
-Private Function GetCellValueSafe(ws As Worksheet, Row As Long, col As Long) As String
-    On Error Resume Next
-    
-    Dim cellValue As Variant
-    cellValue = ws.Cells(Row, col).Value
-    
-    ' FIXED: Special handling for numeric values
-    If col = 5 Then  ' Document sum column
-        If IsNumeric(cellValue) And cellValue <> 0 Then
-            ' Format number without decimals if it's a whole number
-            If cellValue = Int(cellValue) Then
-                GetCellValueSafe = CStr(CLng(cellValue))
-            Else
-                GetCellValueSafe = CStr(cellValue)
-            End If
-        Else
-            GetCellValueSafe = CStr(cellValue)
-        End If
-    Else
-        GetCellValueSafe = CStr(cellValue)
-    End If
-    
-    If Err.number <> 0 Then
-        GetCellValueSafe = ""
-    End If
-    
-    On Error GoTo 0
-End Function
-
-
-
-Private Function FormatLetterForDisplay(letterData As String) As String
-    Dim parts() As String
-    parts = Split(letterData, "|")
-    
-    If UBound(parts) >= 8 Then
-        Dim formattedDate As String
-        formattedDate = FormatDisplayDate(parts(2))
-        
-        Dim formattedSum As String
-        If Len(Trim(parts(4))) > 0 And IsNumeric(parts(4)) Then
-            If CDbl(parts(4)) > 0 Then
-                formattedSum = Format(CDbl(parts(4)), "#,##0.00") & " rub."
-            Else
-                formattedSum = "—"
-            End If
-        Else
-            formattedSum = "—"
-        End If
-        
-        Dim statusIcon As String
-        If InStr(UCase(parts(5)), "RECEIVED") > 0 And InStr(UCase(parts(5)), "NOT RECEIVED") = 0 Then
-            statusIcon = "? " & parts(5)
-        Else
-            statusIcon = "? " & parts(5)
-        End If
-        
-        Dim addressee As String, attachments As String
-        addressee = Left(parts(0), 25) & IIf(Len(parts(0)) > 25, "...", "")
-        attachments = Left(parts(3), 30) & IIf(Len(parts(3)) > 30, "...", "")
-        
-        FormatLetterForDisplay = addressee & " | " & _
-                                parts(1) & " | " & _
-                                formattedDate & " | " & _
-                                attachments & " | " & _
-                                formattedSum & " | " & _
-                                statusIcon & " | " & _
-                                parts(6) & " | " & _
-                                parts(7)
-    Else
-        FormatLetterForDisplay = letterData
-    End If
-End Function
-
-Private Function FormatDisplayDate(dateValue As String) As String
-    On Error Resume Next
-    If IsDate(dateValue) Then
-        FormatDisplayDate = Format(CDate(dateValue), "dd.mm.yyyy")
-    Else
-        FormatDisplayDate = dateValue
-    End If
-    On Error GoTo 0
-End Function
 
 Private Sub UpdateSearchInfo(message As String)
     On Error Resume Next
@@ -512,9 +247,7 @@ Private Sub lstLetterHistory_Click()
         letterData = filteredData(selectedIndex)
         
         Dim parts() As String
-        parts = Split(letterData, "|")
-        
-        If UBound(parts) >= 8 Then
+        If TryParseLetterHistoryRecord(letterData, parts) Then
             On Error Resume Next
             
             If Not txtSumDocument Is Nothing Then
@@ -556,9 +289,7 @@ Private Sub NavigateToSelectedRecord()
         letterData = filteredData(selectedIndex)
         
         Dim parts() As String
-        parts = Split(letterData, "|")
-        
-        If UBound(parts) >= 8 Then
+        If TryParseLetterHistoryRecord(letterData, parts) Then
             Dim rowNumber As Long
             rowNumber = CLng(parts(8))
             
@@ -722,58 +453,13 @@ Private Sub btnUpdateStatus_Click()
         letterData = filteredData(selectedIndex)
         
         Dim parts() As String
-        parts = Split(letterData, "|")
-        
-        If UBound(parts) >= 8 Then
+        If TryParseLetterHistoryRecord(letterData, parts) Then
             Dim rowNumber As Long
             rowNumber = CLng(parts(8))
-            
-            Dim ws As Worksheet
-            On Error Resume Next
-            Set ws = ThisWorkbook.Worksheets("Letters")
-            On Error GoTo 0
-            
-            If ws Is Nothing Then
-                MsgBox "Worksheet 'Letters' not found.", vbExclamation
-                Exit Sub
-            End If
-            
-            On Error Resume Next
-            If Not txtSumDocument Is Nothing Then
-                Dim sumValue As String
-                sumValue = Trim(txtSumDocument.Value)
-                
-                If Len(sumValue) = 0 Then
-                    ws.Cells(rowNumber, 5).Value = ""
-                ElseIf IsNumeric(sumValue) Then
-                    ws.Cells(rowNumber, 5).Value = CDbl(sumValue)
-                Else
-                    ws.Cells(rowNumber, 5).Value = sumValue
-                End If
-            End If
-            
-            ' Find this piece of code and fix it:
             Dim returnStatus As String
-            If Not chkReceived Is Nothing And chkReceived.Value Then
-                If Not dtpReturnDate Is Nothing Then
-                    ' FIXED: Parsing date from text field
-                    Dim dateValue As Date
-                    If IsDate(dtpReturnDate.Value) Then
-                        dateValue = CDate(dtpReturnDate.Value)
-                    Else
-                        dateValue = Date
-                    End If
-                    returnStatus = Format(dateValue, "dd.mm.yyyy") & " received"
-                Else
-                    returnStatus = Format(Date, "dd.mm.yyyy") & " received"
-                End If
-            Else
-                returnStatus = "not received"
-            End If
-
+            returnStatus = BuildLetterReturnStatus((Not chkReceived Is Nothing And chkReceived.Value), ControlValueOrDefault("dtpReturnDate"))
             
-            ws.Cells(rowNumber, 6).Value = returnStatus
-            On Error GoTo 0
+            UpdateLetterHistoryRow rowNumber, ControlValueOrDefault("txtSumDocument"), returnStatus
             
             LoadAllLettersData
             txtHistorySearch_Change
@@ -782,6 +468,29 @@ Private Sub btnUpdateStatus_Click()
         End If
     End If
 End Sub
+
+Private Sub BindHistoryList(records As Collection)
+    If lstLetterHistory Is Nothing Then Exit Sub
+    
+    lstLetterHistory.Clear
+    
+    Dim i As Long
+    For i = 1 To records.count
+        lstLetterHistory.AddItem FormatLetterHistoryDisplay(CStr(records(i)))
+    Next i
+    
+    UpdateSearchInfo "Letters found: " & records.count & " of " & allLettersData.count
+End Sub
+
+Private Function ControlValueOrDefault(controlName As String, Optional defaultValue As String = "") As String
+    On Error Resume Next
+    ControlValueOrDefault = Trim(CStr(Me.Controls(controlName).Value))
+    If Err.number <> 0 Then
+        ControlValueOrDefault = defaultValue
+        Err.Clear
+    End If
+    On Error GoTo 0
+End Function
 
 Private Sub btnRefresh_Click()
     LoadAllLettersData
