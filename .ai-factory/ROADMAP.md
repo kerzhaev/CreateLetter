@@ -52,3 +52,5 @@ The next bounded feature stages for code quality and maintainability are:
   Move remaining `ModuleMain` runtime messages and fallback Word letter text onto workbook-backed localization keys so localization no longer stops at the form layer.
 - [x] `pisces/feature-19-internal-key-migration`
   Separate localized UI labels from persisted internal values for document types, letter types, and Word placeholder identifiers so business logic no longer depends on display text.
+- [x] `pisces/feature-20-entrypoint-identifier-migration`
+  Add English-safe public aliases for workbook bootstrap and letter-creator entry points while preserving legacy macro names as compatibility wrappers.

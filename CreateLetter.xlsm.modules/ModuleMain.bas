@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.14 — 27.03.2026
+' Version: 1.6.15 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.14
+'                    SCHEMA CONSTANTS v1.6.15
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -102,7 +102,7 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    CORE HELPERS v1.6.14
+'                    CORE HELPERS v1.6.15
 ' ======================================================================
 Private g_WordApp As Object
 Private g_WordAppOwned As Boolean
@@ -2042,6 +2042,10 @@ Private Function BuildUnicodeString(ParamArray codePoints() As Variant) As Strin
 End Function
 
 Public Sub ShowLetterCreatorDelayed()
+    ShowLetterCreatorDeferred
+End Sub
+
+Public Sub ShowLetterCreatorDeferred()
     On Error GoTo DelayedErrorHandler
     
     Load frmLetterCreator
@@ -2053,6 +2057,10 @@ DelayedErrorHandler:
 End Sub
 
 Public Sub StartFormirovanieLetters()
+    ShowLetterCreator
+End Sub
+
+Public Sub ShowLetterCreator()
     Load frmLetterCreator
     frmLetterCreator.Show vbModeless
 End Sub

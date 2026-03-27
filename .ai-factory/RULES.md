@@ -23,3 +23,4 @@
 - Do not drive business/status logic from localized English literals like `"RECEIVED"`; use neutral helpers or data-derived checks so Russian and English localizations behave the same.
 - When localizing a workflow, include fallback document-generation text and runtime `MsgBox` paths in `ModuleMain`, not only form captions/tooltips.
 - Combo-box display labels may be localized, but persisted workbook values and business-logic comparisons must use stable English ASCII internal keys.
+- When migrating public VBA identifiers, add English-safe aliases first and keep legacy entry points as thin compatibility wrappers until workbook macros/buttons are switched over.

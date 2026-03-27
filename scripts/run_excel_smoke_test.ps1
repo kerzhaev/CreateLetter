@@ -174,6 +174,38 @@ try {
     }
 
     try {
+        $aliasModule = $workbook.VBProject.VBComponents.Item("ModuleMain").CodeModule
+        $initializeModule = $workbook.VBProject.VBComponents.Item("mdlInicialize").CodeModule
+        $moduleMainText = [string]$aliasModule.Lines(1, $aliasModule.CountOfLines)
+        $initializeModuleText = [string]$initializeModule.Lines(1, $initializeModule.CountOfLines)
+        $requiredAliasNames = @(
+            "Public Sub ShowLetterCreator()",
+            "Public Sub ShowLetterCreatorDeferred()",
+            "Public Sub BootstrapWorkbookSheets()",
+            "Public Sub ResetWorkbookSheets()"
+        )
+
+        $missingAliases = New-Object 'System.Collections.Generic.List[string]'
+        foreach ($aliasName in $requiredAliasNames) {
+            if (($moduleMainText -notlike ("*" + $aliasName + "*")) -and ($initializeModuleText -notlike ("*" + $aliasName + "*"))) {
+                $missingAliases.Add($aliasName) | Out-Null
+            }
+        }
+
+        if ($missingAliases.Count -eq 0) {
+            Add-Result -Results $results -Name "EnglishAliases" -Status "PASS" -Details "English-safe public aliases are present in ModuleMain and mdlInicialize."
+        }
+        else {
+            Add-Result -Results $results -Name "EnglishAliases" -Status "FAIL" -Details ("Missing aliases: " + ($missingAliases -join ", "))
+            $failed = $true
+        }
+    }
+    catch {
+        Add-Result -Results $results -Name "EnglishAliases" -Status "FAIL" -Details ("Alias inspection failed: " + $_.Exception.Message)
+        $failed = $true
+    }
+
+    try {
         $localizationStats = [string]$excel.Run("'" + $workbook.Name + "'!GetLocalizationStats")
         Add-Result -Results $results -Name "LocalizationModule" -Status "PASS" -Details $localizationStats
 

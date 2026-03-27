@@ -2,12 +2,16 @@ Attribute VB_Name = "mdlInicialize"
 ' ======================================================================
 ' Module: mdlInitialize
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
-' Purpose: Creation and configuration of Excel worksheets structure for the program
-' Version: 1.4.1 — 11.09.2025
+' Purpose: Workbook sheet bootstrap and reset entry points with English-safe public aliases
+' Version: 1.4.2 - 27.03.2026
 ' ======================================================================
 Option Explicit
 
 Public Sub InitializeAllWorksheets()
+    BootstrapWorkbookSheets
+End Sub
+
+Public Sub BootstrapWorkbookSheets()
     ' Creation and configuration of all necessary sheets (renamed to avoid conflict)
     On Error GoTo InitError
     
@@ -177,6 +181,11 @@ Public Sub ResetWorksheets()
         On Error GoTo 0
         
         ' Recreate
-        InitializeAllWorksheets
+        BootstrapWorkbookSheets
     End If
 End Sub
+
+Public Sub ResetWorkbookSheets()
+    ResetWorksheets
+End Sub
+
