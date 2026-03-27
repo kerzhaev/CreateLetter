@@ -20,8 +20,8 @@ start CreateLetter.xlsm
 - Microsoft Excel with macro support
 - Access to workbook file `CreateLetter.xlsm`
 - Template files available in project root:
-  - `ШаблонПисьма.docx`
-  - `ШаблонПисьмаДСП.docx`
+  - `LetterTemplate.docx`
+  - `LetterTemplateFOU.docx`
 
 ## Key Features
 
@@ -75,6 +75,7 @@ filesarchive/                 # Workbook archive snapshots
 | [Configuration](docs/configuration.md) | Worksheets, templates, and MCP/agent context |
 | [Development Workflow](docs/development-workflow.md) | AI Factory pipeline, branching, restore points, and manual module sync |
 | [Maintenance](docs/maintenance.md) | VBA export/import, backup, and safe updates |
+| [GitHub Publishing](docs/github-publishing.md) | Public-repo hygiene and release checklist |
 
 ## AI Context
 

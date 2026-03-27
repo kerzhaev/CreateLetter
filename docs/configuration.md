@@ -12,8 +12,8 @@ Key sheets are initialized/managed by `mdlInicialize.bas`:
 
 ## Template Configuration
 
-- `ШаблонПисьма.docx`
-- `ШаблонПисьмаДСП.docx`
+- `LetterTemplate.docx`
+- `LetterTemplateFOU.docx`
 
 Keep template names and placement stable unless code references are updated.
 

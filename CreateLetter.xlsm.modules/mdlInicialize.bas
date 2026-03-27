@@ -2,9 +2,9 @@ Attribute VB_Name = "mdlInicialize"
 
 ' ======================================================================
 ' Module: mdlInitialize
-' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
+' Author: CreateLetter contributors
 ' Purpose: Workbook sheet bootstrap and reset entry points with English-safe public aliases
-' Version: 1.4.6 - 27.03.2026
+' Version: 1.4.7 - 27.03.2026
 ' ======================================================================
 Option Explicit
 
@@ -131,7 +131,7 @@ Private Sub CreateSettingsSheet()
         .Cells(1, 4).Interior.ColorIndex = 36  ' Light yellow
         
         ' Examples of executors
-        .Cells(2, 3).value = "Kerzhaev E.A."
+        .Cells(2, 3).value = "Executor A.A."
         .Cells(2, 4).value = "8-928-123-45-67"
         .Cells(3, 3).value = "Ivanov I.I."
         .Cells(3, 4).value = "8-928-234-56-78"

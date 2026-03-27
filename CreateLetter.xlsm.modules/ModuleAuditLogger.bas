@@ -1,9 +1,9 @@
 Attribute VB_Name = "ModuleAuditLogger"
 ' ======================================================================
 ' Module: ModuleAuditLogger
-' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
+' Author: CreateLetter contributors
 ' Purpose: Audit log helpers for workbook activity tracking
-' Version: 1.0.3 - 27.03.2026
+' Version: 1.0.4 - 27.03.2026
 ' ======================================================================
 
 Option Explicit

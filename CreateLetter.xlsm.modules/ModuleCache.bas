@@ -1,9 +1,9 @@
 Attribute VB_Name = "ModuleCache"
 ' ======================================================================
 ' Module: ModuleCache
-' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
+' Author: CreateLetter contributors
 ' Purpose: Caching system to accelerate searches
-' Version: 1.4.2 - 27.03.2026
+' Version: 1.4.3 - 27.03.2026
 ' ======================================================================
 
 Option Explicit

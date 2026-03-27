@@ -34,3 +34,5 @@
 - Treat `Attribute VB_Name = "..."` as export-only metadata. Never paste or inject it into the top of a module/class code pane manually or through automation; if a workflow targets VBE text insertion, strip all `Attribute VB_*` lines first.
 - Non-ASCII string literals may remain only for workbook compatibility fallbacks or localization content. Do not introduce them as new identifiers, enum names, constant names, procedure names, or persisted logic keys.
 - A form may keep UI-only helpers such as control styling, listbox binding, focus management, and event routing. If code starts assembling reusable business text, parsing workbook schema, or updating persisted state, move it into a shared module.
+- Before publishing or updating public docs, verify that file names, template names, and encoding guidance match the real repository state. Do not leave stale references to legacy Russian template names or Windows-1251 editor defaults after the UTF-8 migration.
+- Keep local-only artifacts out of the public repository: restore points, temporary exports, runtime backup folders, and one-off manual recovery helpers should be ignored or removed before publication.

@@ -1,9 +1,9 @@
 Attribute VB_Name = "ModuleDates"
 ' ======================================================================
 ' Module: ModuleDates
-' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
+' Author: CreateLetter contributors
 ' Purpose: Date parsing and Russian date-formatting helpers
-' Version: 1.4.3 - 27.03.2026
+' Version: 1.4.4 - 27.03.2026
 ' ======================================================================
 Option Explicit
 

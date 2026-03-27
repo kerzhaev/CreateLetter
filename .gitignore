@@ -15,7 +15,11 @@ desktop.ini
 # _Archive/
 
 # Restore points are local safety artifacts, not project history.
-filesarchive/restore-point-*/
+filesarchive/
+
+# Local workbook/runtime artifacts
+Backups/
+_tmp_export/
 
 # Python helper caches
 scripts/__pycache__/

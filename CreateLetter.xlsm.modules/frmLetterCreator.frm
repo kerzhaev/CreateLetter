@@ -17,9 +17,9 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.8 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
-' Version : 1.6.8 - 27.03.2026
-' Author  : Kerzhaev Evgeniy, FKU "95 FES" MO RF
+' Form    : frmLetterCreator v1.6.9 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
+' Version : 1.6.9 - 27.03.2026
+' Author  : CreateLetter contributors
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
 ' ======================================================================
 

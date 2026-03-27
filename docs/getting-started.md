@@ -7,8 +7,8 @@
 - Microsoft Excel with VBA macros enabled
 - Access to `CreateLetter.xlsm`
 - Local template files:
-  - `ШаблонПисьма.docx`
-  - `ШаблонПисьмаДСП.docx`
+  - `LetterTemplate.docx`
+  - `LetterTemplateFOU.docx`
 
 ## Project Files
 

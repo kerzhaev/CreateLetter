@@ -17,8 +17,8 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form: frmLetterHistory v1.2.6 - Thin-shell history UI with workbook-backed localization
-' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
+' Form: frmLetterHistory v1.2.7 - Thin-shell history UI with workbook-backed localization
+' Author: CreateLetter contributors
 ' Date: 27.03.2026
 ' Purpose: History of sent letters with thin-shell UI, navigation, filtering, status updates, and schema-safe bindings
 ' Updates v1.2.6:

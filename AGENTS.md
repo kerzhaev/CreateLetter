@@ -16,8 +16,8 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 ```text
 .
 ├── CreateLetter.xlsm                    # Main macro-enabled workbook
-├── ШаблонПисьма.docx                    # Letter template
-├── ШаблонПисьмаДСП.docx                 # Alternate letter template
+├── LetterTemplate.docx                  # Letter template
+├── LetterTemplateFOU.docx               # Alternate letter template
 ├── CreateLetter.xlsm.modules/           # Exported VBA source modules/forms
 │   ├── frmLetterCreator.frm/.frx        # Main wizard UI and resources
 │   ├── frmLetterHistory.frm/.frx        # History UI and resources

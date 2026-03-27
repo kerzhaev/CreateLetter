@@ -2,9 +2,9 @@ Attribute VB_Name = "ModuleMain"
 
 ' ======================================================================
 ' Module: ModuleMain (main module) - WITH DEBUGGING
-' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
+' Author: CreateLetter contributors
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.22 — 27.03.2026
+' Version: 1.6.23 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
