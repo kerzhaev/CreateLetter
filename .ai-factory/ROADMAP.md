@@ -48,3 +48,5 @@ The next bounded feature stages for code quality and maintainability are:
   Move `frmLetterCreator` captions, tips, dialogs, and creator/address validation messages onto workbook-backed localization keys while keeping English fallbacks safe.
 - [x] `pisces/feature-17-localize-history-ui-slice`
   Move `frmLetterHistory` captions, tooltips, search/export/status dialogs, and history status text onto workbook-backed localization keys without relying on English-only status parsing.
+- [x] `pisces/feature-18-localize-core-runtime-messages`
+  Move remaining `ModuleMain` runtime messages and fallback Word letter text onto workbook-backed localization keys so localization no longer stops at the form layer.

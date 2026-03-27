@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.11 — 27.03.2026
+' Version: 1.6.12 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.11
+'                    SCHEMA CONSTANTS v1.6.12
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -322,7 +322,7 @@ End Function
 
 Public Function FormatDocumentName(docArray As Variant) As String
     If Not IsArray(docArray) Then
-        FormatDocumentName = "Error: invalid data format"
+        FormatDocumentName = T("core.runtime.error.invalid_data_format", "Error: invalid data format")
         Exit Function
     End If
     
@@ -964,7 +964,7 @@ Public Sub SaveNewAddress(addressArray As Variant)
     Exit Sub
     
 SaveError:
-    MsgBox "Error saving address: " & Err.description, vbCritical
+    MsgBox T("core.address.error.save", "Error saving address: ") & Err.description, vbCritical
 End Sub
 
 Public Sub UpdateExistingAddress(rowNumber As Long, addressArray As Variant)
@@ -978,7 +978,7 @@ Public Sub UpdateExistingAddress(rowNumber As Long, addressArray As Variant)
     Exit Sub
     
 UpdateError:
-    MsgBox "Error updating address: " & Err.description, vbCritical
+    MsgBox T("core.address.error.update", "Error updating address: ") & Err.description, vbCritical
 End Sub
 
 Public Sub DeleteExistingAddress(rowNumber As Long)
@@ -992,7 +992,7 @@ Public Sub DeleteExistingAddress(rowNumber As Long)
     Exit Sub
     
 DeleteError:
-    MsgBox "Error deleting address: " & Err.description, vbCritical
+    MsgBox T("core.address.error.delete", "Error deleting address: ") & Err.description, vbCritical
 End Sub
 
 Public Function IsAddressDuplicate(addressArray As Variant, Optional excludeRow As Long = 0) As Boolean
@@ -1125,14 +1125,14 @@ SaveLetterError:
     Debug.Print "Error Description: " & Err.description
     Debug.Print "Error Source: " & Err.Source
     Debug.Print "==========================="
-    MsgBox "Error saving letter info: " & Err.description, vbCritical
+    MsgBox T("core.letter.error.save_info", "Error saving letter info: ") & Err.description, vbCritical
 End Sub
 
 Public Function FormatAttachmentsListCompactWithSum(documentsList As Collection) As String
     Debug.Print "=== DEBUG FormatAttachmentsListCompactWithSum START ==="
     
     If documentsList Is Nothing Or documentsList.count = 0 Then
-        FormatAttachmentsListCompactWithSum = "Documents not specified"
+        FormatAttachmentsListCompactWithSum = T("core.attachments.not_specified", "Documents not specified")
         Debug.Print "=== DEBUG FormatAttachmentsListCompactWithSum END (empty) ==="
         Exit Function
     End If
@@ -1173,7 +1173,7 @@ Public Function FormatDocumentNameWithSum(docArray As Variant) As String
     Debug.Print "IsArray: " & IsArray(docArray)
     
     If Not IsArray(docArray) Then
-        FormatDocumentNameWithSum = "Error: invalid data format"
+        FormatDocumentNameWithSum = T("core.runtime.error.invalid_data_format", "Error: invalid data format")
         Debug.Print "ERROR: Not array"
         Debug.Print "=== DEBUG FormatDocumentNameWithSum END ==="
         Exit Function
@@ -1246,7 +1246,7 @@ Public Function FormatAttachmentsListForWordWithSum(documentsList As Collection)
     Set FormatAttachmentsListForWordWithSum = New Collection
     
     If documentsList Is Nothing Or documentsList.count = 0 Then
-        FormatAttachmentsListForWordWithSum.Add "documents not specified;"
+        FormatAttachmentsListForWordWithSum.Add T("core.attachments.not_specified_word", "documents not specified;")
         Exit Function
     End If
     
@@ -1531,7 +1531,7 @@ Public Sub CreateLetterDocument(addressee As String, addressArray As Variant, le
     
 SaveDocument:
     Dim fileName As String
-    fileName = GenerateFileNameWithExecutor(IIf(Len(Trim(addressee)) = 0, "Letter", addressee), letterNumber, executor)
+    fileName = GenerateFileNameWithExecutor(IIf(Len(Trim(addressee)) = 0, T("core.letter.default_file_name", "Letter"), addressee), letterNumber, executor)
     
     wordDoc.SaveAs fileName
     Debug.Print "File saved: " & fileName
@@ -1541,7 +1541,7 @@ SaveDocument:
         Debug.Print "Excel workbook saved"
     Else
         Debug.Print "Excel workbook save failed: " & saveWorkbookError
-        MsgBox "Letter file was created, but the workbook was not saved: " & saveWorkbookError, vbExclamation
+        MsgBox T("core.letter.warning.workbook_not_saved", "Letter file was created, but the workbook was not saved: ") & saveWorkbookError, vbExclamation
     End If
     
     wordApp.Visible = True
@@ -1552,7 +1552,7 @@ SaveDocument:
     Exit Sub
     
 ErrorHandler:
-    MsgBox "Error creating letter: " & Err.Description, vbCritical
+    MsgBox T("core.letter.error.create_document", "Error creating letter: ") & Err.Description, vbCritical
     If Not wordDoc Is Nothing Then
         wordDoc.Close False
     End If
@@ -1590,7 +1590,7 @@ Public Sub FillWordTemplateData(wordDoc As Object, addresseeText As String, addr
     Exit Sub
     
 TemplateError:
-    MsgBox "Template filling error: " & Err.Description, vbCritical
+    MsgBox T("core.letter.error.template_fill", "Template filling error: ") & Err.Description, vbCritical
 End Sub
 
 Public Sub CreateLetterDocumentFromScratch(wordDoc As Object, addresseeText As String, addressArray As Variant, numberText As String, rawDateText As String, executorText As String, documentType As String, documentsList As Collection)
@@ -1605,20 +1605,20 @@ Public Sub CreateLetterDocumentFromScratch(wordDoc As Object, addresseeText As S
     letterText = GetDocumentTypeText(documentType)
     dateText = FormatLetterDate(rawDateText)
     
-    content = "To the Commander of military unit " & addresseeText & vbCrLf & vbCrLf
+    content = T("core.letter.fallback.to_commander", "To the Commander of military unit ") & addresseeText & vbCrLf & vbCrLf
     content = content & addressText & vbCrLf & vbCrLf & vbCrLf
     content = content & letterText & vbCrLf & vbCrLf
-    content = content & "Executor: " & executorText & vbCrLf
-    content = content & "Phone: " & GetExecutorPhone(executorText) & vbCrLf
-    content = content & "Ref. No.: " & numberText & vbCrLf
-    content = content & "Date: " & dateText & vbCrLf & vbCrLf
+    content = content & T("core.letter.fallback.executor", "Executor: ") & executorText & vbCrLf
+    content = content & T("core.letter.fallback.phone", "Phone: ") & GetExecutorPhone(executorText) & vbCrLf
+    content = content & T("core.letter.fallback.ref_no", "Ref. No.: ") & numberText & vbCrLf
+    content = content & T("core.letter.fallback.date", "Date: ") & dateText & vbCrLf & vbCrLf
     
     wordDoc.Content.Text = content
     AppendAttachmentsToDocumentWithFontAndSum wordDoc, documentsList, 10
     Exit Sub
     
 ScratchError:
-    MsgBox "Letter creation error: " & Err.Description, vbCritical
+    MsgBox T("core.letter.error.create_fallback", "Letter creation error: ") & Err.Description, vbCritical
 End Sub
 
 Public Sub ReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
@@ -1948,7 +1948,7 @@ Public Sub ShowLetterCreatorDelayed()
     Exit Sub
     
 DelayedErrorHandler:
-    MsgBox "Failed to open letter creation form: " & Err.description, vbCritical
+    MsgBox T("core.form.open_creator_error", "Failed to open letter creation form: ") & Err.description, vbCritical
 End Sub
 
 Public Sub StartFormirovanieLetters()
