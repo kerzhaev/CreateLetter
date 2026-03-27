@@ -68,6 +68,12 @@ The migration baseline adds two operational constraints: source-managed VBA rema
 8. Target thin UserForms: forms should orchestrate control state and delegate business logic to shared modules.
 9. Prefer extending existing standard modules before creating new ones; during the form-refactor stage, cap new modules at 1-2 unless a concrete boundary requires more.
 10. When moving worksheet persistence toward `ListObjects`, keep a compatibility fallback to raw ranges until the workbook schema itself is upgraded and verified.
+11. Non-ASCII literals may remain only for localization content or workbook compatibility fallbacks; they must not become new identifiers or business-logic keys.
+
+## Migration Close-Out
+- `frmLetterCreator` and `frmLetterHistory` are treated as thin forms.
+- Form-local code may keep control styling, focus changes, list binding, and direct event routing.
+- Shared modules own validation, workbook CRUD, reusable caption/text assembly, localization lookups, history formatting, and Word/document workflows.
 
 ## Code Examples
 

@@ -4,7 +4,7 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.21 — 27.03.2026
+' Version: 1.6.22 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -18,7 +18,7 @@ Private Const TextTableRowOwnForConfirmation As Long = 1
 Private Const TextTableRowConfirmedDocuments As Long = 2
 Private Const LetterTextsTableName As String = "tblLetterTexts"
 Private Const LegacyLetterTextsTableName As String = "Text"
-Private Const LegacyLetterTextsTableNameCyrillic As String = "Текст"
+Private Const LegacyLetterTextsTableNameLocalized As String = "Текст"
 Private Const AddressesTableName As String = "tblAddresses"
 Private Const LettersTableName As String = "tblLetters"
 Private Const DocumentTypeKeyConfirmed As String = "confirmed_documents"
@@ -2217,6 +2217,22 @@ ReadTextError:
     Debug.Print "GetDocumentTypeText fallback used: " & Err.description
 End Function
 
+Public Function BuildHistoryLoadedCaption(letterCount As Long) As String
+    BuildHistoryLoadedCaption = t("form.letter_history.msg.letters_loaded", "Letters loaded: ") & letterCount
+End Function
+
+Public Function BuildHistoryShowingAllCaption(letterCount As Long) As String
+    BuildHistoryShowingAllCaption = t("form.letter_history.msg.showing_all", "Showing all letters: ") & letterCount
+End Function
+
+Public Function BuildHistoryAmountSearchCaption(searchText As String) As String
+    BuildHistoryAmountSearchCaption = t("form.letter_history.msg.searching_amount", "Searching for number ") & searchText & t("form.letter_history.msg.searching_amount_suffix", " in document amounts...")
+End Function
+
+Public Function BuildHistoryFoundCaption(foundCount As Long, totalCount As Long) As String
+    BuildHistoryFoundCaption = t("form.letter_history.msg.letters_found", "Letters found: ") & foundCount & t("form.letter_history.msg.out_of", " of ") & totalCount
+End Function
+
 Private Function GetLetterTextsTable(ws As Worksheet) As ListObject
     On Error Resume Next
     Set GetLetterTextsTable = ws.ListObjects(LetterTextsTableName)
@@ -2224,7 +2240,7 @@ Private Function GetLetterTextsTable(ws As Worksheet) As ListObject
         Set GetLetterTextsTable = ws.ListObjects(LegacyLetterTextsTableName)
     End If
     If GetLetterTextsTable Is Nothing Then
-        Set GetLetterTextsTable = ws.ListObjects(LegacyLetterTextsTableNameCyrillic)
+        Set GetLetterTextsTable = ws.ListObjects(LegacyLetterTextsTableNameLocalized)
     End If
     On Error GoTo 0
 End Function

@@ -17,14 +17,15 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form: frmLetterHistory v1.2.5 - Thin-shell history UI with workbook-backed localization
+' Form: frmLetterHistory v1.2.6 - Thin-shell history UI with workbook-backed localization
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Date: 27.03.2026
 ' Purpose: History of sent letters with thin-shell UI, navigation, filtering, status updates, and schema-safe bindings
-' Updates v1.2.5:
+' Updates v1.2.6:
 ' - Moved history captions, tips, dialogs, and search info onto workbook-backed localization keys
 ' - Kept navigation, export, and status update flow aligned with named letter columns
 ' - Preserved Russian/European date formatting and record navigation workflow
+' - Removed local history caption builders in favor of shared ModuleMain helpers
 ' ======================================================================
 Option Explicit
 
@@ -238,22 +239,6 @@ Private Sub UpdateSearchInfo(message As String)
     End If
     On Error GoTo 0
 End Sub
-
-Private Function BuildHistoryLoadedCaption(letterCount As Long) As String
-    BuildHistoryLoadedCaption = t("form.letter_history.msg.letters_loaded", "Letters loaded: ") & letterCount
-End Function
-
-Private Function BuildHistoryShowingAllCaption(letterCount As Long) As String
-    BuildHistoryShowingAllCaption = t("form.letter_history.msg.showing_all", "Showing all letters: ") & letterCount
-End Function
-
-Private Function BuildHistoryAmountSearchCaption(searchText As String) As String
-    BuildHistoryAmountSearchCaption = t("form.letter_history.msg.searching_amount", "Searching for number ") & searchText & t("form.letter_history.msg.searching_amount_suffix", " in document amounts...")
-End Function
-
-Private Function BuildHistoryFoundCaption(foundCount As Long, totalCount As Long) As String
-    BuildHistoryFoundCaption = t("form.letter_history.msg.letters_found", "Letters found: ") & foundCount & t("form.letter_history.msg.out_of", " of ") & totalCount
-End Function
 
 ' ===============================================================================
 ' CONTROL EVENTS - REVISED

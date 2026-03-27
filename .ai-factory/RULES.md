@@ -32,3 +32,5 @@
 - COM VBA sync tooling must tolerate legacy exported module encodings during migration; do not assume every historical `.bas/.cls` file is already UTF-8-clean.
 - Standard-module sync must strip exported attribute lines such as `Attribute VB_Name = "ModuleName"` before calling `CodeModule.AddFromString`; those lines are valid in exported files but invalid inside the VBE code pane.
 - Treat `Attribute VB_Name = "..."` as export-only metadata. Never paste or inject it into the top of a module/class code pane manually or through automation; if a workflow targets VBE text insertion, strip all `Attribute VB_*` lines first.
+- Non-ASCII string literals may remain only for workbook compatibility fallbacks or localization content. Do not introduce them as new identifiers, enum names, constant names, procedure names, or persisted logic keys.
+- A form may keep UI-only helpers such as control styling, listbox binding, focus management, and event routing. If code starts assembling reusable business text, parsing workbook schema, or updating persisted state, move it into a shared module.

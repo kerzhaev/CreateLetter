@@ -8,11 +8,11 @@
 - [x] Stage 2: Restore-point script and rollback documentation for workbook + modules snapshots.
 - [x] Stage 3: Source-management baseline documented with `CreateLetter.xlsm.modules/` as the text source of truth and UTF-8 as the target artifact baseline.
 - [x] Stage 4: Localization foundation (`Localization` data + string lookup API) without changing workbook schema.
-- [ ] Stage 5: Comment translation and user-facing string extraction to localization keys.
-- [ ] Stage 6: Internal key migration for placeholders, service strings, and hidden literals.
-- [ ] Stage 7: Incremental English ASCII migration for code identifiers by bounded domain slices.
-- [ ] Stage 8: Workbook schema migration for internal sheet, table, and helper names.
-- [ ] Stage 9: Post-migration architecture cleanup for thin UserForms, consolidated repositories/services, and Word integration services.
+- [x] Stage 5: Comment translation and user-facing string extraction to localization keys.
+- [x] Stage 6: Internal key migration for placeholders, service strings, and hidden literals.
+- [x] Stage 7: Incremental English ASCII migration for code identifiers by bounded domain slices.
+- [x] Stage 8: Workbook schema migration for internal sheet, table, and helper names.
+- [x] Stage 9: Post-migration architecture cleanup for thin UserForms, consolidated repositories/services, and Word integration services.
   Keep forms as orchestration shells only, move business logic into existing modules where practical, and add no more than 1-2 new modules unless a later stage proves more are necessary.
 
 ## Delivery Gates
@@ -76,3 +76,5 @@ The next bounded feature stages for code quality and maintainability are:
   Add English-safe public aliases for legacy maintenance/admin entry points, then harden the VBA sync workflow against duplicate-name and VBE attribute insertion regressions.
 - [x] `pisces/feature-31-bootstrap-maintenance-localization`
   Move workbook-bootstrap and legacy snapshot helper prompts/messages onto workbook-backed localization keys so maintenance flows follow the same localization contract as the main runtime.
+- [x] `pisces/feature-32-final-identifier-and-stage-closure`
+  Remove the last non-ASCII compatibility identifier names from core modules, move residual history caption builders into shared logic, and formally close the staged migration roadmap after a final thin-form audit.
