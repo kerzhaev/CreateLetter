@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleBackup"
 ' Module: ModuleBackup
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Workbook backup helpers
-' Version: 1.4.2 - 27.03.2026
+' Version: 1.4.3 - 27.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -27,12 +27,12 @@ Public Sub CreateBackup()
     CleanOldBackups backupFolder, 7
 
     Debug.Print "Backup created: " & backupFileName
-    MsgBox "Backup created successfully!" & vbCrLf & backupPath, vbInformation
+    MsgBox t("backup.msg.created_success", "Backup created successfully!") & vbCrLf & backupPath, vbInformation
     Exit Sub
 
 BackupError:
     Debug.Print "Error creating backup: " & Err.Description
-    MsgBox "Error creating backup: " & Err.Description, vbCritical
+    MsgBox t("backup.msg.create_error", "Error creating backup: ") & Err.Description, vbCritical
 End Sub
 
 Private Sub CleanOldBackups(backupFolder As String, daysToKeep As Integer)
@@ -83,12 +83,12 @@ Public Sub ShowBackupInfo()
 
     backupFolder = ThisWorkbook.Path & "\Backups\"
     If Dir$(backupFolder, vbDirectory) = "" Then
-        MsgBox "Backup folder not found.", vbInformation
+        MsgBox t("backup.msg.folder_not_found", "Backup folder not found."), vbInformation
         Exit Sub
     End If
 
     fileName = Dir$(backupFolder & "FormirovanieLetters_backup_*.xlsx")
-    backupList = "BACKUP LIST:" & vbCrLf & vbCrLf
+    backupList = t("backup.msg.list_title", "BACKUP LIST:") & vbCrLf & vbCrLf
 
     Do While fileName <> ""
         filePath = backupFolder & fileName
@@ -96,18 +96,18 @@ Public Sub ShowBackupInfo()
         fileSize = FileLen(filePath)
 
         backupList = backupList & fileName & vbCrLf
-        backupList = backupList & "  Date: " & Format$(fileDate, "dd.mm.yyyy hh:mm") & vbCrLf
-        backupList = backupList & "  Size: " & Format$(fileSize \ 1024, "#,##0") & " KB" & vbCrLf & vbCrLf
+        backupList = backupList & t("backup.msg.date_label", "  Date: ") & Format$(fileDate, "dd.mm.yyyy hh:mm") & vbCrLf
+        backupList = backupList & t("backup.msg.size_label", "  Size: ") & Format$(fileSize \ 1024, "#,##0") & " KB" & vbCrLf & vbCrLf
 
         backupCount = backupCount + 1
         fileName = Dir$
     Loop
 
     If backupCount = 0 Then
-        MsgBox "No backups found.", vbInformation
+        MsgBox t("backup.msg.none_found", "No backups found."), vbInformation
     Else
-        backupList = "Backups found: " & backupCount & vbCrLf & vbCrLf & backupList
-        MsgBox backupList, vbInformation, "Backup Information"
+        backupList = t("backup.msg.found_count", "Backups found: ") & backupCount & vbCrLf & vbCrLf & backupList
+        MsgBox backupList, vbInformation, t("backup.title.information", "Backup Information")
     End If
 End Sub
 
@@ -116,16 +116,16 @@ Public Sub RestoreFromBackup()
 
     backupFolder = ThisWorkbook.Path & "\Backups\"
     If Dir$(backupFolder, vbDirectory) = "" Then
-        MsgBox "Backup folder not found.", vbExclamation
+        MsgBox t("backup.msg.folder_not_found", "Backup folder not found."), vbExclamation
         Exit Sub
     End If
 
-    MsgBox "To restore from a backup:" & vbCrLf & vbCrLf & _
-           "1. Close the current workbook" & vbCrLf & _
-           "2. Open the folder: " & backupFolder & vbCrLf & _
-           "3. Select the desired backup copy" & vbCrLf & _
-           "4. Rename and open the restored workbook", _
-           vbInformation, "Restore from Backup"
+    MsgBox t("backup.msg.restore_instructions", "To restore from a backup:") & vbCrLf & vbCrLf & _
+           t("backup.msg.restore_step_1", "1. Close the current workbook") & vbCrLf & _
+           t("backup.msg.restore_step_2", "2. Open the folder: ") & backupFolder & vbCrLf & _
+           t("backup.msg.restore_step_3", "3. Select the desired backup copy") & vbCrLf & _
+           t("backup.msg.restore_step_4", "4. Rename and open the restored workbook"), _
+           vbInformation, t("backup.title.restore", "Restore from Backup")
 End Sub
 
 Public Function GetBackupFolderPath() As String
@@ -142,9 +142,9 @@ Public Sub SetBackupSettings(enableAutoBackup As Boolean, retentionDays As Integ
     SaveSetting "FormirovanieLetters", "Backup", "AutoBackupEnabled", enableAutoBackup
     SaveSetting "FormirovanieLetters", "Backup", "RetentionDays", retentionDays
 
-    MsgBox "Backup settings saved:" & vbCrLf & _
-           "Automatic backup: " & IIf(enableAutoBackup, "Enabled", "Disabled") & vbCrLf & _
-           "Keep copies for: " & retentionDays & " days", vbInformation
+    MsgBox t("backup.msg.settings_saved", "Backup settings saved:") & vbCrLf & _
+           t("backup.msg.automatic_backup", "Automatic backup: ") & IIf(enableAutoBackup, t("backup.label.enabled", "Enabled"), t("backup.label.disabled", "Disabled")) & vbCrLf & _
+           t("backup.msg.keep_copies", "Keep copies for: ") & retentionDays & " days", vbInformation
 End Sub
 
 Public Function GetBackupSettings() As String
@@ -158,11 +158,11 @@ Public Function GetBackupSettings() As String
     retentionDays = GetSetting("FormirovanieLetters", "Backup", "RetentionDays", 7)
     lastBackup = GetSetting("FormirovanieLetters", "Backup", "LastBackupDate", DateSerial(1900, 1, 1))
 
-    GetBackupSettings = "BACKUP SETTINGS:" & vbCrLf & vbCrLf & _
-                        "Automatic backup: " & IIf(autoEnabled, "Enabled", "Disabled") & vbCrLf & _
-                        "Retention period: " & retentionDays & " days" & vbCrLf & _
-                        "Last backup: " & IIf(lastBackup = DateSerial(1900, 1, 1), "Never", Format$(lastBackup, "dd.mm.yyyy")) & vbCrLf & _
-                        "Backup folder: " & GetBackupFolderPath()
+    GetBackupSettings = t("backup.msg.settings_title", "BACKUP SETTINGS:") & vbCrLf & vbCrLf & _
+                        t("backup.msg.automatic_backup", "Automatic backup: ") & IIf(autoEnabled, t("backup.label.enabled", "Enabled"), t("backup.label.disabled", "Disabled")) & vbCrLf & _
+                        t("backup.msg.retention_period", "Retention period: ") & retentionDays & " days" & vbCrLf & _
+                        t("backup.msg.last_backup", "Last backup: ") & IIf(lastBackup = DateSerial(1900, 1, 1), t("backup.label.never", "Never"), Format$(lastBackup, "dd.mm.yyyy")) & vbCrLf & _
+                        t("backup.msg.backup_folder", "Backup folder: ") & GetBackupFolderPath()
 
     On Error GoTo 0
 End Function

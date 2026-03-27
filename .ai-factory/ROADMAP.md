@@ -70,3 +70,5 @@ The next bounded feature stages for code quality and maintainability are:
   Normalize legacy helper modules to clean UTF-8 source, replace garbled comments with English headers/comments, and preserve runtime behavior through automated workbook sync and smoke validation.
 - [x] `pisces/feature-28-normalize-exported-source-encoding`
   Re-normalize source-managed VBA exports after manual VbaModuleManager roundtrips so the repository returns to a stable UTF-8 baseline before further feature work.
+- [x] `pisces/feature-29-localize-maintenance-runtime-messages`
+  Move backup and audit helper user-facing runtime/admin messages onto workbook-backed localization keys and refresh the Localization sheet automatically.

@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleAuditLogger"
 ' Module: ModuleAuditLogger
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Audit log helpers for workbook activity tracking
-' Version: 1.0.1 - 27.03.2026
+' Version: 1.0.2 - 27.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -146,7 +146,7 @@ Public Sub ShowAuditLog()
 
     auditSheet.Visible = xlSheetVisible
     auditSheet.Activate
-    MsgBox "Audit log opened. Hide the sheet after review if needed.", vbInformation
+    MsgBox t("audit.msg.log_opened", "Audit log opened. Hide the sheet after review if needed."), vbInformation
 End Sub
 
 Public Sub GenerateAuditReport(Optional daysBack As Integer = 30)
@@ -204,7 +204,7 @@ Public Sub GenerateAuditReport(Optional daysBack As Integer = 30)
     Exit Sub
 
 ReportError:
-    MsgBox "Error generating audit report: " & Err.Description, vbCritical
+    MsgBox t("audit.msg.report_error", "Error generating audit report: ") & Err.Description, vbCritical
 End Sub
 
 Public Sub ShowUsageStatistics()
@@ -232,33 +232,34 @@ Public Sub ShowUsageStatistics()
         uniqueUsers(userName) = uniqueUsers(userName) + 1
     Next rowIndex
 
-    report = "SYSTEM USAGE STATISTICS" & vbCrLf & vbCrLf
-    report = report & "Total sessions: " & totalSessions & vbCrLf
-    report = report & "Letters created: " & totalLetters & vbCrLf
-    report = report & "Unique users: " & uniqueUsers.Count & vbCrLf & vbCrLf
-    report = report & "TOP USERS:" & vbCrLf
+    report = t("audit.msg.system_statistics_header", "SYSTEM USAGE STATISTICS") & vbCrLf & vbCrLf
+    report = report & t("audit.msg.total_sessions", "Total sessions: ") & totalSessions & vbCrLf
+    report = report & t("audit.msg.letters_created", "Letters created: ") & totalLetters & vbCrLf
+    report = report & t("audit.msg.unique_users", "Unique users: ") & uniqueUsers.Count & vbCrLf & vbCrLf
+    report = report & t("audit.msg.top_users", "TOP USERS:") & vbCrLf
 
     For Each key In uniqueUsers.Keys
         report = report & key & ": " & uniqueUsers(key) & " actions" & vbCrLf
     Next key
 
-    MsgBox report, vbInformation, "System Statistics"
+    MsgBox report, vbInformation, t("audit.title.system_statistics", "System Statistics")
 End Sub
 
 Public Sub AdminPanel()
     Dim choice As String
 
-    choice = InputBox("Select action:" & vbCrLf & _
-                      "1 - Show audit log" & vbCrLf & _
-                      "2 - Usage statistics" & vbCrLf & _
-                      "3 - 30-day report" & vbCrLf & _
-                      "4 - 7-day report", "Administrator Panel", "1")
+    choice = InputBox(t("audit.msg.admin_prompt", "Select action:") & vbCrLf & _
+                      t("audit.msg.admin_option_1", "1 - Show audit log") & vbCrLf & _
+                      t("audit.msg.admin_option_2", "2 - Usage statistics") & vbCrLf & _
+                      t("audit.msg.admin_option_3", "3 - 30-day report") & vbCrLf & _
+                      t("audit.msg.admin_option_4", "4 - 7-day report"), _
+                      t("audit.title.admin_panel", "Administrator Panel"), "1")
 
     Select Case choice
         Case "1": ShowAuditLog
         Case "2": ShowUsageStatistics
         Case "3": GenerateAuditReport 30
         Case "4": GenerateAuditReport 7
-        Case Else: MsgBox "Cancelled", vbInformation
+        Case Else: MsgBox t("audit.msg.cancelled", "Cancelled"), vbInformation
     End Select
 End Sub
