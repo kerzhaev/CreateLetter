@@ -2,24 +2,24 @@
 
 > Excel VBA tool for composing and tracking outgoing letters from reusable templates.
 
-CreateLetter is a macro-enabled workbook (`CreateLetter.xlsm`) that guides users through letter preparation with structured address data, attachment lists, and template-driven output.
-The codebase is source-managed in `CreateLetter.xlsm.modules/` for maintainable VBA workflows.
+CreateLetter is a source-managed Excel VBA project for preparing letters from workbook-backed data and reusable templates.
+The public repository focuses on the VBA source in `CreateLetter.xlsm.modules/` plus the project tooling/documentation. Runtime workbook and template binaries are intentionally kept out of the public tree.
 
 ## Quick Start
 
 ```bash
-# 1) Open workbook in Excel
-start CreateLetter.xlsm
+# 1) Provision local runtime assets (workbook + templates)
+# 2) Sync VBA sources into the local workbook
+python .\scripts\sync_vba_from_modules.py .\CreateLetter.xlsm .\CreateLetter.xlsm.modules
 
-# 2) Enable macros when prompted
-# 3) Run the main form from workbook UI/macro entrypoint
+# 3) Open workbook in Excel and enable macros
 ```
 
 ## Requirements
 
 - Microsoft Excel with macro support
-- Access to workbook file `CreateLetter.xlsm`
-- Template files available in project root:
+- A local runtime workbook `CreateLetter.xlsm` (not stored in the public repository)
+- Local template files:
   - `LetterTemplate.docx`
   - `LetterTemplateFOU.docx`
 
@@ -43,9 +43,8 @@ start CreateLetter.xlsm
 ## Project Layout
 
 ```text
-CreateLetter.xlsm             # Main workbook used in Excel
 CreateLetter.xlsm.modules/    # Source-managed VBA modules/forms
-filesarchive/                 # Workbook archive snapshots
+scripts/                      # Local automation helpers
 .ai-factory/                  # Project context and architecture docs
 ```
 
@@ -55,6 +54,18 @@ filesarchive/                 # Workbook archive snapshots
 - Reusing saved recipient and executor reference data
 - Tracking letter preparation history in workbook-managed records
 - Maintaining VBA source in module files for safer updates
+
+## Public Repository Scope
+
+- Included:
+  - VBA source modules and UserForm code
+  - automation scripts
+  - documentation and AI Factory context
+- Excluded:
+  - local workbook/runtime binaries
+  - local Word templates
+  - `.frx` form resource binaries
+  - local AI skill directories and restore-point artifacts
 
 ## Maintenance At A Glance
 
@@ -85,4 +96,4 @@ filesarchive/                 # Workbook archive snapshots
 
 ## License
 
-Proprietary/internal unless specified otherwise by the project owner.
+MIT. See [LICENSE](LICENSE).

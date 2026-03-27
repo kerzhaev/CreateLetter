@@ -15,12 +15,9 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 ## Project Structure
 ```text
 .
-├── CreateLetter.xlsm                    # Main macro-enabled workbook
-├── LetterTemplate.docx                  # Letter template
-├── LetterTemplateFOU.docx               # Alternate letter template
 ├── CreateLetter.xlsm.modules/           # Exported VBA source modules/forms
-│   ├── frmLetterCreator.frm/.frx        # Main wizard UI and resources
-│   ├── frmLetterHistory.frm/.frx        # History UI and resources
+│   ├── frmLetterCreator.frm             # Main wizard UI source
+│   ├── frmLetterHistory.frm             # History UI source
 │   ├── ModuleMain.bas                   # Core logic and validation
 │   ├── mdlInicialize.bas                # Worksheet bootstrap/reset
 │   ├── ModuleDates.bas                  # Date helpers
@@ -37,20 +34,16 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 │   └── sync_vba_from_modules.py         # Excel COM VBA sync helper for modules/forms
 │   └── ensure_workbook_tables.py        # Excel COM workbook schema helper for tblAddresses/tblLetters
 │   └── ensure_localization_sheet.py     # Excel COM workbook localization sheet bootstrap helper
-├── .agents/skills/                      # External installed skills for agent use
-│   ├── xlsx/
-│   └── vbaexcel/
 ├── .ai-factory/                         # AI Factory context artifacts
 │   ├── DESCRIPTION.md
 │   ├── ARCHITECTURE.md
 │   └── RULES.md
-└── .codex/skills/                       # Built-in project-local AIF skills
+└── docs/                                # Project and publication docs
 ```
 
 ## Key Entry Points
 | File | Purpose |
 |------|---------|
-| CreateLetter.xlsm | Runtime workbook used by end users |
 | CreateLetter.xlsm.modules/ModuleMain.bas | Core business rules and shared logic |
 | CreateLetter.xlsm.modules/frmLetterCreator.frm | Main letter creation flow |
 | CreateLetter.xlsm.modules/mdlInicialize.bas | Initializes/reset required worksheets |

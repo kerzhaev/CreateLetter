@@ -20,6 +20,14 @@ filesarchive/
 # Local workbook/runtime artifacts
 Backups/
 _tmp_export/
+CreateLetter.xlsm
+LetterTemplate.docx
+LetterTemplateFOU.docx
+CreateLetter.xlsm.modules/*.frx
+
+# Local AI tooling / skills are not part of the public source repository
+.codex/
+.agents/
 
 # Python helper caches
 scripts/__pycache__/

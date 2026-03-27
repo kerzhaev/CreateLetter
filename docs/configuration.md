@@ -16,6 +16,7 @@ Key sheets are initialized/managed by `mdlInicialize.bas`:
 - `LetterTemplateFOU.docx`
 
 Keep template names and placement stable unless code references are updated.
+The public repository does not carry these binaries; provide them locally in the project root.
 
 ## Archive and Backup
 

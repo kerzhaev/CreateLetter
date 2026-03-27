@@ -13,19 +13,25 @@ Before pushing the repository publicly:
 powershell -ExecutionPolicy Bypass -File .\scripts\run_excel_smoke_test.ps1 -RequireLocalizationModule -RequireStructuredTables -RequireLocalizationSheet
 ```
 
-3. Confirm that `CreateLetter.xlsm.modules/` is synchronized with `CreateLetter.xlsm`.
-4. Confirm that local-only folders are not staged:
+3. Confirm that `CreateLetter.xlsm.modules/` is synchronized with the local `CreateLetter.xlsm`.
+4. Confirm that local-only folders and binaries are not staged:
    - `filesarchive/`
    - `Backups/`
    - `_tmp_export/`
+   - `.codex/`
+   - `.agents/`
+   - `CreateLetter.xlsm`
+   - `LetterTemplate.docx`
+   - `LetterTemplateFOU.docx`
+   - `CreateLetter.xlsm.modules/*.frx`
 
 ## Public Repository Hygiene
 
-- Template files are expected to be named:
+- Local template files are expected to be named:
   - `LetterTemplate.docx`
   - `LetterTemplateFOU.docx`
 - Exported VBA source is the text source of truth.
-- `.frx`, `.xlsm`, and `.docx` are binary artifacts and should not be line-normalized.
+- `.frx`, `.xlsm`, and `.docx` are binary artifacts and are intentionally excluded from the public repository.
 - Workspace/editor configuration must remain UTF-8-oriented to avoid reintroducing encoding issues.
 
 ## Recommended Release Checklist

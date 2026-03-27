@@ -36,3 +36,4 @@
 - A form may keep UI-only helpers such as control styling, listbox binding, focus management, and event routing. If code starts assembling reusable business text, parsing workbook schema, or updating persisted state, move it into a shared module.
 - Before publishing or updating public docs, verify that file names, template names, and encoding guidance match the real repository state. Do not leave stale references to legacy Russian template names or Windows-1251 editor defaults after the UTF-8 migration.
 - Keep local-only artifacts out of the public repository: restore points, temporary exports, runtime backup folders, and one-off manual recovery helpers should be ignored or removed before publication.
+- The public GitHub repository is source-only: keep workbook binaries, template binaries, `.frx` resources, and local AI skill directories outside git while preserving local developer workflows through ignored files.

@@ -80,3 +80,5 @@ The next bounded feature stages for code quality and maintainability are:
   Remove the last non-ASCII compatibility identifier names from core modules, move residual history caption builders into shared logic, and formally close the staged migration roadmap after a final thin-form audit.
 - [x] `pisces/feature-33-github-publication-prep`
   Prepare the repository for GitHub publication by aligning public docs with real file names, switching workspace defaults to UTF-8, removing obsolete manual-recovery artifacts, and ignoring local-only runtime/export folders.
+- [x] `pisces/feature-34-public-source-only-github`
+  Convert the public repository to a source-only layout by removing local AI skill bundles and binary runtime assets from git, adding an MIT license, and documenting the local provisioning contract for workbook/template artifacts.
