@@ -15,6 +15,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 
+
 ' ======================================================================
 ' Form: frmLetterHistory v1.2.5 - Thin-shell history UI with workbook-backed localization
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF

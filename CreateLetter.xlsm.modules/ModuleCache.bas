@@ -29,7 +29,7 @@ Public Function GetCachedAddresses(searchTerm As String) As Collection
 
         If Not GetCachedAddresses Is Nothing Then
             addressCache.Add searchKey, GetCachedAddresses
-            Debug.Print "Addresses loaded from database and cached: " & searchTerm & " (found: " & GetCachedAddresses.Count & ")"
+            Debug.Print "Addresses loaded from database and cached: " & searchTerm & " (found: " & GetCachedAddresses.count & ")"
         Else
             Set GetCachedAddresses = New Collection
             Debug.Print "Addresses not found: " & searchTerm
@@ -39,7 +39,7 @@ Public Function GetCachedAddresses(searchTerm As String) As Collection
     Exit Function
 
 CacheError:
-    Debug.Print "Addresses caching error: " & Err.Description
+    Debug.Print "Addresses caching error: " & Err.description
     Set GetCachedAddresses = New Collection
 End Function
 
@@ -61,7 +61,7 @@ Public Function GetCachedAttachments(searchTerm As String) As Collection
 
         If Not GetCachedAttachments Is Nothing Then
             attachmentCache.Add searchKey, GetCachedAttachments
-            Debug.Print "Attachments loaded from database and cached: " & searchTerm & " (found: " & GetCachedAttachments.Count & ")"
+            Debug.Print "Attachments loaded from database and cached: " & searchTerm & " (found: " & GetCachedAttachments.count & ")"
         Else
             Set GetCachedAttachments = New Collection
             Debug.Print "Attachments not found: " & searchTerm
@@ -71,7 +71,7 @@ Public Function GetCachedAttachments(searchTerm As String) As Collection
     Exit Function
 
 CacheError:
-    Debug.Print "Attachments caching error: " & Err.Description
+    Debug.Print "Attachments caching error: " & Err.description
     Set GetCachedAttachments = New Collection
 End Function
 
@@ -125,13 +125,13 @@ Public Function GetCacheStats() As String
     If addressCache Is Nothing Then
         stats = stats & "Addresses cache: not initialized" & vbCrLf
     Else
-        stats = stats & "Addresses cache: " & addressCache.Count & " entries" & vbCrLf
+        stats = stats & "Addresses cache: " & addressCache.count & " entries" & vbCrLf
     End If
 
     If attachmentCache Is Nothing Then
         stats = stats & "Attachments cache: not initialized" & vbCrLf
     Else
-        stats = stats & "Attachments cache: " & attachmentCache.Count & " entries" & vbCrLf
+        stats = stats & "Attachments cache: " & attachmentCache.count & " entries" & vbCrLf
     End If
 
     On Error GoTo 0
@@ -142,3 +142,4 @@ End Function
 Public Sub ShowCacheStats()
     MsgBox GetCacheStats(), vbInformation, "Cache Statistics"
 End Sub
+

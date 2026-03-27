@@ -594,3 +594,5 @@ End Function
 Private Function NormalizeLocalizationKey(ByVal key As String) As String
     NormalizeLocalizationKey = LCase$(Trim$(key))
 End Function
+
+

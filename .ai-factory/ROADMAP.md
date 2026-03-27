@@ -68,3 +68,5 @@ The next bounded feature stages for code quality and maintainability are:
   Make the COM sync helper tolerant to legacy exported VBA file encodings, normalize the corrupted cache module source, and verify that schema-migration changes compile cleanly after workbook sync.
 - [x] `pisces/feature-27-legacy-modules-comment-cleanup`
   Normalize legacy helper modules to clean UTF-8 source, replace garbled comments with English headers/comments, and preserve runtime behavior through automated workbook sync and smoke validation.
+- [x] `pisces/feature-28-normalize-exported-source-encoding`
+  Re-normalize source-managed VBA exports after manual VbaModuleManager roundtrips so the repository returns to a stable UTF-8 baseline before further feature work.

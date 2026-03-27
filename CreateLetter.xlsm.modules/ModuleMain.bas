@@ -1,4 +1,5 @@
 Attribute VB_Name = "ModuleMain"
+
 ' ======================================================================
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
@@ -2519,4 +2520,6 @@ Public Sub SetStatusBarMessage(message As String, Optional clearAfterSeconds As 
     
     On Error GoTo 0
 End Sub
+
+
 
