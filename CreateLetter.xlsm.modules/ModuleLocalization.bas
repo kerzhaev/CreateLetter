@@ -2,7 +2,7 @@ Attribute VB_Name = "ModuleLocalization"
 ' ======================================================================
 ' Module: ModuleLocalization
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
-' Version: 1.4.1 - 27.03.2026
+' Version: 1.4.2 - 27.03.2026
 ' Notes:
 ' - This module does not change workbook schema.
 ' - Workbook sheet-based localization is optional and loaded only if present.
@@ -134,6 +134,8 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "en", "common.of", "of"
     AddTranslation "ru", "common.not_specified", "Не указано"
     AddTranslation "en", "common.not_specified", "Not specified"
+    AddTranslation "ru", "common.unknown_user", "Неизвестный пользователь"
+    AddTranslation "en", "common.unknown_user", "Unknown user"
     AddTranslation "ru", "dialog.cancel_letter_creation", "Отменить создание письма?"
     AddTranslation "en", "dialog.cancel_letter_creation", "Cancel letter creation?"
     AddTranslation "ru", "dialog.discard_unsaved_documents", "Несохраненные документы будут потеряны. Закрыть?"
@@ -500,10 +502,14 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "en", "core.letter.fallback.ref_no", "Ref. No.: "
     AddTranslation "ru", "core.letter.fallback.date", "Дата: "
     AddTranslation "en", "core.letter.fallback.date", "Date: "
+    AddTranslation "ru", "core.letter.attachment_prefix", "Приложение: "
+    AddTranslation "en", "core.letter.attachment_prefix", "Attachment: "
     AddTranslation "ru", "core.letter.text.confirmed", "направляем подтвержденные бухгалтерские документы в ваш адрес"
     AddTranslation "en", "core.letter.text.confirmed", "forwarding confirmed accounting documents to your address"
     AddTranslation "ru", "core.letter.text.own_confirmation", "направляем следующие документы в ваш адрес для подтверждения"
     AddTranslation "en", "core.letter.text.own_confirmation", "forwarding the following documents to your address for confirmation"
+    AddTranslation "ru", "core.date.unknown_month", "неизвестный_месяц"
+    AddTranslation "en", "core.date.unknown_month", "unknown_month"
     AddTranslation "ru", "core.form.open_creator_error", "Не удалось открыть форму создания письма: "
     AddTranslation "en", "core.form.open_creator_error", "Failed to open letter creation form: "
     AddTranslation "ru", "status.ready", "Готово"

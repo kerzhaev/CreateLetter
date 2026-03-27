@@ -60,3 +60,5 @@ The next bounded feature stages for code quality and maintainability are:
   Move history export and search-hint output workflows from `frmLetterHistory` into `ModuleMain` so the form remains a thin orchestration shell.
 - [x] `pisces/feature-23-creator-summary-and-menu-refactor`
   Move creator progress/counter captions and document-action menu text assembly into `ModuleMain` so `frmLetterCreator` keeps only UI wiring.
+- [x] `pisces/feature-24-hidden-literals-cleanup`
+  Replace remaining hardcoded fallback literals in core helpers with localization-backed keys for unknown-user, unknown-month, and attachment-prefix paths.

@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.18 — 27.03.2026
+' Version: 1.6.19 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.18
+'                    SCHEMA CONSTANTS v1.6.19
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -102,7 +102,7 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    CORE HELPERS v1.6.18
+'                    CORE HELPERS v1.6.19
 ' ======================================================================
 Private g_WordApp As Object
 Private g_WordAppOwned As Boolean
@@ -1091,7 +1091,7 @@ End Function
 Public Function GetCurrentUserFIO() As String
     On Error Resume Next
     GetCurrentUserFIO = Environ("USERNAME")
-    If GetCurrentUserFIO = "" Then GetCurrentUserFIO = "Unknown user"
+    If GetCurrentUserFIO = "" Then GetCurrentUserFIO = t("common.unknown_user", "Unknown user")
     On Error GoTo 0
 End Function
 
@@ -1880,7 +1880,7 @@ Public Sub AppendAttachmentsToDocumentWithFontAndSum(wordDoc As Object, document
     Set rng = wordDoc.content
     rng.Collapse 0
     
-    rng.InsertAfter "Attachment: "
+    rng.InsertAfter T("core.letter.attachment_prefix", "Attachment: ")
     
     Dim attachmentFragments As Collection
     Set attachmentFragments = FormatAttachmentsListForWordWithSum(documentsList)
@@ -2138,7 +2138,7 @@ Private Function GetDirectMonthName(monthNumber As Integer) As String
         Case 10: GetDirectMonthName = BuildUnicodeString(&H43E, &H43A, &H442, &H44F, &H431, &H440, &H44F)
         Case 11: GetDirectMonthName = BuildUnicodeString(&H43D, &H43E, &H44F, &H431, &H440, &H44F)
         Case 12: GetDirectMonthName = BuildUnicodeString(&H434, &H435, &H43A, &H430, &H431, &H440, &H44F)
-        Case Else: GetDirectMonthName = "unknown_month"
+        Case Else: GetDirectMonthName = t("core.date.unknown_month", "unknown_month")
     End Select
 End Function
 
