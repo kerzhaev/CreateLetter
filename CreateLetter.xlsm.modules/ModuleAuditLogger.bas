@@ -2,13 +2,12 @@ Attribute VB_Name = "ModuleAuditLogger"
 ' ======================================================================
 ' Module: ModuleAuditLogger
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
-' Purpose: User action audit system
-' Version: 1.0.0 — 06.08.2025
+' Purpose: Audit log helpers for workbook activity tracking
+' Version: 1.0.1 - 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
-' Constants for action types
 Public Const AUDIT_OPEN_FILE1 As String = "OPEN_FILE"
 Public Const AUDIT_CREATE_LETTER As String = "CREATE_LETTER"
 Public Const AUDIT_CLOSE_FILE As String = "CLOSE_FILE"
@@ -18,262 +17,243 @@ Public Const AUDIT_SAVE_ADDRESS As String = "SAVE_ADDRESS"
 
 Public Sub WriteAuditLog(action As String, details As String, Optional recipient As String = "")
     On Error GoTo AuditError
-    
+
     Dim auditSheet As Worksheet
-    Set auditSheet = GetOrCreateAuditSheet()
-    
     Dim lastRow As Long
-    lastRow = auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row + 1
-    
-    ' Getting user and computer information
-    Dim userName As String, computerName As String, ipAddress As String
-    userName = Environ("USERNAME")
-    computerName = Environ("COMPUTERNAME")
+    Dim userName As String
+    Dim computerName As String
+    Dim ipAddress As String
+
+    Set auditSheet = GetOrCreateAuditSheet()
+    lastRow = auditSheet.Cells(auditSheet.Rows.Count, 1).End(xlUp).Row + 1
+
+    userName = Environ$("USERNAME")
+    computerName = Environ$("COMPUTERNAME")
     ipAddress = GetLocalIPAddress()
-    
+
     With auditSheet
-        .Cells(lastRow, 1).value = Format(Now, "dd.mm.yyyy")           ' Date
-        .Cells(lastRow, 2).value = Format(Now, "hh:mm:ss")             ' Time
-        .Cells(lastRow, 3).value = userName                            ' User
-        .Cells(lastRow, 4).value = computerName                        ' Computer
-        .Cells(lastRow, 5).value = ipAddress                           ' IP Address
-        .Cells(lastRow, 6).value = action                              ' Action
-        .Cells(lastRow, 7).value = details                             ' Details
-        .Cells(lastRow, 8).value = recipient                           ' Letter Recipient
-        .Cells(lastRow, 9).value = Application.Version                 ' Excel Version
-        
-        ' Color highlighting by action type
+        .Cells(lastRow, 1).Value = Format$(Now, "dd.mm.yyyy")
+        .Cells(lastRow, 2).Value = Format$(Now, "hh:mm:ss")
+        .Cells(lastRow, 3).Value = userName
+        .Cells(lastRow, 4).Value = computerName
+        .Cells(lastRow, 5).Value = ipAddress
+        .Cells(lastRow, 6).Value = action
+        .Cells(lastRow, 7).Value = details
+        .Cells(lastRow, 8).Value = recipient
+        .Cells(lastRow, 9).Value = Application.Version
+
         Select Case action
             Case AUDIT_OPEN_FILE1
-                .Cells(lastRow, 6).Interior.Color = RGB(200, 255, 200)  ' Light green
+                .Cells(lastRow, 6).Interior.Color = RGB(200, 255, 200)
             Case AUDIT_CREATE_LETTER
-                .Cells(lastRow, 6).Interior.Color = RGB(255, 255, 200)  ' Yellow
+                .Cells(lastRow, 6).Interior.Color = RGB(255, 255, 200)
             Case AUDIT_CLOSE_FILE
-                .Cells(lastRow, 6).Interior.Color = RGB(255, 200, 200)  ' Light red
+                .Cells(lastRow, 6).Interior.Color = RGB(255, 200, 200)
             Case Else
-                .Cells(lastRow, 6).Interior.Color = RGB(240, 240, 240)  ' Gray
+                .Cells(lastRow, 6).Interior.Color = RGB(240, 240, 240)
         End Select
     End With
-    
-    ' Cleaning up old records (older than 90 days for audit)
+
     CleanOldAuditEntries auditSheet, 90
-    
     Exit Sub
-    
+
 AuditError:
-    ' Critical error - write to Debug
-    Debug.Print Format(Now, "hh:mm:ss") & " AUDIT_ERROR: " & Err.description
+    Debug.Print Format$(Now, "hh:mm:ss") & " AUDIT_ERROR: " & Err.Description
 End Sub
 
 Private Function GetOrCreateAuditSheet() As Worksheet
     Dim auditSheet As Worksheet
-    
-    ' Attempting to find the "AuditLog" sheet
+
     On Error Resume Next
     Set auditSheet = ThisWorkbook.Worksheets("AuditLog")
     On Error GoTo 0
-    
-    ' Create sheet if not found
+
     If auditSheet Is Nothing Then
         Set auditSheet = ThisWorkbook.Worksheets.Add
         With auditSheet
             .Name = "AuditLog"
-            .Visible = xlSheetVeryHidden  ' Hide the sheet
-            
-            ' Headers
-            .Cells(1, 1).value = "Date"
-            .Cells(1, 2).value = "Time"
-            .Cells(1, 3).value = "User"
-            .Cells(1, 4).value = "Computer"
-            .Cells(1, 5).value = "IP Address"
-            .Cells(1, 6).value = "Action"
-            .Cells(1, 7).value = "Details"
-            .Cells(1, 8).value = "Recipient"
-            .Cells(1, 9).value = "Excel Version"
-            
-            ' Headers formatting
+            .Visible = xlSheetVeryHidden
+            .Cells(1, 1).Value = "Date"
+            .Cells(1, 2).Value = "Time"
+            .Cells(1, 3).Value = "User"
+            .Cells(1, 4).Value = "Computer"
+            .Cells(1, 5).Value = "IP Address"
+            .Cells(1, 6).Value = "Action"
+            .Cells(1, 7).Value = "Details"
+            .Cells(1, 8).Value = "Recipient"
+            .Cells(1, 9).Value = "Excel Version"
+
             With .Range("A1:I1")
                 .Font.Bold = True
                 .Interior.Color = RGB(100, 100, 100)
                 .Font.Color = RGB(255, 255, 255)
                 .Borders.LineStyle = xlContinuous
             End With
-            
+
             .Columns("A:I").AutoFit
         End With
     End If
-    
+
     Set GetOrCreateAuditSheet = auditSheet
 End Function
 
 Private Function GetLocalIPAddress() As String
     On Error Resume Next
-    ' Simple IP retrieval via WMI
+
     Dim objWMIService As Object
-    Dim colItems As Object, objItem As Object
-    
+    Dim colItems As Object
+    Dim objItem As Object
+
     Set objWMIService = GetObject("winmgmts:\\.\root\cimv2")
     Set colItems = objWMIService.ExecQuery("Select IPAddress from Win32_NetworkAdapterConfiguration where IPEnabled=TRUE")
-    
+
     For Each objItem In colItems
-        If Not IsNull(objItem.ipAddress) Then
-            GetLocalIPAddress = objItem.ipAddress(0)
+        If Not IsNull(objItem.IPAddress) Then
+            GetLocalIPAddress = objItem.IPAddress(0)
             Exit For
         End If
-    Next
-    
+    Next objItem
+
     If GetLocalIPAddress = "" Then GetLocalIPAddress = "Unknown"
     On Error GoTo 0
 End Function
 
 Private Sub CleanOldAuditEntries(auditSheet As Worksheet, daysToKeep As Integer)
     On Error Resume Next
-    
+
     Dim lastRow As Long
-    lastRow = auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row
-    
-    If lastRow <= 5000 Then Exit Sub  ' Clean only if there are more than 5000 records
-    
-    Dim i As Long
-    For i = lastRow To 2 Step -1
-        Dim logDate As Date
-        If IsDate(auditSheet.Cells(i, 1).value) Then
-            logDate = CDate(auditSheet.Cells(i, 1).value)
-            
-            ' Delete records older than the specified number of days
+    Dim rowIndex As Long
+    Dim logDate As Date
+
+    lastRow = auditSheet.Cells(auditSheet.Rows.Count, 1).End(xlUp).Row
+    If lastRow <= 5000 Then Exit Sub
+
+    For rowIndex = lastRow To 2 Step -1
+        If IsDate(auditSheet.Cells(rowIndex, 1).Value) Then
+            logDate = CDate(auditSheet.Cells(rowIndex, 1).Value)
             If Date - logDate > daysToKeep Then
-                auditSheet.Rows(i).Delete
+                auditSheet.Rows(rowIndex).Delete
             End If
         End If
-    Next i
-    
+    Next rowIndex
+
     On Error GoTo 0
 End Sub
 
 Public Sub ShowAuditLog()
-    ' Function for administrator - show audit log
     Dim auditSheet As Worksheet
     Set auditSheet = GetOrCreateAuditSheet()
-    
+
     auditSheet.Visible = xlSheetVisible
     auditSheet.Activate
-    MsgBox "Audit log opened. Do not forget to hide the sheet after viewing!", vbInformation
+    MsgBox "Audit log opened. Hide the sheet after review if needed.", vbInformation
 End Sub
 
 Public Sub GenerateAuditReport(Optional daysBack As Integer = 30)
-    ' Generate usage report for a period
     On Error GoTo ReportError
-    
+
     Dim auditSheet As Worksheet
-    Set auditSheet = GetOrCreateAuditSheet()
-    
     Dim reportWb As Workbook
     Dim reportWs As Worksheet
+    Dim sourceRow As Long
+    Dim targetRow As Long
+    Dim entryDate As Date
+
+    Set auditSheet = GetOrCreateAuditSheet()
     Set reportWb = Workbooks.Add
     Set reportWs = reportWb.Worksheets(1)
-    
-    reportWs.Name = "Audit report for " & daysBack & " days"
-    
-    ' Report headers
+
+    reportWs.Name = "Audit report " & daysBack & " days"
+
     With reportWs
-        .Cells(1, 1).value = "AUDIT REPORT FOR 'LETTER GENERATION' SYSTEM"
-        .Cells(2, 1).value = "Period: " & Format(Date - daysBack, "dd.mm.yyyy") & " - " & Format(Date, "dd.mm.yyyy")
-        .Cells(3, 1).value = "Report generation date: " & Format(Now, "dd.mm.yyyy hh:mm")
-        
-        .Cells(5, 1).value = "Date"
-        .Cells(5, 2).value = "Time"
-        .Cells(5, 3).value = "User"
-        .Cells(5, 4).value = "Computer"
-        .Cells(5, 5).value = "Action"
-        .Cells(5, 6).value = "Details"
-        .Cells(5, 7).value = "Recipient"
-        
+        .Cells(1, 1).Value = "AUDIT REPORT FOR LETTER SYSTEM"
+        .Cells(2, 1).Value = "Period: " & Format$(Date - daysBack, "dd.mm.yyyy") & " - " & Format$(Date, "dd.mm.yyyy")
+        .Cells(3, 1).Value = "Generated: " & Format$(Now, "dd.mm.yyyy hh:mm")
+        .Cells(5, 1).Value = "Date"
+        .Cells(5, 2).Value = "Time"
+        .Cells(5, 3).Value = "User"
+        .Cells(5, 4).Value = "Computer"
+        .Cells(5, 5).Value = "Action"
+        .Cells(5, 6).Value = "Details"
+        .Cells(5, 7).Value = "Recipient"
         .Range("A1").Font.Size = 14
         .Range("A1").Font.Bold = True
         .Range("A5:G5").Font.Bold = True
         .Range("A5:G5").Interior.Color = RGB(200, 200, 200)
     End With
-    
-    ' Copying data for the period
-    Dim sourceRow As Long, targetRow As Long
+
     targetRow = 6
-    
-    For sourceRow = 2 To auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row
-        If IsDate(auditSheet.Cells(sourceRow, 1).value) Then
-            Dim entryDate As Date
-            entryDate = CDate(auditSheet.Cells(sourceRow, 1).value)
-            
+    For sourceRow = 2 To auditSheet.Cells(auditSheet.Rows.Count, 1).End(xlUp).Row
+        If IsDate(auditSheet.Cells(sourceRow, 1).Value) Then
+            entryDate = CDate(auditSheet.Cells(sourceRow, 1).Value)
             If Date - entryDate <= daysBack Then
-                reportWs.Cells(targetRow, 1).value = auditSheet.Cells(sourceRow, 1).value  ' Date
-                reportWs.Cells(targetRow, 2).value = auditSheet.Cells(sourceRow, 2).value  ' Time
-                reportWs.Cells(targetRow, 3).value = auditSheet.Cells(sourceRow, 3).value  ' User
-                reportWs.Cells(targetRow, 4).value = auditSheet.Cells(sourceRow, 4).value  ' Computer
-                reportWs.Cells(targetRow, 5).value = auditSheet.Cells(sourceRow, 6).value  ' Action
-                reportWs.Cells(targetRow, 6).value = auditSheet.Cells(sourceRow, 7).value  ' Details
-                reportWs.Cells(targetRow, 7).value = auditSheet.Cells(sourceRow, 8).value  ' Recipient
+                reportWs.Cells(targetRow, 1).Value = auditSheet.Cells(sourceRow, 1).Value
+                reportWs.Cells(targetRow, 2).Value = auditSheet.Cells(sourceRow, 2).Value
+                reportWs.Cells(targetRow, 3).Value = auditSheet.Cells(sourceRow, 3).Value
+                reportWs.Cells(targetRow, 4).Value = auditSheet.Cells(sourceRow, 4).Value
+                reportWs.Cells(targetRow, 5).Value = auditSheet.Cells(sourceRow, 6).Value
+                reportWs.Cells(targetRow, 6).Value = auditSheet.Cells(sourceRow, 7).Value
+                reportWs.Cells(targetRow, 7).Value = auditSheet.Cells(sourceRow, 8).Value
                 targetRow = targetRow + 1
             End If
         End If
     Next sourceRow
-    
+
     reportWs.Columns("A:G").AutoFit
     reportWb.Application.Visible = True
-    
     Exit Sub
-    
+
 ReportError:
-    MsgBox "Error generating report: " & Err.description, vbCritical
+    MsgBox "Error generating audit report: " & Err.Description, vbCritical
 End Sub
 
-
-
-
-' Show usage statistics
 Public Sub ShowUsageStatistics()
     Dim auditSheet As Worksheet
-    Set auditSheet = GetOrCreateAuditSheet()
-    
-    Dim totalSessions As Long, totalLetters As Long
+    Dim totalSessions As Long
+    Dim totalLetters As Long
     Dim uniqueUsers As Object
+    Dim rowIndex As Long
+    Dim action As String
+    Dim userName As String
+    Dim report As String
+    Dim key As Variant
+
+    Set auditSheet = GetOrCreateAuditSheet()
     Set uniqueUsers = CreateObject("Scripting.Dictionary")
-    
-    Dim i As Long
-    For i = 2 To auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row
-        Dim action As String, user As String
-        action = auditSheet.Cells(i, 6).value
-        user = auditSheet.Cells(i, 3).value
-        
+
+    For rowIndex = 2 To auditSheet.Cells(auditSheet.Rows.Count, 1).End(xlUp).Row
+        action = auditSheet.Cells(rowIndex, 6).Value
+        userName = auditSheet.Cells(rowIndex, 3).Value
+
         If action = AUDIT_OPEN_FILE1 Then totalSessions = totalSessions + 1
         If action = AUDIT_CREATE_LETTER Then totalLetters = totalLetters + 1
-        
-        If Not uniqueUsers.Exists(user) Then uniqueUsers.Add user, 0
-        uniqueUsers(user) = uniqueUsers(user) + 1
-    Next i
-    
-    Dim report As String
+
+        If Not uniqueUsers.Exists(userName) Then uniqueUsers.Add userName, 0
+        uniqueUsers(userName) = uniqueUsers(userName) + 1
+    Next rowIndex
+
     report = "SYSTEM USAGE STATISTICS" & vbCrLf & vbCrLf
     report = report & "Total sessions: " & totalSessions & vbCrLf
     report = report & "Letters created: " & totalLetters & vbCrLf
-    report = report & "Unique users: " & uniqueUsers.count & vbCrLf & vbCrLf
+    report = report & "Unique users: " & uniqueUsers.Count & vbCrLf & vbCrLf
     report = report & "TOP USERS:" & vbCrLf
-    
-    Dim key As Variant
-    For Each key In uniqueUsers.keys
+
+    For Each key In uniqueUsers.Keys
         report = report & key & ": " & uniqueUsers(key) & " actions" & vbCrLf
     Next key
-    
+
     MsgBox report, vbInformation, "System Statistics"
 End Sub
 
-' Quick commands for the administrator
 Public Sub AdminPanel()
     Dim choice As String
+
     choice = InputBox("Select action:" & vbCrLf & _
-                     "1 - Show audit log" & vbCrLf & _
-                     "2 - Usage statistics" & vbCrLf & _
-                     "3 - 30-day report" & vbCrLf & _
-                     "4 - 7-day report", "Administrator Panel", "1")
-    
+                      "1 - Show audit log" & vbCrLf & _
+                      "2 - Usage statistics" & vbCrLf & _
+                      "3 - 30-day report" & vbCrLf & _
+                      "4 - 7-day report", "Administrator Panel", "1")
+
     Select Case choice
         Case "1": ShowAuditLog
         Case "2": ShowUsageStatistics
@@ -282,4 +262,3 @@ Public Sub AdminPanel()
         Case Else: MsgBox "Cancelled", vbInformation
     End Select
 End Sub
-

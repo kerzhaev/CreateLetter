@@ -66,3 +66,5 @@ The next bounded feature stages for code quality and maintainability are:
   Rename the Settings sheet text table to `tblLetterTexts`, keep fallback compatibility for the legacy `Text` table name, and teach bootstrap/smoke tooling to validate the new schema.
 - [x] `pisces/feature-26-sync-fallback-legacy-encoding`
   Make the COM sync helper tolerant to legacy exported VBA file encodings, normalize the corrupted cache module source, and verify that schema-migration changes compile cleanly after workbook sync.
+- [x] `pisces/feature-27-legacy-modules-comment-cleanup`
+  Normalize legacy helper modules to clean UTF-8 source, replace garbled comments with English headers/comments, and preserve runtime behavior through automated workbook sync and smoke validation.
