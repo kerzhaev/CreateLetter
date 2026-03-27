@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleAuditLogger"
 ' Module: ModuleAuditLogger
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Audit log helpers for workbook activity tracking
-' Version: 1.0.2 - 27.03.2026
+' Version: 1.0.3 - 27.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -14,6 +14,10 @@ Public Const AUDIT_CLOSE_FILE As String = "CLOSE_FILE"
 Public Const AUDIT_SEARCH_ADDRESS As String = "SEARCH_ADDRESS"
 Public Const AUDIT_SEARCH_ATTACHMENT As String = "SEARCH_ATTACHMENT"
 Public Const AUDIT_SAVE_ADDRESS As String = "SAVE_ADDRESS"
+
+Public Sub OpenAuditLog()
+    ShowAuditLog
+End Sub
 
 Public Sub WriteAuditLog(action As String, details As String, Optional recipient As String = "")
     On Error GoTo AuditError
@@ -207,6 +211,10 @@ ReportError:
     MsgBox t("audit.msg.report_error", "Error generating audit report: ") & Err.Description, vbCritical
 End Sub
 
+Public Sub ShowAuditStatistics()
+    ShowUsageStatistics
+End Sub
+
 Public Sub ShowUsageStatistics()
     Dim auditSheet As Worksheet
     Dim totalSessions As Long
@@ -243,6 +251,10 @@ Public Sub ShowUsageStatistics()
     Next key
 
     MsgBox report, vbInformation, t("audit.title.system_statistics", "System Statistics")
+End Sub
+
+Public Sub OpenAuditAdminPanel()
+    AdminPanel
 End Sub
 
 Public Sub AdminPanel()

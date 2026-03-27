@@ -2,13 +2,17 @@ Attribute VB_Name = "MdlBackup1"
 ' ======================================================================
 ' Module: MdlBackup1
 ' Purpose: Legacy VBA snapshot and workbook snapshot helpers
-' Version: 1.0.1 - 27.03.2026
+' Version: 1.0.2 - 27.03.2026
 ' Notes:
 ' - This module is kept for compatibility with legacy admin workflows.
 ' - It is not part of the main end-user runtime path.
 ' ======================================================================
 
 Option Explicit
+
+Public Sub CreateProjectVbaSnapshot()
+    CreateVBASnapshot
+End Sub
 
 Public Sub CreateVBASnapshot()
     Dim vbComp As Object
@@ -73,6 +77,10 @@ Public Function GetComponentTypeName(componentType As Integer) As String
     End Select
 End Function
 
+Public Sub RestoreVbaSnapshot()
+    RestoreFromSnapshot
+End Sub
+
 Public Sub RestoreFromSnapshot()
     Dim importPath As String
     Dim fso As Object
@@ -115,6 +123,10 @@ Public Sub RestoreFromSnapshot()
            vbInformation, "Restore Complete"
 End Sub
 
+Public Function SelectVbaSnapshotFolder() As String
+    SelectVbaSnapshotFolder = SelectSnapshotFolder()
+End Function
+
 Public Function SelectSnapshotFolder() As String
     Dim snapshotsPath As String
     Dim selectedPath As String
@@ -138,6 +150,10 @@ Public Function SelectSnapshotFolder() As String
     End If
 End Function
 
+Public Sub TagAllModulesWithSnapshotVersion()
+    AddVersionTagsToAllModules
+End Sub
+
 Public Sub AddVersionTagsToAllModules()
     Dim vbComp As Object
     Dim codeModule As Object
@@ -158,6 +174,10 @@ Public Sub AddVersionTagsToAllModules()
     Next vbComp
 
     MsgBox "Version tags inserted into all standard modules.", vbInformation
+End Sub
+
+Public Sub CreateWorkbookFileSnapshot()
+    CreateWorkbookSnapshot
 End Sub
 
 Public Sub CreateWorkbookSnapshot()
@@ -191,10 +211,18 @@ Public Sub CreateWorkbookSnapshot()
     Shell "explorer.exe " & snapshotPath, vbNormalFocus
 End Sub
 
+Public Sub CreateFullSnapshotBundle()
+    QuickSnapshot
+End Sub
+
 Public Sub QuickSnapshot()
     AddVersionTagsToAllModules
     CreateVBASnapshot
     CreateWorkbookSnapshot
+End Sub
+
+Public Sub OpenLetterCreatorForm()
+    ShowLetterCreator
 End Sub
 
 Public Sub ShowLetterCreator()

@@ -31,3 +31,4 @@
 - When renaming workbook ListObjects, keep a compatibility fallback for the old table name until the bootstrap script and smoke harness both recognize the new schema.
 - COM VBA sync tooling must tolerate legacy exported module encodings during migration; do not assume every historical `.bas/.cls` file is already UTF-8-clean.
 - Standard-module sync must strip exported attribute lines such as `Attribute VB_Name = "ModuleName"` before calling `CodeModule.AddFromString`; those lines are valid in exported files but invalid inside the VBE code pane.
+- Treat `Attribute VB_Name = "..."` as export-only metadata. Never paste or inject it into the top of a module/class code pane manually or through automation; if a workflow targets VBE text insertion, strip all `Attribute VB_*` lines first.
