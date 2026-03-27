@@ -32,7 +32,7 @@ The next bounded feature stages for code quality and maintainability are:
   Move address/history/settings reads toward in-memory `Variant` arrays to reduce worksheet roundtrips and prepare faster search/filter paths.
 - [x] `pisces/feature-9-targeted-error-handling-pass`
   Replace risky `On Error Resume Next` in workbook/Word/export flows with targeted handlers while leaving harmless UI-formatting fallbacks lightweight.
-- [ ] `pisces/feature-10-word-app-singleton`
+- [x] `pisces/feature-10-word-app-singleton`
   Reuse one `Word.Application` instance per session instead of repeatedly creating/attaching per letter generation call.
 - [ ] `pisces/feature-11-listobjects-migration-readiness`
   Introduce helpers/accessors for `tblAddresses` and `tblLetters`, then gradually move CRUD/search/history flows onto `ListObjects`.

@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.7 — 27.03.2026
+' Version: 1.6.8 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.7
+'                    SCHEMA CONSTANTS v1.6.8
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -86,8 +86,11 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.7
+'                    NEW FUNCTIONS v1.6.8
 ' ======================================================================
+Private g_WordApp As Object
+Private g_WordAppOwned As Boolean
+
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
     If Len(Trim(addressee)) = 0 Then
@@ -1262,6 +1265,100 @@ LookupFailed:
     TryGetRunningWordApplication = False
 End Function
 
+Private Function IsWordApplicationAlive(wordApp As Object) As Boolean
+    On Error GoTo NotAlive
+    
+    If wordApp Is Nothing Then Exit Function
+    Dim visibleState As Boolean
+    visibleState = CBool(wordApp.Visible)
+    IsWordApplicationAlive = True
+    Exit Function
+    
+NotAlive:
+    IsWordApplicationAlive = False
+End Function
+
+Public Function GetSharedWordApplication() As Object
+    On Error GoTo CreateFailed
+    
+    If IsWordApplicationAlive(g_WordApp) Then
+        Set GetSharedWordApplication = g_WordApp
+        Exit Function
+    End If
+    
+    Set g_WordApp = Nothing
+    g_WordAppOwned = False
+    
+    If TryGetRunningWordApplication(g_WordApp) Then
+        Set GetSharedWordApplication = g_WordApp
+        Exit Function
+    End If
+    
+    Set g_WordApp = CreateObject("Word.Application")
+    g_WordAppOwned = True
+    Set GetSharedWordApplication = g_WordApp
+    Exit Function
+    
+CreateFailed:
+    Set g_WordApp = Nothing
+    g_WordAppOwned = False
+    Err.Raise Err.Number, "GetSharedWordApplication", Err.Description
+End Function
+
+Public Sub ResetSharedWordApplication()
+    Set g_WordApp = Nothing
+    g_WordAppOwned = False
+End Sub
+
+Public Sub ReleaseSharedWordApplication(Optional closeDocuments As Boolean = False)
+    On Error GoTo ReleaseFailed
+    
+    If g_WordApp Is Nothing Then Exit Sub
+    
+    If g_WordAppOwned Then
+        If closeDocuments Then
+            g_WordApp.Quit False
+        Else
+            g_WordApp.Visible = True
+        End If
+    End If
+    
+    Set g_WordApp = Nothing
+    g_WordAppOwned = False
+    Exit Sub
+    
+ReleaseFailed:
+    Set g_WordApp = Nothing
+    g_WordAppOwned = False
+End Sub
+
+Public Function GetSharedWordApplicationState() As String
+    If g_WordApp Is Nothing Then
+        GetSharedWordApplicationState = "empty"
+    ElseIf IsWordApplicationAlive(g_WordApp) Then
+        If g_WordAppOwned Then
+            GetSharedWordApplicationState = "owned"
+        Else
+            GetSharedWordApplicationState = "reused"
+        End If
+    Else
+        GetSharedWordApplicationState = "stale"
+    End If
+End Function
+
+Public Function WarmUpSharedWordApplication() As Boolean
+    On Error GoTo WarmUpFailed
+    
+    Dim wordApp As Object
+    Set wordApp = GetSharedWordApplication()
+    wordApp.Visible = True
+    WarmUpSharedWordApplication = Not wordApp Is Nothing
+    Exit Function
+    
+WarmUpFailed:
+    WarmUpSharedWordApplication = False
+End Function
+
 Private Function TrySaveCurrentWorkbook(ByRef errorMessage As String) As Boolean
     On Error GoTo SaveFailed
     
@@ -1314,13 +1411,7 @@ Public Sub CreateLetterDocument(addressee As String, addressArray As Variant, le
     
     On Error GoTo ErrorHandler
     
-    If Not TryGetRunningWordApplication(wordApp) Then
-        Set wordApp = CreateObject("Word.Application")
-    End If
-    
-    If wordApp Is Nothing Then
-        Err.Raise 429, "CreateLetterDocument", "Failed to create Word.Application object"
-    End If
+    Set wordApp = GetSharedWordApplication()
     
     wordApp.Visible = True
     
@@ -1364,6 +1455,9 @@ ErrorHandler:
     MsgBox "Error creating letter: " & Err.Description, vbCritical
     If Not wordDoc Is Nothing Then
         wordDoc.Close False
+    End If
+    If Not IsWordApplicationAlive(wordApp) Then
+        ResetSharedWordApplication
     End If
     Set wordDoc = Nothing
     Set wordApp = Nothing
