@@ -36,3 +36,5 @@ The next bounded feature stages for code quality and maintainability are:
   Reuse one `Word.Application` instance per session instead of repeatedly creating/attaching per letter generation call.
 - [x] `pisces/feature-11-listobjects-migration-readiness`
   Introduce helpers/accessors for `tblAddresses` and `tblLetters`, then gradually move CRUD/search/history flows onto `ListObjects`.
+- [x] `pisces/feature-12-listobjects-bootstrap`
+  Bootstrap `tblAddresses` and `tblLetters` in the workbook itself through a repeatable COM script, while preserving data layout and keeping code fallback-safe.

@@ -67,6 +67,7 @@ The migration baseline adds two operational constraints: source-managed VBA rema
 7. Add localization in two steps: foundation first, user-facing string migration second.
 8. Target thin UserForms: forms should orchestrate control state and delegate business logic to shared modules.
 9. Prefer extending existing standard modules before creating new ones; during the form-refactor stage, cap new modules at 1-2 unless a concrete boundary requires more.
+10. When moving worksheet persistence toward `ListObjects`, keep a compatibility fallback to raw ranges until the workbook schema itself is upgraded and verified.
 
 ## Code Examples
 

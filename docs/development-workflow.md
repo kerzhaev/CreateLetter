@@ -61,6 +61,18 @@ python .\scripts\sync_vba_from_modules.py .\CreateLetter.xlsm .\CreateLetter.xls
 4. Export modules back to `CreateLetter.xlsm.modules/` after validated changes.
 5. Verify that workbook runtime behavior does not depend on automatic source-management hooks.
 
+## Workbook Schema Automation
+
+When a feature changes workbook structure itself, prefer a repeatable script over a one-off manual edit.
+
+Current helper:
+
+```powershell
+python .\scripts\ensure_workbook_tables.py .\CreateLetter.xlsm
+```
+
+This helper creates `tblAddresses` and `tblLetters` if they are missing and leaves existing data intact.
+
 ## Source of Truth and Encoding Policy
 
 - `CreateLetter.xlsm.modules/` is the source of truth for VBA text artifacts.
