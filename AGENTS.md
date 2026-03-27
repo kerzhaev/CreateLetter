@@ -36,6 +36,7 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 │   └── run_excel_smoke_test.ps1         # Excel COM smoke-test helper
 │   └── sync_vba_from_modules.py         # Excel COM VBA sync helper for modules/forms
 │   └── ensure_workbook_tables.py        # Excel COM workbook schema helper for tblAddresses/tblLetters
+│   └── ensure_localization_sheet.py     # Excel COM workbook localization sheet bootstrap helper
 ├── .agents/skills/                      # External installed skills for agent use
 │   ├── xlsx/
 │   └── vbaexcel/

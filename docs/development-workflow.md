@@ -73,6 +73,14 @@ python .\scripts\ensure_workbook_tables.py .\CreateLetter.xlsm
 
 This helper creates `tblAddresses` and `tblLetters` if they are missing and leaves existing data intact.
 
+Localization bootstrap helper:
+
+```powershell
+python .\scripts\ensure_localization_sheet.py .\CreateLetter.xlsm
+```
+
+This helper materializes the workbook `Localization` sheet from built-in translations in `ModuleLocalization.bas`.
+
 ## Source of Truth and Encoding Policy
 
 - `CreateLetter.xlsm.modules/` is the source of truth for VBA text artifacts.

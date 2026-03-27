@@ -40,3 +40,5 @@ The next bounded feature stages for code quality and maintainability are:
   Bootstrap `tblAddresses` and `tblLetters` in the workbook itself through a repeatable COM script, while preserving data layout and keeping code fallback-safe.
 - [x] `pisces/feature-13-structured-smoke-diagnostics`
   Teach the smoke harness to verify structured tables explicitly so workbook schema regressions are caught automatically.
+- [x] `pisces/feature-14-localization-sheet-bootstrap`
+  Materialize the workbook `Localization` sheet from `ModuleLocalization.bas` so localization can evolve in workbook data instead of only built-in VBA defaults.

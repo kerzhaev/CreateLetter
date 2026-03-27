@@ -17,3 +17,4 @@
 - Before asking the user for a manual VBA import, first try synchronizing the workbook automatically through the local COM tooling and run the smoke tests yourself.
 - Workbook schema changes must be performed through a repeatable local script or explicit COM automation step, then verified automatically before asking the user to inspect anything.
 - If a feature changes workbook structure, extend the smoke harness to assert the new structure so the same regression is caught automatically next time.
+- When code already contains a workbook-backed fallback path, prefer bootstrapping the corresponding workbook sheet/table through automation instead of hardcoding more defaults in VBA.
