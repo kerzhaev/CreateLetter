@@ -38,3 +38,5 @@ The next bounded feature stages for code quality and maintainability are:
   Introduce helpers/accessors for `tblAddresses` and `tblLetters`, then gradually move CRUD/search/history flows onto `ListObjects`.
 - [x] `pisces/feature-12-listobjects-bootstrap`
   Bootstrap `tblAddresses` and `tblLetters` in the workbook itself through a repeatable COM script, while preserving data layout and keeping code fallback-safe.
+- [x] `pisces/feature-13-structured-smoke-diagnostics`
+  Teach the smoke harness to verify structured tables explicitly so workbook schema regressions are caught automatically.

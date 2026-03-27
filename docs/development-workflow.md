@@ -99,6 +99,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_excel_smoke_test.ps1
 ```
 
 Use `-RequireLocalizationModule` after importing updated modules into the workbook for localization stages.
+Use `-RequireStructuredTables` after workbook schema stages that depend on `tblAddresses` / `tblLetters`.
 
 ## See Also
 

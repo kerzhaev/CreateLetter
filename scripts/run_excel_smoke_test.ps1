@@ -6,6 +6,9 @@ param(
     [switch]$RequireLocalizationModule,
 
     [Parameter(Mandatory = $false)]
+    [switch]$RequireStructuredTables,
+
+    [Parameter(Mandatory = $false)]
     [switch]$AllowLegacyRussianSheetNames
 )
 
@@ -44,6 +47,20 @@ function Test-WorksheetVariants {
     }
 
     return $null
+}
+
+function Get-WorksheetTableNames {
+    param(
+        [object]$Worksheet
+    )
+
+    $tableNames = New-Object 'System.Collections.Generic.List[string]'
+
+    for ($i = 1; $i -le $Worksheet.ListObjects.Count; $i++) {
+        $tableNames.Add([string]$Worksheet.ListObjects.Item($i).Name) | Out-Null
+    }
+
+    return $tableNames
 }
 
 $resolvedWorkbookPath = Resolve-Path $WorkbookPath
@@ -90,6 +107,32 @@ try {
         }
         else {
             Add-Result -Results $results -Name ("Worksheet:" + $sheetRequirement.LogicalName) -Status "PASS" -Details ("Worksheet is present as '" + $resolvedSheetName + "'.")
+        }
+    }
+
+    $structuredTableRequirements = @(
+        @{ Sheet = "Addresses"; Table = "tblAddresses" },
+        @{ Sheet = "Letters"; Table = "tblLetters" }
+    )
+
+    foreach ($tableRequirement in $structuredTableRequirements) {
+        try {
+            $sheet = $workbook.Worksheets.Item($tableRequirement.Sheet)
+            $tableNames = Get-WorksheetTableNames -Worksheet $sheet
+            if ($tableNames.Contains($tableRequirement.Table)) {
+                Add-Result -Results $results -Name ("StructuredTable:" + $tableRequirement.Sheet) -Status "PASS" -Details ("Structured table '" + $tableRequirement.Table + "' is present.")
+            }
+            elseif ($RequireStructuredTables) {
+                Add-Result -Results $results -Name ("StructuredTable:" + $tableRequirement.Sheet) -Status "FAIL" -Details ("Expected structured table '" + $tableRequirement.Table + "'. Found: " + (($tableNames | Select-Object -First 20) -join ", "))
+                $failed = $true
+            }
+            else {
+                Add-Result -Results $results -Name ("StructuredTable:" + $tableRequirement.Sheet) -Status "WARN" -Details ("Structured table '" + $tableRequirement.Table + "' is missing. Found: " + (($tableNames | Select-Object -First 20) -join ", "))
+            }
+        }
+        catch {
+            Add-Result -Results $results -Name ("StructuredTable:" + $tableRequirement.Sheet) -Status "FAIL" -Details $_.Exception.Message
+            $failed = $true
         }
     }
 

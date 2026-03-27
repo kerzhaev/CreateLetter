@@ -16,3 +16,4 @@
 - Every VBA module or form edited during an iteration must have its top header metadata updated: keep the module/form description accurate, bump the visible version number, and refresh the change date.
 - Before asking the user for a manual VBA import, first try synchronizing the workbook automatically through the local COM tooling and run the smoke tests yourself.
 - Workbook schema changes must be performed through a repeatable local script or explicit COM automation step, then verified automatically before asking the user to inspect anything.
+- If a feature changes workbook structure, extend the smoke harness to assert the new structure so the same regression is caught automatically next time.
