@@ -2,7 +2,7 @@ Attribute VB_Name = "MdlBackup1"
 ' ======================================================================
 ' Module: MdlBackup1
 ' Purpose: Legacy VBA snapshot and workbook snapshot helpers
-' Version: 1.0.2 - 27.03.2026
+' Version: 1.0.3 - 27.03.2026
 ' Notes:
 ' - This module is kept for compatibility with legacy admin workflows.
 ' - It is not part of the main end-user runtime path.
@@ -59,10 +59,10 @@ Public Sub CreateVBASnapshot()
     Next vbComp
     Close #fileNum
 
-    MsgBox "VBA snapshot created successfully!" & vbCrLf & _
-           "Folder: " & exportPath & vbCrLf & _
-           "Exported components: " & ThisWorkbook.VBProject.VBComponents.Count, _
-           vbInformation, "VBA Snapshot"
+    MsgBox t("snapshot.msg.vba_created_success", "VBA snapshot created successfully!") & vbCrLf & _
+           t("snapshot.msg.folder_label", "Folder: ") & exportPath & vbCrLf & _
+           t("snapshot.msg.exported_components", "Exported components: ") & ThisWorkbook.VBProject.VBComponents.Count, _
+           vbInformation, t("snapshot.title.vba_snapshot", "VBA Snapshot")
 
     Shell "explorer.exe " & exportPath, vbNormalFocus
 End Sub
@@ -95,10 +95,10 @@ Public Sub RestoreFromSnapshot()
     Set fso = CreateObject("Scripting.FileSystemObject")
     Set folder = fso.GetFolder(importPath)
 
-    response = MsgBox("Warning!" & vbCrLf & _
+    response = MsgBox(t("snapshot.msg.restore_warning", "Warning!" & vbCrLf & _
                       "This operation removes the current VBA modules and restores them from the selected snapshot." & vbCrLf & _
-                      "Do you want to continue?", _
-                      vbYesNo + vbExclamation, "Confirm Restore")
+                      "Do you want to continue?"), _
+                      vbYesNo + vbExclamation, t("snapshot.title.confirm_restore", "Confirm Restore"))
     If response = vbNo Then Exit Sub
 
     For componentIndex = ThisWorkbook.VBProject.VBComponents.Count To 1 Step -1
@@ -118,9 +118,9 @@ Public Sub RestoreFromSnapshot()
         End If
     Next file
 
-    MsgBox "Snapshot restored successfully!" & vbCrLf & _
-           "Folder: " & importPath, _
-           vbInformation, "Restore Complete"
+    MsgBox t("snapshot.msg.restore_complete", "Snapshot restored successfully!") & vbCrLf & _
+           t("snapshot.msg.folder_label", "Folder: ") & importPath, _
+           vbInformation, t("snapshot.title.restore_complete", "Restore Complete")
 End Sub
 
 Public Function SelectVbaSnapshotFolder() As String
@@ -134,14 +134,14 @@ Public Function SelectSnapshotFolder() As String
     snapshotsPath = ThisWorkbook.Path & "\VBA_Snapshots\"
 
     If Dir$(snapshotsPath, vbDirectory) = "" Then
-        MsgBox "Snapshots folder not found: " & snapshotsPath, vbExclamation
+        MsgBox t("snapshot.msg.folder_not_found", "Snapshots folder not found: ") & snapshotsPath, vbExclamation
         SelectSnapshotFolder = ""
         Exit Function
     End If
 
-    selectedPath = InputBox("Enter the snapshot folder name:" & vbCrLf & _
-                            "Available root: " & snapshotsPath, _
-                            "Select Snapshot", "Snapshot_")
+    selectedPath = InputBox(t("snapshot.prompt.select_folder", "Enter the snapshot folder name:" & vbCrLf & _
+                            "Available root: ") & snapshotsPath, _
+                            t("snapshot.title.select_folder", "Select Snapshot"), t("snapshot.prompt.default_folder", "Snapshot_"))
 
     If selectedPath <> "" Then
         SelectSnapshotFolder = snapshotsPath & selectedPath & "\"
@@ -173,7 +173,7 @@ Public Sub AddVersionTagsToAllModules()
         End If
     Next vbComp
 
-    MsgBox "Version tags inserted into all standard modules.", vbInformation
+    MsgBox t("snapshot.msg.version_tags_inserted", "Version tags inserted into all standard modules."), vbInformation
 End Sub
 
 Public Sub CreateWorkbookFileSnapshot()
@@ -187,8 +187,8 @@ Public Sub CreateWorkbookSnapshot()
     Dim description As String
     Dim fileName As String
 
-    description = InputBox("Enter a short snapshot label:", _
-                           "Snapshot Label", "manual_snapshot")
+    description = InputBox(t("snapshot.prompt.workbook_label", "Enter a short snapshot label:"), _
+                           t("snapshot.title.workbook_snapshot", "Workbook Snapshot"), t("snapshot.prompt.workbook_default", "manual_snapshot"))
     If description = "" Then Exit Sub
 
     timeStamp = Format$(Now, "yyyy-mm-dd_hh-mm")
@@ -203,10 +203,10 @@ Public Sub CreateWorkbookSnapshot()
 
     ThisWorkbook.SaveCopyAs snapshotPath & fileName
 
-    MsgBox "Workbook snapshot created!" & vbCrLf & _
-           "File: " & fileName & vbCrLf & _
-           "Folder: " & snapshotPath, _
-           vbInformation, "Workbook Snapshot"
+    MsgBox t("snapshot.msg.workbook_created", "Workbook snapshot created!") & vbCrLf & _
+           t("snapshot.msg.file_label", "File: ") & fileName & vbCrLf & _
+           t("snapshot.msg.folder_label", "Folder: ") & snapshotPath, _
+           vbInformation, t("snapshot.title.workbook_snapshot", "Workbook Snapshot")
 
     Shell "explorer.exe " & snapshotPath, vbNormalFocus
 End Sub

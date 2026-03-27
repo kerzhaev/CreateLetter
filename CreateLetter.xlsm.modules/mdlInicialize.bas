@@ -4,7 +4,7 @@ Attribute VB_Name = "mdlInicialize"
 ' Module: mdlInitialize
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Workbook sheet bootstrap and reset entry points with English-safe public aliases
-' Version: 1.4.5 - 27.03.2026
+' Version: 1.4.6 - 27.03.2026
 ' ======================================================================
 Option Explicit
 
@@ -13,7 +13,7 @@ Public Sub InitializeAllWorksheets()
 End Sub
 
 Public Sub BootstrapWorkbookSheets()
-    ' Creation and configuration of all necessary sheets (renamed to avoid conflict)
+    ' Create and configure all required sheets.
     On Error GoTo InitError
     
     ' "Addresses" sheet
@@ -25,11 +25,11 @@ Public Sub BootstrapWorkbookSheets()
     ' "Settings" sheet
     CreateSettingsSheet
     
-    MsgBox "Sheets structure created successfully!", vbInformation
+    MsgBox t("bootstrap.msg.structure_created", "Sheets structure created successfully!"), vbInformation
     Exit Sub
     
 InitError:
-    MsgBox "Error creating sheets structure: " & Err.description, vbCritical
+    MsgBox t("bootstrap.msg.structure_create_error", "Error creating sheets structure: ") & Err.description, vbCritical
 End Sub
 
 Private Sub CreateAddressesSheet()
@@ -45,7 +45,7 @@ Private Sub CreateAddressesSheet()
         ws.Name = "Addresses"
     End If
     
-    ' Create headers (CHANGE: added 7th column "Phone")
+    ' Create headers.
     With ws
         .Cells(1, 1).value = "Recipient Name"
         .Cells(1, 2).value = "Street"
@@ -55,7 +55,7 @@ Private Sub CreateAddressesSheet()
         .Cells(1, 6).value = "Postal Code"
         .Cells(1, 7).value = "Phone"
         
-        ' Headers formatting (using standard VBA constants)
+        ' Header formatting.
         With .Range("A1:G1")
             .Font.Bold = True
             .Interior.ColorIndex = 37  ' Light blue
@@ -143,11 +143,11 @@ Private Sub CreateSettingsSheet()
         .Cells(1, 6).Font.Bold = True
         .Cells(1, 6).Interior.ColorIndex = 34  ' Light pink
         
-        ' Text examples (CHANGE: first letter is lowercase)
+        ' Text examples.
         .Cells(2, 6).value = "forwarding the following documents to your address for confirmation"
         .Cells(3, 6).value = "forwarding confirmed accounting documents to your address"
         
-        ' Creating a structured table in column F
+        ' Create a structured table in column F.
         Dim textRange As Range
         Set textRange = .Range("F1:F3")
         
@@ -165,9 +165,9 @@ Private Sub CreateSettingsSheet()
 End Sub
 
 Public Sub ResetWorksheets()
-    ' Reset all worksheet settings
+    ' Reset workbook-managed sheets.
     Dim response As VbMsgBoxResult
-    response = MsgBox("Are you sure you want to reset all data?", vbYesNo + vbQuestion + vbDefaultButton2)
+    response = MsgBox(t("bootstrap.msg.reset_confirm", "Are you sure you want to reset all data?"), vbYesNo + vbQuestion + vbDefaultButton2)
     
     If response = vbYes Then
         On Error Resume Next
@@ -181,7 +181,7 @@ Public Sub ResetWorksheets()
         
         On Error GoTo 0
         
-        ' Recreate
+        ' Recreate the workbook baseline.
         BootstrapWorkbookSheets
     End If
 End Sub

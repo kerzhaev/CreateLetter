@@ -72,3 +72,7 @@ The next bounded feature stages for code quality and maintainability are:
   Re-normalize source-managed VBA exports after manual VbaModuleManager roundtrips so the repository returns to a stable UTF-8 baseline before further feature work.
 - [x] `pisces/feature-29-localize-maintenance-runtime-messages`
   Move backup and audit helper user-facing runtime/admin messages onto workbook-backed localization keys and refresh the Localization sheet automatically.
+- [x] `pisces/feature-30-maintenance-entrypoint-aliases`
+  Add English-safe public aliases for legacy maintenance/admin entry points, then harden the VBA sync workflow against duplicate-name and VBE attribute insertion regressions.
+- [x] `pisces/feature-31-bootstrap-maintenance-localization`
+  Move workbook-bootstrap and legacy snapshot helper prompts/messages onto workbook-backed localization keys so maintenance flows follow the same localization contract as the main runtime.
