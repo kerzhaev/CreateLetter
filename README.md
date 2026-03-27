@@ -97,3 +97,8 @@ scripts/                      # Local automation helpers
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## CI
+
+GitHub Actions validates the public repository layout and documentation consistency.
+Because the public repository is source-only, CI does not run Excel automation on GitHub runners.

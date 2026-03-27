@@ -1,0 +1,93 @@
+name: Repository Consistency
+
+on:
+  push:
+    branches:
+      - main
+      - 'pisces/**'
+  pull_request:
+
+jobs:
+  source-only-checks:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required project files
+        shell: pwsh
+        run: |
+          $required = @(
+            'README.md',
+            'LICENSE',
+            'AGENTS.md',
+            '.ai-factory/ARCHITECTURE.md',
+            '.ai-factory/ROADMAP.md',
+            '.ai-factory/RULES.md',
+            'docs/github-publishing.md',
+            'scripts/sync_vba_from_modules.py',
+            'scripts/run_excel_smoke_test.ps1'
+          )
+
+          $missing = @()
+          foreach ($path in $required) {
+            if (-not (Test-Path $path)) {
+              $missing += $path
+            }
+          }
+
+          if ($missing.Count -gt 0) {
+            Write-Error ("Missing required files:`n" + ($missing -join "`n"))
+          }
+
+      - name: Enforce source-only public layout
+        shell: pwsh
+        run: |
+          $forbiddenPatterns = @(
+            '^\.codex/',
+            '^\.agents/',
+            '^CreateLetter\.xlsm$',
+            '^LetterTemplate.*\.docx$',
+            '^CreateLetter\.xlsm\.modules/.*\.frx$',
+            '^filesarchive/',
+            '^Backups/',
+            '^_tmp_export/'
+          )
+
+          $tracked = git ls-files
+          $violations = New-Object System.Collections.Generic.List[string]
+
+          foreach ($item in $tracked) {
+            foreach ($pattern in $forbiddenPatterns) {
+              if ($item -match $pattern) {
+                $violations.Add($item)
+                break
+              }
+            }
+          }
+
+          if ($violations.Count -gt 0) {
+            Write-Error ("Forbidden tracked paths detected:`n" + ($violations -join "`n"))
+          }
+
+      - name: Check for stale publication references
+        shell: pwsh
+        run: |
+          $files = @(
+            'README.md',
+            'AGENTS.md',
+            'docs/getting-started.md',
+            'docs/configuration.md',
+            'docs/github-publishing.md',
+            '.vscode/settings.json'
+          )
+
+          $pattern = 'windows1251|ШаблонПисьма|ШаблонПисьмаДСП'
+          $hits = Select-String -Path $files -Pattern $pattern
+
+          if ($hits) {
+            $lines = $hits | ForEach-Object { "$($_.Path):$($_.LineNumber): $($_.Line.Trim())" }
+            Write-Error ("Stale publication references found:`n" + ($lines -join "`n"))
+          }
+

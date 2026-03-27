@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project Documentation
+    url: ./docs/github-publishing.md
+    about: Review repository scope and publication rules before filing an issue.
+

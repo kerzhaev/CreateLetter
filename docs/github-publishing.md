@@ -40,3 +40,11 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_excel_smoke_test.ps1 -Req
 - Update `AGENTS.md` and `.ai-factory/*` when structure or workflow changes.
 - Keep user-facing strings in localization data rather than scattering them through VBA logic.
 - Prefer additive compatibility aliases when renaming workbook-facing macros.
+
+## GitHub Automation
+
+- The repository includes a GitHub Actions workflow that validates:
+  - required source/docs files are present;
+  - forbidden binary/runtime/local AI artifacts are not tracked;
+  - public docs do not drift back to legacy template names or Windows-1251 guidance.
+- Excel COM smoke tests remain local-only because the public repository does not include the runtime workbook binary.

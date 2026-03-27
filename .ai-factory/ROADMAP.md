@@ -82,3 +82,5 @@ The next bounded feature stages for code quality and maintainability are:
   Prepare the repository for GitHub publication by aligning public docs with real file names, switching workspace defaults to UTF-8, removing obsolete manual-recovery artifacts, and ignoring local-only runtime/export folders.
 - [x] `pisces/feature-34-public-source-only-github`
   Convert the public repository to a source-only layout by removing local AI skill bundles and binary runtime assets from git, adding an MIT license, and documenting the local provisioning contract for workbook/template artifacts.
+- [x] `pisces/feature-35-github-templates-and-ci`
+  Add GitHub issue templates, a PR template, and a source-only repository consistency workflow so the public repo has basic contribution and publication guardrails.
