@@ -28,7 +28,7 @@ The next bounded feature stages for code quality and maintainability are:
 
 - [x] `pisces/feature-7-schema-enums-and-columns`
   Introduce shared enums/constants for `Addresses`, `Letters`, `Settings`, and array-based record parts so creator/history logic stops depending on raw numeric indexes.
-- [ ] `pisces/feature-8-array-based-excel-repositories`
+- [x] `pisces/feature-8-array-based-excel-repositories`
   Move address/history/settings reads toward in-memory `Variant` arrays to reduce worksheet roundtrips and prepare faster search/filter paths.
 - [ ] `pisces/feature-9-targeted-error-handling-pass`
   Replace risky `On Error Resume Next` in workbook/Word/export flows with targeted handlers while leaving harmless UI-formatting fallbacks lightweight.

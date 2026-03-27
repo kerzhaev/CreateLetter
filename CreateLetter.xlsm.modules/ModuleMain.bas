@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.5 — 27.03.2026
+' Version: 1.6.6 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.5
+'                    SCHEMA CONSTANTS v1.6.6
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -86,7 +86,7 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.5
+'                    NEW FUNCTIONS v1.6.6
 ' ======================================================================
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
@@ -358,6 +358,70 @@ Public Function FormatDocumentName(docArray As Variant) As String
     FormatDocumentName = result
 End Function
 
+Private Function ReadWorksheetMatrix(ws As Worksheet, firstColumn As Long, lastColumn As Long) As Variant
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.count, firstColumn).End(xlUp).Row
+    
+    If lastRow < FIRST_DATA_ROW Then
+        ReadWorksheetMatrix = Empty
+        Exit Function
+    End If
+    
+    ReadWorksheetMatrix = ws.Range(ws.Cells(FIRST_DATA_ROW, firstColumn), ws.Cells(lastRow, lastColumn)).Value
+End Function
+
+Private Function MatrixValueOrEmpty(dataMatrix As Variant, rowIndex As Long, columnIndex As Long) As String
+    If IsArray(dataMatrix) Then
+        MatrixValueOrEmpty = CStr(dataMatrix(rowIndex, columnIndex))
+    Else
+        MatrixValueOrEmpty = ""
+    End If
+End Function
+
+Private Function BuildAddressSearchLineFromMatrix(addressData As Variant, rowIndex As Long) As String
+    BuildAddressSearchLineFromMatrix = MatrixValueOrEmpty(addressData, rowIndex, AddressColumnAddressee) & " " & _
+                                       MatrixValueOrEmpty(addressData, rowIndex, AddressColumnStreet) & " " & _
+                                       MatrixValueOrEmpty(addressData, rowIndex, AddressColumnCity) & " " & _
+                                       MatrixValueOrEmpty(addressData, rowIndex, AddressColumnDistrict) & " " & _
+                                       MatrixValueOrEmpty(addressData, rowIndex, AddressColumnRegion) & " " & _
+                                       MatrixValueOrEmpty(addressData, rowIndex, AddressColumnPostalCode) & " " & _
+                                       MatrixValueOrEmpty(addressData, rowIndex, AddressColumnPhone)
+End Function
+
+Private Function BuildAddressListItemFromMatrix(addressData As Variant, rowIndex As Long, worksheetRowNumber As Long) As String
+    BuildAddressListItemFromMatrix = MatrixValueOrEmpty(addressData, rowIndex, AddressColumnAddressee) & " | " & _
+                                     MatrixValueOrEmpty(addressData, rowIndex, AddressColumnStreet) & " | " & _
+                                     MatrixValueOrEmpty(addressData, rowIndex, AddressColumnCity) & " | " & _
+                                     MatrixValueOrEmpty(addressData, rowIndex, AddressColumnDistrict) & " | " & _
+                                     MatrixValueOrEmpty(addressData, rowIndex, AddressColumnRegion) & " | " & _
+                                     MatrixValueOrEmpty(addressData, rowIndex, AddressColumnPostalCode) & " | " & _
+                                     MatrixValueOrEmpty(addressData, rowIndex, AddressColumnPhone) & " | " & worksheetRowNumber
+End Function
+
+Private Function BuildLetterHistoryRecordFromMatrix(letterData As Variant, rowIndex As Long, worksheetRowNumber As Long) As String
+    BuildLetterHistoryRecordFromMatrix = MatrixValueOrEmpty(letterData, rowIndex, LetterColumnAddressee) & "|" & _
+                                         MatrixValueOrEmpty(letterData, rowIndex, LetterColumnOutgoingNumber) & "|" & _
+                                         MatrixValueOrEmpty(letterData, rowIndex, LetterColumnOutgoingDate) & "|" & _
+                                         MatrixValueOrEmpty(letterData, rowIndex, LetterColumnAttachmentText) & "|" & _
+                                         NormalizeHistorySumCell(letterData(rowIndex, LetterColumnDocumentSum)) & "|" & _
+                                         MatrixValueOrEmpty(letterData, rowIndex, LetterColumnReturnStatus) & "|" & _
+                                         MatrixValueOrEmpty(letterData, rowIndex, LetterColumnExecutor) & "|" & _
+                                         MatrixValueOrEmpty(letterData, rowIndex, LetterColumnDocumentType) & "|" & _
+                                         CStr(worksheetRowNumber)
+End Function
+
+Private Function NormalizeHistorySumCell(cellValue As Variant) As String
+    If IsNumeric(cellValue) And cellValue <> 0 Then
+        If cellValue = Int(cellValue) Then
+            NormalizeHistorySumCell = CStr(CLng(cellValue))
+        Else
+            NormalizeHistorySumCell = CStr(cellValue)
+        End If
+    Else
+        NormalizeHistorySumCell = CStr(cellValue)
+    End If
+End Function
+
 ' ======================================================================
 '                    SEARCH AND DATA FUNCTIONS
 ' ======================================================================
@@ -369,30 +433,17 @@ Public Function SearchAddresses(searchTerm As String) As Collection
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, AddressColumnAddressee).End(xlUp).Row
+    Dim addressData As Variant
+    addressData = ReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnPhone)
+    If IsEmpty(addressData) Then Exit Function
+    
+    Dim normalizedSearch As String
+    normalizedSearch = UCase$(Trim$(searchTerm))
     
     Dim i As Long
-    For i = FIRST_DATA_ROW To lastRow
-        Dim searchLine As String
-        searchLine = ws.Cells(i, AddressColumnAddressee).Value & " " & _
-                     ws.Cells(i, AddressColumnStreet).Value & " " & _
-                     ws.Cells(i, AddressColumnCity).Value & " " & _
-                     ws.Cells(i, AddressColumnDistrict).Value & " " & _
-                     ws.Cells(i, AddressColumnRegion).Value & " " & _
-                     ws.Cells(i, AddressColumnPostalCode).Value & " " & _
-                     ws.Cells(i, AddressColumnPhone).Value
-        
-        If InStr(1, UCase(searchLine), UCase(searchTerm)) > 0 Then
-            Dim fullAddress As String
-            fullAddress = ws.Cells(i, AddressColumnAddressee).Value & " | " & _
-                          ws.Cells(i, AddressColumnStreet).Value & " | " & _
-                          ws.Cells(i, AddressColumnCity).Value & " | " & _
-                          ws.Cells(i, AddressColumnDistrict).Value & " | " & _
-                          ws.Cells(i, AddressColumnRegion).Value & " | " & _
-                          ws.Cells(i, AddressColumnPostalCode).Value & " | " & _
-                          ws.Cells(i, AddressColumnPhone).Value & " | " & i
-            SearchAddresses.Add fullAddress
+    For i = LBound(addressData, 1) To UBound(addressData, 1)
+        If Len(normalizedSearch) = 0 Or InStr(1, UCase$(BuildAddressSearchLineFromMatrix(addressData, i)), normalizedSearch, vbTextCompare) > 0 Then
+            SearchAddresses.Add BuildAddressListItemFromMatrix(addressData, i, i + FIRST_DATA_ROW - 1)
         End If
     Next i
     
@@ -475,13 +526,13 @@ Public Function LoadLetterHistoryData() As Collection
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Letters")
     
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, LetterColumnAddressee).End(xlUp).Row
-    If lastRow < FIRST_DATA_ROW Then Exit Function
+    Dim letterData As Variant
+    letterData = ReadWorksheetMatrix(ws, LetterColumnAddressee, LetterColumnDocumentType)
+    If IsEmpty(letterData) Then Exit Function
     
     Dim i As Long
-    For i = FIRST_DATA_ROW To lastRow
-        LoadLetterHistoryData.Add BuildLetterHistoryRecord(ws, i)
+    For i = LBound(letterData, 1) To UBound(letterData, 1)
+        LoadLetterHistoryData.Add BuildLetterHistoryRecordFromMatrix(letterData, i, i + FIRST_DATA_ROW - 1)
     Next i
     
     Exit Function
@@ -709,13 +760,19 @@ Public Function SearchAttachments(searchTerm As String) As Collection
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Settings")
     
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, SettingsColumnAttachmentName).End(xlUp).Row
+    Dim settingsData As Variant
+    settingsData = ReadWorksheetMatrix(ws, SettingsColumnAttachmentName, SettingsColumnExecutorPhone)
+    If IsEmpty(settingsData) Then Exit Function
+    
+    Dim normalizedSearch As String
+    normalizedSearch = UCase$(Trim$(searchTerm))
     
     Dim i As Long
-    For i = FIRST_DATA_ROW To lastRow
-        If Len(Trim(ws.Cells(i, SettingsColumnAttachmentName).Value)) > 0 And InStr(1, UCase(ws.Cells(i, SettingsColumnAttachmentName).Value), UCase(searchTerm)) > 0 Then
-            SearchAttachments.Add ws.Cells(i, SettingsColumnAttachmentName).Value
+    For i = LBound(settingsData, 1) To UBound(settingsData, 1)
+        If Len(Trim$(MatrixValueOrEmpty(settingsData, i, SettingsColumnAttachmentName))) > 0 Then
+            If Len(normalizedSearch) = 0 Or InStr(1, UCase$(MatrixValueOrEmpty(settingsData, i, SettingsColumnAttachmentName)), normalizedSearch, vbTextCompare) > 0 Then
+                SearchAttachments.Add MatrixValueOrEmpty(settingsData, i, SettingsColumnAttachmentName)
+            End If
         End If
     Next i
 End Function
@@ -729,13 +786,14 @@ Public Function GetExecutorsList() As Collection
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Settings")
     
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, SettingsColumnExecutorName).End(xlUp).Row
+    Dim settingsData As Variant
+    settingsData = ReadWorksheetMatrix(ws, SettingsColumnAttachmentName, SettingsColumnExecutorPhone)
+    If IsEmpty(settingsData) Then Exit Function
     
     Dim i As Long
-    For i = FIRST_DATA_ROW To lastRow
-        If Len(Trim(ws.Cells(i, SettingsColumnExecutorName).Value)) > 0 Then
-            GetExecutorsList.Add ws.Cells(i, SettingsColumnExecutorName).Value
+    For i = LBound(settingsData, 1) To UBound(settingsData, 1)
+        If Len(Trim$(MatrixValueOrEmpty(settingsData, i, SettingsColumnExecutorName))) > 0 Then
+            GetExecutorsList.Add MatrixValueOrEmpty(settingsData, i, SettingsColumnExecutorName)
         End If
     Next i
 End Function
@@ -753,14 +811,15 @@ Public Function GetExecutorPhone(executorFIO As String) As String
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Settings")
     
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, SettingsColumnExecutorName).End(xlUp).Row
+    Dim settingsData As Variant
+    settingsData = ReadWorksheetMatrix(ws, SettingsColumnAttachmentName, SettingsColumnExecutorPhone)
+    If IsEmpty(settingsData) Then Exit Function
     
     Dim i As Long
-    For i = FIRST_DATA_ROW To lastRow
-        If ws.Cells(i, SettingsColumnExecutorName).Value = executorFIO Then
-            If Len(Trim(ws.Cells(i, SettingsColumnExecutorPhone).Value)) > 0 Then
-                GetExecutorPhone = ws.Cells(i, SettingsColumnExecutorPhone).Value
+    For i = LBound(settingsData, 1) To UBound(settingsData, 1)
+        If MatrixValueOrEmpty(settingsData, i, SettingsColumnExecutorName) = executorFIO Then
+            If Len(Trim$(MatrixValueOrEmpty(settingsData, i, SettingsColumnExecutorPhone))) > 0 Then
+                GetExecutorPhone = MatrixValueOrEmpty(settingsData, i, SettingsColumnExecutorPhone)
             End If
             Exit Function
         End If
@@ -844,18 +903,19 @@ Public Function IsAddressDuplicate(addressArray As Variant, Optional excludeRow 
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
-    Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, AddressColumnAddressee).End(xlUp).Row
+    Dim addressData As Variant
+    addressData = ReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnPhone)
+    If IsEmpty(addressData) Then Exit Function
     
     Dim i As Long, matchCount As Integer
-    For i = FIRST_DATA_ROW To lastRow
-        If i = excludeRow Then GoTo NextRow
+    For i = LBound(addressData, 1) To UBound(addressData, 1)
+        If i + FIRST_DATA_ROW - 1 = excludeRow Then GoTo NextRow
         
         matchCount = 0
         
-        If UCase(Trim(ws.Cells(i, AddressColumnAddressee).Value)) = UCase(Trim(addressArray(AddressIndexAddressee))) Then matchCount = matchCount + 1
-        If UCase(Trim(ws.Cells(i, AddressColumnCity).Value)) = UCase(Trim(addressArray(AddressIndexCity))) Then matchCount = matchCount + 1
-        If UCase(Trim(ws.Cells(i, AddressColumnPostalCode).Value)) = UCase(Trim(addressArray(AddressIndexPostalCode))) Then matchCount = matchCount + 1
+        If UCase$(Trim$(MatrixValueOrEmpty(addressData, i, AddressColumnAddressee))) = UCase$(Trim$(CStr(addressArray(AddressIndexAddressee)))) Then matchCount = matchCount + 1
+        If UCase$(Trim$(MatrixValueOrEmpty(addressData, i, AddressColumnCity))) = UCase$(Trim$(CStr(addressArray(AddressIndexCity)))) Then matchCount = matchCount + 1
+        If UCase$(Trim$(MatrixValueOrEmpty(addressData, i, AddressColumnPostalCode))) = UCase$(Trim$(CStr(addressArray(AddressIndexPostalCode)))) Then matchCount = matchCount + 1
         
         If matchCount >= 3 Then
             IsAddressDuplicate = True
