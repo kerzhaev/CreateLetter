@@ -46,3 +46,5 @@ The next bounded feature stages for code quality and maintainability are:
   Extend the smoke harness with an explicit `Localization` worksheet gate so workbook-backed localization regressions are caught automatically.
 - [x] `pisces/feature-16-localize-creator-ui-slice`
   Move `frmLetterCreator` captions, tips, dialogs, and creator/address validation messages onto workbook-backed localization keys while keeping English fallbacks safe.
+- [x] `pisces/feature-17-localize-history-ui-slice`
+  Move `frmLetterHistory` captions, tooltips, search/export/status dialogs, and history status text onto workbook-backed localization keys without relying on English-only status parsing.

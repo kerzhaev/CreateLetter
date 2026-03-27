@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.10 — 27.03.2026
+' Version: 1.6.11 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.10
+'                    SCHEMA CONSTANTS v1.6.11
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -681,10 +681,29 @@ End Function
 
 Public Function BuildLetterReturnStatus(isReceived As Boolean, returnDateText As String) As String
     If isReceived Then
-        BuildLetterReturnStatus = Format(ResolveLetterDateOrToday(returnDateText), "dd.mm.yyyy") & " received"
+        BuildLetterReturnStatus = Format(ResolveLetterDateOrToday(returnDateText), "dd.mm.yyyy") & T("history.status.received_suffix", " received")
     Else
-        BuildLetterReturnStatus = "not received"
+        BuildLetterReturnStatus = T("history.status.not_received", "not received")
     End If
+End Function
+
+Public Function HasReturnStatusDate(returnStatus As String) As Boolean
+    HasReturnStatusDate = (Len(ExtractReturnStatusDate(returnStatus)) > 0)
+End Function
+
+Public Function ExtractReturnStatusDate(returnStatus As String) As String
+    Dim parts() As String
+    Dim index As Long
+
+    ExtractReturnStatusDate = ""
+    parts = Split(returnStatus, " ")
+
+    For index = LBound(parts) To UBound(parts)
+        If IsDate(parts(index)) Then
+            ExtractReturnStatusDate = Format(CDate(parts(index)), "dd.mm.yyyy")
+            Exit Function
+        End If
+    Next index
 End Function
 
 Public Sub UpdateLetterHistoryRow(rowNumber As Long, sumValue As String, returnStatus As String)
@@ -828,10 +847,10 @@ Private Function FormatHistoryDocumentSum(sumText As String) As String
 End Function
 
 Private Function BuildHistoryStatusLabel(returnStatus As String) As String
-    If InStr(UCase$(returnStatus), "RECEIVED") > 0 And InStr(UCase$(returnStatus), "NOT RECEIVED") = 0 Then
-        BuildHistoryStatusLabel = "Received " & returnStatus
+    If HasReturnStatusDate(returnStatus) Then
+        BuildHistoryStatusLabel = T("history.status.received_label", "Received ") & returnStatus
     Else
-        BuildHistoryStatusLabel = "Pending " & returnStatus
+        BuildHistoryStatusLabel = T("history.status.pending_label", "Pending ") & returnStatus
     End If
 End Function
 
@@ -887,7 +906,7 @@ Public Function GetCurrentUserFIO() As String
 End Function
 
 Public Function GetExecutorPhone(executorFIO As String) As String
-    GetExecutorPhone = "Not specified"
+    GetExecutorPhone = T("common.not_specified", "Not specified")
     
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Settings")
@@ -2214,7 +2233,7 @@ Public Sub ShowLetterHistoryModeless()
     If Not existingForm Is Nothing Then
         existingForm.SetFocus
         existingForm.ZOrder 0
-        MsgBox "Letter history form is already open!", vbInformation
+        MsgBox T("form.letter_history.msg.already_open", "Letter history form is already open!"), vbInformation
     Else
         Load frmLetterHistory
         frmLetterHistory.Show vbModeless
@@ -2224,7 +2243,7 @@ Public Sub ShowLetterHistoryModeless()
     Exit Sub
     
 ShowHistoryError:
-    MsgBox "Error opening letter history form: " & Err.description, vbCritical
+    MsgBox T("form.letter_history.msg.open_error", "Error opening letter history form: ") & Err.description, vbCritical
 End Sub
 
 Public Sub ClearAddressHighlight()

@@ -20,3 +20,4 @@
 - When code already contains a workbook-backed fallback path, prefer bootstrapping the corresponding workbook sheet/table through automation instead of hardcoding more defaults in VBA.
 - When a new workbook-backed localization or schema artifact becomes part of the baseline, add an explicit smoke-test flag for it instead of relying on ad-hoc manual checks.
 - Use `scripts/create_restore_point.ps1 -Label "<feature-name>"` for restore points; do not substitute other parameter names.
+- Do not drive business/status logic from localized English literals like `"RECEIVED"`; use neutral helpers or data-derived checks so Russian and English localizations behave the same.
