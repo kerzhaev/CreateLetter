@@ -206,6 +206,21 @@ try {
     }
 
     try {
+        $documentTypeLabel = [string]$excel.Run("'" + $workbook.Name + "'!GetDocumentTypeDisplayLabel", "confirmed_documents")
+        if ([string]::IsNullOrWhiteSpace($documentTypeLabel) -or $documentTypeLabel -eq "confirmed_documents") {
+            Add-Result -Results $results -Name "DocumentTypeDisplay" -Status "FAIL" -Details "Internal document type key leaked instead of a display label."
+            $failed = $true
+        }
+        else {
+            Add-Result -Results $results -Name "DocumentTypeDisplay" -Status "PASS" -Details ("Display label resolved to: " + $documentTypeLabel)
+        }
+    }
+    catch {
+        Add-Result -Results $results -Name "DocumentTypeDisplay" -Status "FAIL" -Details ("Display label lookup failed: " + $_.Exception.Message)
+        $failed = $true
+    }
+
+    try {
         $localizationStats = [string]$excel.Run("'" + $workbook.Name + "'!GetLocalizationStats")
         Add-Result -Results $results -Name "LocalizationModule" -Status "PASS" -Details $localizationStats
 

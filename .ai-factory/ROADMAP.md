@@ -54,3 +54,5 @@ The next bounded feature stages for code quality and maintainability are:
   Separate localized UI labels from persisted internal values for document types, letter types, and Word placeholder identifiers so business logic no longer depends on display text.
 - [x] `pisces/feature-20-entrypoint-identifier-migration`
   Add English-safe public aliases for workbook bootstrap and letter-creator entry points while preserving legacy macro names as compatibility wrappers.
+- [x] `pisces/feature-21-hide-internal-keys-from-user-outputs`
+  Keep internal ASCII keys in workbook storage while converting history search/export surfaces back to localized display labels for operators.

@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterHistory 
-   Caption         =   "Letter History v1.2.3"
+   Caption         =   "Letter History v1.2.4"
    ClientHeight    =   11715
    ClientLeft      =   120
    ClientTop       =   465
@@ -15,11 +15,11 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 ' ======================================================================
-' Form: frmLetterHistory v1.2.3 - Thin-shell history UI with workbook-backed localization
+' Form: frmLetterHistory v1.2.4 - Thin-shell history UI with workbook-backed localization
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Date: 27.03.2026
 ' Purpose: History of sent letters with thin-shell UI, navigation, filtering, status updates, and schema-safe bindings
-' Updates v1.2.3:
+' Updates v1.2.4:
 ' - Moved history captions, tips, dialogs, and search info onto workbook-backed localization keys
 ' - Kept navigation, export, and status update flow aligned with named letter columns
 ' - Preserved Russian/European date formatting and record navigation workflow
@@ -546,7 +546,7 @@ Private Sub btnExportToExcel_Click()
             exportWs.Cells(i + 1, LetterColumnDocumentSum).value = parts(HistoryPartDocumentSum)
             exportWs.Cells(i + 1, LetterColumnReturnStatus).value = parts(HistoryPartReturnStatus)
             exportWs.Cells(i + 1, LetterColumnExecutor).value = parts(HistoryPartExecutor)
-            exportWs.Cells(i + 1, LetterColumnDocumentType).value = parts(HistoryPartDocumentType)
+            exportWs.Cells(i + 1, LetterColumnDocumentType).value = GetDocumentTypeDisplayLabel(parts(HistoryPartDocumentType))
         End If
     Next i
     

@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.15 — 27.03.2026
+' Version: 1.6.16 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.15
+'                    SCHEMA CONSTANTS v1.6.16
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -102,7 +102,7 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    CORE HELPERS v1.6.15
+'                    CORE HELPERS v1.6.16
 ' ======================================================================
 Private g_WordApp As Object
 Private g_WordAppOwned As Boolean
@@ -863,6 +863,13 @@ Private Function LetterHistoryRecordMatches(letterData As String, searchText As 
             If InStr(1, UCase$(parts(j)), searchPattern, vbTextCompare) > 0 Then
                 LetterHistoryRecordMatches = True
                 Exit Function
+            End If
+            
+            If j = HistoryPartDocumentType Then
+                If InStr(1, UCase$(GetDocumentTypeDisplayLabel(parts(j))), searchPattern, vbTextCompare) > 0 Then
+                    LetterHistoryRecordMatches = True
+                    Exit Function
+                End If
             End If
         End If
     Next j
