@@ -9,6 +9,9 @@ param(
     [switch]$RequireStructuredTables,
 
     [Parameter(Mandatory = $false)]
+    [switch]$RequireLocalizationSheet,
+
+    [Parameter(Mandatory = $false)]
     [switch]$AllowLegacyRussianSheetNames
 )
 
@@ -96,6 +99,13 @@ try {
         $requiredSheets[0].Variants += "Адреса"
         $requiredSheets[1].Variants += "Письма"
         $requiredSheets[2].Variants += "Настройки"
+    }
+
+    if ($RequireLocalizationSheet) {
+        $requiredSheets += @{
+            LogicalName = "Localization"
+            Variants = @("Localization")
+        }
     }
 
     foreach ($sheetRequirement in $requiredSheets) {

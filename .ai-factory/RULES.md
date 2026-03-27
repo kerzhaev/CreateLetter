@@ -18,3 +18,4 @@
 - Workbook schema changes must be performed through a repeatable local script or explicit COM automation step, then verified automatically before asking the user to inspect anything.
 - If a feature changes workbook structure, extend the smoke harness to assert the new structure so the same regression is caught automatically next time.
 - When code already contains a workbook-backed fallback path, prefer bootstrapping the corresponding workbook sheet/table through automation instead of hardcoding more defaults in VBA.
+- When a new workbook-backed localization or schema artifact becomes part of the baseline, add an explicit smoke-test flag for it instead of relying on ad-hoc manual checks.
