@@ -21,3 +21,18 @@
 - Every stage starts with a restore point.
 - No stage is merged until it passes the manual Excel smoke test and `$aif-verify`.
 - If UTF-8/source-management becomes unstable, later migration stages stop until that baseline is fixed.
+
+## AIF Refactor Subplan
+
+The next bounded feature stages for code quality and maintainability are:
+
+- [x] `pisces/feature-7-schema-enums-and-columns`
+  Introduce shared enums/constants for `Addresses`, `Letters`, `Settings`, and array-based record parts so creator/history logic stops depending on raw numeric indexes.
+- [ ] `pisces/feature-8-array-based-excel-repositories`
+  Move address/history/settings reads toward in-memory `Variant` arrays to reduce worksheet roundtrips and prepare faster search/filter paths.
+- [ ] `pisces/feature-9-targeted-error-handling-pass`
+  Replace risky `On Error Resume Next` in workbook/Word/export flows with targeted handlers while leaving harmless UI-formatting fallbacks lightweight.
+- [ ] `pisces/feature-10-word-app-singleton`
+  Reuse one `Word.Application` instance per session instead of repeatedly creating/attaching per letter generation call.
+- [ ] `pisces/feature-11-listobjects-migration-readiness`
+  Introduce helpers/accessors for `tblAddresses` and `tblLetters`, then gradually move CRUD/search/history flows onto `ListObjects`.

@@ -3,13 +3,90 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.4 — 26.03.2026
+' Version: 1.6.5 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.4
+'                    SCHEMA CONSTANTS v1.6.5
+' ======================================================================
+Public Const FIRST_DATA_ROW As Long = 2
+Private Const TextTableColumnBody As Long = 1
+Private Const TextTableRowOwnForConfirmation As Long = 1
+Private Const TextTableRowConfirmedDocuments As Long = 2
+
+Public Enum AddressColumns
+    AddressColumnAddressee = 1
+    AddressColumnStreet = 2
+    AddressColumnCity = 3
+    AddressColumnDistrict = 4
+    AddressColumnRegion = 5
+    AddressColumnPostalCode = 6
+    AddressColumnPhone = 7
+End Enum
+
+Public Enum LetterColumns
+    LetterColumnAddressee = 1
+    LetterColumnOutgoingNumber = 2
+    LetterColumnOutgoingDate = 3
+    LetterColumnAttachmentText = 4
+    LetterColumnDocumentSum = 5
+    LetterColumnReturnStatus = 6
+    LetterColumnExecutor = 7
+    LetterColumnDocumentType = 8
+End Enum
+
+Public Enum SettingsColumns
+    SettingsColumnAttachmentName = 1
+    SettingsColumnExecutorName = 3
+    SettingsColumnExecutorPhone = 4
+End Enum
+
+Public Enum AddressArrayIndexes
+    AddressIndexAddressee = 0
+    AddressIndexStreet = 1
+    AddressIndexCity = 2
+    AddressIndexDistrict = 3
+    AddressIndexRegion = 4
+    AddressIndexPostalCode = 5
+    AddressIndexPhone = 6
+End Enum
+
+Public Enum AddressListPartIndexes
+    AddressPartAddressee = 0
+    AddressPartStreet = 1
+    AddressPartCity = 2
+    AddressPartDistrict = 3
+    AddressPartRegion = 4
+    AddressPartPostalCode = 5
+    AddressPartPhone = 6
+    AddressPartRowNumber = 7
+End Enum
+
+Public Enum DocumentArrayIndexes
+    DocumentIndexName = 0
+    DocumentIndexNumber = 1
+    DocumentIndexDate = 2
+    DocumentIndexCopies = 3
+    DocumentIndexSheets = 4
+    DocumentIndexSum = 5
+End Enum
+
+Public Enum LetterHistoryPartIndexes
+    HistoryPartAddressee = 0
+    HistoryPartOutgoingNumber = 1
+    HistoryPartOutgoingDate = 2
+    HistoryPartAttachmentText = 3
+    HistoryPartDocumentSum = 4
+    HistoryPartReturnStatus = 5
+    HistoryPartExecutor = 6
+    HistoryPartDocumentType = 7
+    HistoryPartRowNumber = 8
+End Enum
+
+' ======================================================================
+'                    NEW FUNCTIONS v1.6.5
 ' ======================================================================
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
@@ -216,24 +293,24 @@ End Function
 '                    DOCUMENT FUNCTIONS
 ' ======================================================================
 Public Function CreateDocumentArray(docName As String, docNumber As String, docDate As String, docCopies As String, docSheets As String) As Variant
-    Dim docArray(4) As String
-    docArray(0) = Trim(docName)
-    docArray(1) = Trim(docNumber)
-    docArray(2) = Trim(docDate)
-    docArray(3) = Trim(docCopies)
-    docArray(4) = Trim(docSheets)
+    Dim docArray(DocumentIndexSheets) As String
+    docArray(DocumentIndexName) = Trim(docName)
+    docArray(DocumentIndexNumber) = Trim(docNumber)
+    docArray(DocumentIndexDate) = Trim(docDate)
+    docArray(DocumentIndexCopies) = Trim(docCopies)
+    docArray(DocumentIndexSheets) = Trim(docSheets)
     
     CreateDocumentArray = docArray
 End Function
 
 Public Function CreateDocumentArrayWithSum(docName As String, docNumber As String, docDate As String, docCopies As String, docSheets As String, docSum As String) As Variant
-    Dim docArray(5) As String
-    docArray(0) = Trim(docName)
-    docArray(1) = Trim(docNumber)
-    docArray(2) = Trim(docDate)
-    docArray(3) = Trim(docCopies)
-    docArray(4) = Trim(docSheets)
-    docArray(5) = Trim(docSum)
+    Dim docArray(DocumentIndexSum) As String
+    docArray(DocumentIndexName) = Trim(docName)
+    docArray(DocumentIndexNumber) = Trim(docNumber)
+    docArray(DocumentIndexDate) = Trim(docDate)
+    docArray(DocumentIndexCopies) = Trim(docCopies)
+    docArray(DocumentIndexSheets) = Trim(docSheets)
+    docArray(DocumentIndexSum) = Trim(docSum)
     
     CreateDocumentArrayWithSum = docArray
 End Function
@@ -245,33 +322,33 @@ Public Function FormatDocumentName(docArray As Variant) As String
     End If
     
     Dim result As String
-    result = docArray(0)
+    result = docArray(DocumentIndexName)
     
     result = result & " No."
-    If Len(Trim(docArray(1))) > 0 Then
-        result = result & docArray(1)
+    If Len(Trim(docArray(DocumentIndexNumber))) > 0 Then
+        result = result & docArray(DocumentIndexNumber)
     Else
         result = result & "    "
     End If
     
     result = result & " dated "
-    If Len(Trim(docArray(2))) > 0 Then
-        result = result & docArray(2)
+    If Len(Trim(docArray(DocumentIndexDate))) > 0 Then
+        result = result & docArray(DocumentIndexDate)
     Else
         result = result & "        "
     End If
     
     result = result & " ("
     
-    If Len(Trim(docArray(3))) > 0 Then
-        result = result & docArray(3) & " copies"
+    If Len(Trim(docArray(DocumentIndexCopies))) > 0 Then
+        result = result & docArray(DocumentIndexCopies) & " copies"
     Else
         result = result & "  copies"
     End If
     
     result = result & ", "
-    If Len(Trim(docArray(4))) > 0 Then
-        result = result & docArray(4) & " sheets"
+    If Len(Trim(docArray(DocumentIndexSheets))) > 0 Then
+        result = result & docArray(DocumentIndexSheets) & " sheets"
     Else
         result = result & "   sheets"
     End If
@@ -293,28 +370,28 @@ Public Function SearchAddresses(searchTerm As String) As Collection
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
     Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, 1).End(xlUp).Row
+    lastRow = ws.Cells(ws.Rows.count, AddressColumnAddressee).End(xlUp).Row
     
     Dim i As Long
-    For i = 2 To lastRow
+    For i = FIRST_DATA_ROW To lastRow
         Dim searchLine As String
-        searchLine = ws.Cells(i, 1).Value & " " & _
-                     ws.Cells(i, 2).Value & " " & _
-                     ws.Cells(i, 3).Value & " " & _
-                     ws.Cells(i, 4).Value & " " & _
-                     ws.Cells(i, 5).Value & " " & _
-                     ws.Cells(i, 6).Value & " " & _
-                     ws.Cells(i, 7).Value
+        searchLine = ws.Cells(i, AddressColumnAddressee).Value & " " & _
+                     ws.Cells(i, AddressColumnStreet).Value & " " & _
+                     ws.Cells(i, AddressColumnCity).Value & " " & _
+                     ws.Cells(i, AddressColumnDistrict).Value & " " & _
+                     ws.Cells(i, AddressColumnRegion).Value & " " & _
+                     ws.Cells(i, AddressColumnPostalCode).Value & " " & _
+                     ws.Cells(i, AddressColumnPhone).Value
         
         If InStr(1, UCase(searchLine), UCase(searchTerm)) > 0 Then
             Dim fullAddress As String
-            fullAddress = ws.Cells(i, 1).Value & " | " & _
-                          ws.Cells(i, 2).Value & " | " & _
-                          ws.Cells(i, 3).Value & " | " & _
-                          ws.Cells(i, 4).Value & " | " & _
-                          ws.Cells(i, 5).Value & " | " & _
-                          ws.Cells(i, 6).Value & " | " & _
-                          ws.Cells(i, 7).Value & " | " & i
+            fullAddress = ws.Cells(i, AddressColumnAddressee).Value & " | " & _
+                          ws.Cells(i, AddressColumnStreet).Value & " | " & _
+                          ws.Cells(i, AddressColumnCity).Value & " | " & _
+                          ws.Cells(i, AddressColumnDistrict).Value & " | " & _
+                          ws.Cells(i, AddressColumnRegion).Value & " | " & _
+                          ws.Cells(i, AddressColumnPostalCode).Value & " | " & _
+                          ws.Cells(i, AddressColumnPhone).Value & " | " & i
             SearchAddresses.Add fullAddress
         End If
     Next i
@@ -341,12 +418,12 @@ Public Function TryParseAddressListItem(addressItem As String, ByRef addressPart
         Exit Function
     End If
     
-    If Not IsNumeric(addressParts(7)) Then
+    If Not IsNumeric(addressParts(AddressPartRowNumber)) Then
         errorMessage = "Address row reference is invalid."
         Exit Function
     End If
     
-    rowNumber = CLng(addressParts(7))
+    rowNumber = CLng(addressParts(AddressPartRowNumber))
     TryParseAddressListItem = True
 End Function
 
@@ -399,11 +476,11 @@ Public Function LoadLetterHistoryData() As Collection
     Set ws = ThisWorkbook.Worksheets("Letters")
     
     Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, "A").End(xlUp).Row
-    If lastRow < 2 Then Exit Function
+    lastRow = ws.Cells(ws.Rows.count, LetterColumnAddressee).End(xlUp).Row
+    If lastRow < FIRST_DATA_ROW Then Exit Function
     
     Dim i As Long
-    For i = 2 To lastRow
+    For i = FIRST_DATA_ROW To lastRow
         LoadLetterHistoryData.Add BuildLetterHistoryRecord(ws, i)
     Next i
     
@@ -436,38 +513,38 @@ Public Function FormatLetterHistoryDisplay(letterData As String) As String
     Dim parts() As String
     parts = Split(letterData, "|")
     
-    If UBound(parts) < 8 Then
+    If UBound(parts) < HistoryPartRowNumber Then
         FormatLetterHistoryDisplay = letterData
         Exit Function
     End If
     
     Dim formattedDate As String
-    formattedDate = FormatHistoryDateForDisplay(parts(2))
+    formattedDate = FormatHistoryDateForDisplay(parts(HistoryPartOutgoingDate))
     
     Dim formattedSum As String
-    formattedSum = FormatHistoryDocumentSum(parts(4))
+    formattedSum = FormatHistoryDocumentSum(parts(HistoryPartDocumentSum))
     
     Dim statusText As String
-    statusText = BuildHistoryStatusLabel(parts(5))
+    statusText = BuildHistoryStatusLabel(parts(HistoryPartReturnStatus))
     
     Dim addressee As String
     Dim attachments As String
-    addressee = Left(parts(0), 25) & IIf(Len(parts(0)) > 25, "...", "")
-    attachments = Left(parts(3), 30) & IIf(Len(parts(3)) > 30, "...", "")
+    addressee = Left(parts(HistoryPartAddressee), 25) & IIf(Len(parts(HistoryPartAddressee)) > 25, "...", "")
+    attachments = Left(parts(HistoryPartAttachmentText), 30) & IIf(Len(parts(HistoryPartAttachmentText)) > 30, "...", "")
     
     FormatLetterHistoryDisplay = addressee & " | " & _
-                                 parts(1) & " | " & _
+                                 parts(HistoryPartOutgoingNumber) & " | " & _
                                  formattedDate & " | " & _
                                  attachments & " | " & _
                                  formattedSum & " | " & _
                                  statusText & " | " & _
-                                 parts(6) & " | " & _
-                                 parts(7)
+                                 parts(HistoryPartExecutor) & " | " & _
+                                 parts(HistoryPartDocumentType)
 End Function
 
 Public Function TryParseLetterHistoryRecord(letterData As String, ByRef parts As Variant) As Boolean
     parts = Split(letterData, "|")
-    TryParseLetterHistoryRecord = (UBound(parts) >= 8)
+    TryParseLetterHistoryRecord = (UBound(parts) >= HistoryPartRowNumber)
 End Function
 
 Public Function BuildLetterReturnStatus(isReceived As Boolean, returnDateText As String) As String
@@ -485,14 +562,14 @@ Public Sub UpdateLetterHistoryRow(rowNumber As Long, sumValue As String, returnS
     Set ws = ThisWorkbook.Worksheets("Letters")
     
     If Len(Trim(sumValue)) = 0 Then
-        ws.Cells(rowNumber, 5).Value = ""
+        ws.Cells(rowNumber, LetterColumnDocumentSum).Value = ""
     ElseIf IsNumeric(sumValue) Then
-        ws.Cells(rowNumber, 5).Value = CDbl(sumValue)
+        ws.Cells(rowNumber, LetterColumnDocumentSum).Value = CDbl(sumValue)
     Else
-        ws.Cells(rowNumber, 5).Value = sumValue
+        ws.Cells(rowNumber, LetterColumnDocumentSum).Value = sumValue
     End If
     
-    ws.Cells(rowNumber, 6).Value = returnStatus
+    ws.Cells(rowNumber, LetterColumnReturnStatus).Value = returnStatus
     Exit Sub
     
 UpdateError:
@@ -500,14 +577,14 @@ UpdateError:
 End Sub
 
 Private Function BuildLetterHistoryRecord(ws As Worksheet, rowNumber As Long) As String
-    BuildLetterHistoryRecord = GetHistoryCellValueSafe(ws, rowNumber, 1) & "|" & _
-                               GetHistoryCellValueSafe(ws, rowNumber, 2) & "|" & _
-                               GetHistoryCellValueSafe(ws, rowNumber, 3) & "|" & _
-                               GetHistoryCellValueSafe(ws, rowNumber, 4) & "|" & _
-                               GetHistoryCellValueSafe(ws, rowNumber, 5) & "|" & _
-                               GetHistoryCellValueSafe(ws, rowNumber, 6) & "|" & _
-                               GetHistoryCellValueSafe(ws, rowNumber, 7) & "|" & _
-                               GetHistoryCellValueSafe(ws, rowNumber, 8) & "|" & _
+    BuildLetterHistoryRecord = GetHistoryCellValueSafe(ws, rowNumber, LetterColumnAddressee) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, LetterColumnOutgoingNumber) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, LetterColumnOutgoingDate) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, LetterColumnAttachmentText) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, LetterColumnDocumentSum) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, LetterColumnReturnStatus) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, LetterColumnExecutor) & "|" & _
+                               GetHistoryCellValueSafe(ws, rowNumber, LetterColumnDocumentType) & "|" & _
                                CStr(rowNumber)
 End Function
 
@@ -519,8 +596,8 @@ Private Function LetterHistoryRecordMatches(letterData As String, searchText As 
     searchPattern = UCase$(Trim$(searchText))
     
     Dim j As Long
-    For j = 0 To UBound(parts) - 1
-        If j = 4 Then
+    For j = LBound(parts) To HistoryPartDocumentType
+        If j = HistoryPartDocumentSum Then
             If IsNumeric(searchPattern) Then
                 If IsHistoryNumericMatch(parts(j), searchPattern) Then
                     LetterHistoryRecordMatches = True
@@ -575,7 +652,7 @@ Private Function GetHistoryCellValueSafe(ws As Worksheet, rowNumber As Long, col
     Dim cellValue As Variant
     cellValue = ws.Cells(rowNumber, columnNumber).Value
     
-    If columnNumber = 5 Then
+    If columnNumber = LetterColumnDocumentSum Then
         If IsNumeric(cellValue) And cellValue <> 0 Then
             If cellValue = Int(cellValue) Then
                 GetHistoryCellValueSafe = CStr(CLng(cellValue))
@@ -633,12 +710,12 @@ Public Function SearchAttachments(searchTerm As String) As Collection
     Set ws = ThisWorkbook.Worksheets("Settings")
     
     Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, 1).End(xlUp).Row
+    lastRow = ws.Cells(ws.Rows.count, SettingsColumnAttachmentName).End(xlUp).Row
     
     Dim i As Long
-    For i = 2 To lastRow
-        If Len(Trim(ws.Cells(i, 1).Value)) > 0 And InStr(1, UCase(ws.Cells(i, 1).Value), UCase(searchTerm)) > 0 Then
-            SearchAttachments.Add ws.Cells(i, 1).Value
+    For i = FIRST_DATA_ROW To lastRow
+        If Len(Trim(ws.Cells(i, SettingsColumnAttachmentName).Value)) > 0 And InStr(1, UCase(ws.Cells(i, SettingsColumnAttachmentName).Value), UCase(searchTerm)) > 0 Then
+            SearchAttachments.Add ws.Cells(i, SettingsColumnAttachmentName).Value
         End If
     Next i
 End Function
@@ -653,12 +730,12 @@ Public Function GetExecutorsList() As Collection
     Set ws = ThisWorkbook.Worksheets("Settings")
     
     Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, 3).End(xlUp).Row
+    lastRow = ws.Cells(ws.Rows.count, SettingsColumnExecutorName).End(xlUp).Row
     
     Dim i As Long
-    For i = 2 To lastRow
-        If Len(Trim(ws.Cells(i, 3).Value)) > 0 Then
-            GetExecutorsList.Add ws.Cells(i, 3).Value
+    For i = FIRST_DATA_ROW To lastRow
+        If Len(Trim(ws.Cells(i, SettingsColumnExecutorName).Value)) > 0 Then
+            GetExecutorsList.Add ws.Cells(i, SettingsColumnExecutorName).Value
         End If
     Next i
 End Function
@@ -677,17 +754,39 @@ Public Function GetExecutorPhone(executorFIO As String) As String
     Set ws = ThisWorkbook.Worksheets("Settings")
     
     Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, 3).End(xlUp).Row
+    lastRow = ws.Cells(ws.Rows.count, SettingsColumnExecutorName).End(xlUp).Row
     
     Dim i As Long
-    For i = 2 To lastRow
-        If ws.Cells(i, 3).Value = executorFIO Then
-            If Len(Trim(ws.Cells(i, 4).Value)) > 0 Then
-                GetExecutorPhone = ws.Cells(i, 4).Value
+    For i = FIRST_DATA_ROW To lastRow
+        If ws.Cells(i, SettingsColumnExecutorName).Value = executorFIO Then
+            If Len(Trim(ws.Cells(i, SettingsColumnExecutorPhone).Value)) > 0 Then
+                GetExecutorPhone = ws.Cells(i, SettingsColumnExecutorPhone).Value
             End If
             Exit Function
         End If
     Next i
+End Function
+
+Private Sub WriteAddressRow(ws As Worksheet, rowNumber As Long, addressArray As Variant)
+    ws.Cells(rowNumber, AddressColumnAddressee).Value = addressArray(AddressIndexAddressee)
+    ws.Cells(rowNumber, AddressColumnStreet).Value = addressArray(AddressIndexStreet)
+    ws.Cells(rowNumber, AddressColumnCity).Value = addressArray(AddressIndexCity)
+    ws.Cells(rowNumber, AddressColumnDistrict).Value = addressArray(AddressIndexDistrict)
+    ws.Cells(rowNumber, AddressColumnRegion).Value = addressArray(AddressIndexRegion)
+    ws.Cells(rowNumber, AddressColumnPostalCode).Value = addressArray(AddressIndexPostalCode)
+    ws.Cells(rowNumber, AddressColumnPhone).Value = FormatPhoneNumber(CStr(addressArray(AddressIndexPhone)))
+End Sub
+
+Private Function AddressColumnFromIndex(addressIndex As AddressArrayIndexes) As AddressColumns
+    Select Case addressIndex
+        Case AddressIndexAddressee: AddressColumnFromIndex = AddressColumnAddressee
+        Case AddressIndexStreet: AddressColumnFromIndex = AddressColumnStreet
+        Case AddressIndexCity: AddressColumnFromIndex = AddressColumnCity
+        Case AddressIndexDistrict: AddressColumnFromIndex = AddressColumnDistrict
+        Case AddressIndexRegion: AddressColumnFromIndex = AddressColumnRegion
+        Case AddressIndexPostalCode: AddressColumnFromIndex = AddressColumnPostalCode
+        Case Else: AddressColumnFromIndex = AddressColumnPhone
+    End Select
 End Function
 
 ' ======================================================================
@@ -700,16 +799,8 @@ Public Sub SaveNewAddress(addressArray As Variant)
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
     Dim newRow As Long
-    newRow = ws.Cells(ws.Rows.count, 1).End(xlUp).Row + 1
-    
-    Dim i As Long
-    For i = 0 To UBound(addressArray)
-        If i = 6 Then
-            ws.Cells(newRow, i + 1).Value = FormatPhoneNumber(CStr(addressArray(i)))
-        Else
-            ws.Cells(newRow, i + 1).Value = addressArray(i)
-        End If
-    Next i
+    newRow = ws.Cells(ws.Rows.count, AddressColumnAddressee).End(xlUp).Row + 1
+    WriteAddressRow ws, newRow, addressArray
     
     Exit Sub
     
@@ -723,14 +814,7 @@ Public Sub UpdateExistingAddress(rowNumber As Long, addressArray As Variant)
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
-    Dim i As Long
-    For i = 0 To UBound(addressArray)
-        If i = 6 Then
-            ws.Cells(rowNumber, i + 1).Value = FormatPhoneNumber(CStr(addressArray(i)))
-        Else
-            ws.Cells(rowNumber, i + 1).Value = addressArray(i)
-        End If
-    Next i
+    WriteAddressRow ws, rowNumber, addressArray
     
     Exit Sub
     
@@ -761,17 +845,17 @@ Public Function IsAddressDuplicate(addressArray As Variant, Optional excludeRow 
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
     Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.count, 1).End(xlUp).Row
+    lastRow = ws.Cells(ws.Rows.count, AddressColumnAddressee).End(xlUp).Row
     
     Dim i As Long, matchCount As Integer
-    For i = 2 To lastRow
+    For i = FIRST_DATA_ROW To lastRow
         If i = excludeRow Then GoTo NextRow
         
         matchCount = 0
         
-        If UCase(Trim(ws.Cells(i, 1).Value)) = UCase(Trim(addressArray(0))) Then matchCount = matchCount + 1
-        If UCase(Trim(ws.Cells(i, 3).Value)) = UCase(Trim(addressArray(2))) Then matchCount = matchCount + 1
-        If UCase(Trim(ws.Cells(i, 6).Value)) = UCase(Trim(addressArray(5))) Then matchCount = matchCount + 1
+        If UCase(Trim(ws.Cells(i, AddressColumnAddressee).Value)) = UCase(Trim(addressArray(AddressIndexAddressee))) Then matchCount = matchCount + 1
+        If UCase(Trim(ws.Cells(i, AddressColumnCity).Value)) = UCase(Trim(addressArray(AddressIndexCity))) Then matchCount = matchCount + 1
+        If UCase(Trim(ws.Cells(i, AddressColumnPostalCode).Value)) = UCase(Trim(addressArray(AddressIndexPostalCode))) Then matchCount = matchCount + 1
         
         If matchCount >= 3 Then
             IsAddressDuplicate = True
@@ -822,13 +906,13 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     Set ws = ThisWorkbook.Worksheets("Letters")
     
     Dim newRow As Long
-    newRow = ws.Cells(ws.Rows.count, 1).End(xlUp).Row + 1
+    newRow = ws.Cells(ws.Rows.count, LetterColumnAddressee).End(xlUp).Row + 1
     
     ' DEBUG: Writing basic data
     Debug.Print "=== BEFORE writing basic data ==="
-    ws.Cells(newRow, 1).Value = addressee
-    ws.Cells(newRow, 2).Value = letterNumber
-    ws.Cells(newRow, 3).Value = letterDate
+    ws.Cells(newRow, LetterColumnAddressee).Value = addressee
+    ws.Cells(newRow, LetterColumnOutgoingNumber).Value = letterNumber
+    ws.Cells(newRow, LetterColumnOutgoingDate).Value = letterDate
     Debug.Print "=== AFTER writing basic data ==="
     
     ' DEBUG: Formatting attachments
@@ -842,7 +926,7 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     ' DEBUG: Writing to Excel
     Debug.Print "=== BEFORE writing to Excel cell (4) ==="
     On Error Resume Next
-    ws.Cells(newRow, 4).Value = attachmentText
+    ws.Cells(newRow, LetterColumnAttachmentText).Value = attachmentText
     If Err.number <> 0 Then
         Debug.Print "ERROR writing to cell (4): " & Err.description & " (Number: " & Err.number & ")"
         Err.Clear
@@ -860,10 +944,10 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     Debug.Print "=== BEFORE writing sum to cell (5) ==="
     On Error Resume Next
     If totalSum > 0 Then
-        ws.Cells(newRow, 5).Value = totalSum
+        ws.Cells(newRow, LetterColumnDocumentSum).Value = totalSum
         Debug.Print "Written totalSum: " & totalSum
     Else
-        ws.Cells(newRow, 5).Value = ""
+        ws.Cells(newRow, LetterColumnDocumentSum).Value = ""
         Debug.Print "Written empty sum"
     End If
     If Err.number <> 0 Then
@@ -876,9 +960,9 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     ' DEBUG: Writing remaining data
     Debug.Print "=== BEFORE writing remaining cells ==="
     On Error Resume Next
-    ws.Cells(newRow, 6).Value = ""
-    ws.Cells(newRow, 7).Value = executor
-    ws.Cells(newRow, 8).Value = documentType
+    ws.Cells(newRow, LetterColumnReturnStatus).Value = ""
+    ws.Cells(newRow, LetterColumnExecutor).Value = executor
+    ws.Cells(newRow, LetterColumnDocumentType).Value = documentType
     If Err.number <> 0 Then
         Debug.Print "ERROR writing remaining cells: " & Err.description & " (Number: " & Err.number & ")"
         Err.Clear
@@ -919,7 +1003,7 @@ Public Function FormatAttachmentsListCompactWithSum(documentsList As Collection)
         Dim docArray As Variant
         docArray = documentsList(i)
         
-        If IsArray(docArray) And UBound(docArray) >= 5 Then
+        If IsArray(docArray) And UBound(docArray) >= DocumentIndexSum Then
             Debug.Print "  Calling FormatDocumentNameWithSum"
             Dim docResult As String
             docResult = FormatDocumentNameWithSum(docArray)
@@ -958,33 +1042,33 @@ Public Function FormatDocumentNameWithSum(docArray As Variant) As String
     Next j
     
     Dim result As String
-    result = docArray(0)
+    result = docArray(DocumentIndexName)
     
     result = result & " No."
-    If Len(Trim(docArray(1))) > 0 Then
-        result = result & docArray(1)
+    If Len(Trim(docArray(DocumentIndexNumber))) > 0 Then
+        result = result & docArray(DocumentIndexNumber)
     Else
         result = result & "    "
     End If
     
     result = result & " dated "
-    If Len(Trim(docArray(2))) > 0 Then
-        result = result & docArray(2)
+    If Len(Trim(docArray(DocumentIndexDate))) > 0 Then
+        result = result & docArray(DocumentIndexDate)
     Else
         result = result & "        "
     End If
     
     ' FIXED SUM CHECK
-    If UBound(docArray) >= 5 And Len(Trim(docArray(5))) > 0 Then
-        Debug.Print "Processing sum: '" & docArray(5) & "'"
-        If IsNumeric(docArray(5)) Then
+    If UBound(docArray) >= DocumentIndexSum And Len(Trim(docArray(DocumentIndexSum))) > 0 Then
+        Debug.Print "Processing sum: '" & docArray(DocumentIndexSum) & "'"
+        If IsNumeric(docArray(DocumentIndexSum)) Then
             Dim sumText As String
-            sumText = CStr(CLng(CDbl(docArray(5))))
+            sumText = CStr(CLng(CDbl(docArray(DocumentIndexSum))))
             result = result & " for the amount of " & sumText & " rub."
             Debug.Print "Sum formatted as: " & sumText
         Else
-            result = result & " (" & docArray(5) & ")"
-            Debug.Print "Sum as text: " & docArray(5)
+            result = result & " (" & docArray(DocumentIndexSum) & ")"
+            Debug.Print "Sum as text: " & docArray(DocumentIndexSum)
         End If
     Else
         Debug.Print "No sum found or empty sum"
@@ -992,15 +1076,15 @@ Public Function FormatDocumentNameWithSum(docArray As Variant) As String
     
     result = result & " ("
     
-    If Len(Trim(docArray(3))) > 0 Then
-        result = result & docArray(3) & " copies"
+    If Len(Trim(docArray(DocumentIndexCopies))) > 0 Then
+        result = result & docArray(DocumentIndexCopies) & " copies"
     Else
         result = result & "  copies"
     End If
     
     result = result & ", "
-    If Len(Trim(docArray(4))) > 0 Then
-        result = result & docArray(4) & " sheets"
+    If Len(Trim(docArray(DocumentIndexSheets))) > 0 Then
+        result = result & docArray(DocumentIndexSheets) & " sheets"
     Else
         result = result & "   sheets"
     End If
@@ -1089,15 +1173,15 @@ Public Function DuplicateDocumentArray(sourceItem As Variant) As Variant
     sourceSum = ""
     
     If IsArray(sourceItem) Then
-        If UBound(sourceItem) >= 4 Then
-            sourceName = CStr(sourceItem(0))
-            sourceDate = CStr(sourceItem(2))
-            sourceCopies = CStr(sourceItem(3))
-            sourceSheets = CStr(sourceItem(4))
+        If UBound(sourceItem) >= DocumentIndexSheets Then
+            sourceName = CStr(sourceItem(DocumentIndexName))
+            sourceDate = CStr(sourceItem(DocumentIndexDate))
+            sourceCopies = CStr(sourceItem(DocumentIndexCopies))
+            sourceSheets = CStr(sourceItem(DocumentIndexSheets))
         End If
         
-        If UBound(sourceItem) >= 5 Then
-            sourceSum = CStr(sourceItem(5))
+        If UBound(sourceItem) >= DocumentIndexSum Then
+            sourceSum = CStr(sourceItem(DocumentIndexSum))
         End If
     End If
     
@@ -1333,9 +1417,9 @@ Public Function CalculateTotalDocumentsSum(documents As Collection) As Double
         
         Debug.Print "Checking document " & i & " for sum calculation"
         
-        If IsArray(docArray) And UBound(docArray) >= 5 Then
+        If IsArray(docArray) And UBound(docArray) >= DocumentIndexSum Then
             Dim docSum As String
-            docSum = Trim(CStr(docArray(5)))
+            docSum = Trim(CStr(docArray(DocumentIndexSum)))
             
             Debug.Print "  Document " & i & " sum: '" & docSum & "'"
             Debug.Print "  IsNumeric: " & IsNumeric(docSum)
@@ -1383,7 +1467,7 @@ Public Function FormatRecipientAddress(addressParts As Variant) As String
     Set addressComponents = New Collection
     
     Dim i As Integer
-    For i = 1 To UBound(addressParts)
+    For i = AddressIndexStreet To AddressIndexPhone
         If Len(Trim(CStr(addressParts(i)))) > 0 Then
             addressComponents.Add Trim(CStr(addressParts(i)))
         End If
@@ -1475,15 +1559,17 @@ Public Function HasAddressDataChanged(rowNumber As Long, newAddressArray As Vari
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
     Dim i As Long
-    For i = 0 To UBound(newAddressArray)
+    For i = AddressIndexAddressee To AddressIndexPhone
         Dim sheetValue As String
         Dim formValue As String
+        Dim columnNumber As AddressColumns
         
-        sheetValue = UCase(Trim(CStr(ws.Cells(rowNumber, i + 1).Value)))
+        columnNumber = AddressColumnFromIndex(i)
+        sheetValue = UCase(Trim(CStr(ws.Cells(rowNumber, columnNumber).Value)))
         formValue = UCase(Trim(CStr(newAddressArray(i))))
         
         If sheetValue <> formValue Then
-            Debug.Print "Change in column " & (i + 1) & ": '" & ws.Cells(rowNumber, i + 1).Value & "' -> '" & newAddressArray(i) & "'"
+            Debug.Print "Change in column " & columnNumber & ": '" & ws.Cells(rowNumber, columnNumber).Value & "' -> '" & newAddressArray(i) & "'"
             HasAddressDataChanged = True
             Exit Function
         End If
@@ -1586,9 +1672,9 @@ Public Function GetDocumentTypeText(documentType As String) As String
         If tbl.ListRows.count >= 1 Then
             Dim textResult As String
             If UCase(Trim(documentType)) = "OWN FOR CONFIRMATION" Then
-                textResult = Trim(tbl.DataBodyRange.Cells(1, 1).Value)
-            ElseIf tbl.ListRows.count >= 2 Then
-                textResult = Trim(tbl.DataBodyRange.Cells(2, 1).Value)
+                textResult = Trim(tbl.DataBodyRange.Cells(TextTableRowOwnForConfirmation, TextTableColumnBody).Value)
+            ElseIf tbl.ListRows.count >= TextTableRowConfirmedDocuments Then
+                textResult = Trim(tbl.DataBodyRange.Cells(TextTableRowConfirmedDocuments, TextTableColumnBody).Value)
             End If
             
             If Len(textResult) > 0 Then

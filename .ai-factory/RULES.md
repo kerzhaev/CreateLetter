@@ -14,3 +14,4 @@
 - User-facing Russian text must come from localization data, not from new hardcoded literals in business logic.
 - Do not start the next migration stage until the previous stage passes a manual smoke test in Excel.
 - Every VBA module or form edited during an iteration must have its top header metadata updated: keep the module/form description accurate, bump the visible version number, and refresh the change date.
+- Before asking the user for a manual VBA import, first try synchronizing the workbook automatically through the local COM tooling and run the smoke tests yourself.

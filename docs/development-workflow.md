@@ -50,9 +50,16 @@ This project uses a modified `VbaModuleManager` in **manual mode**.
 
 Developer contract:
 
-1. Import modules into the workbook before testing VBA changes in Excel.
-2. Export modules back to `CreateLetter.xlsm.modules/` after validated changes.
-3. Verify that workbook runtime behavior does not depend on automatic source-management hooks.
+1. Prefer synchronizing modules/forms automatically before asking for manual import:
+
+```powershell
+python .\scripts\sync_vba_from_modules.py .\CreateLetter.xlsm .\CreateLetter.xlsm.modules
+```
+
+2. If automatic sync fails because of COM/VBProject access or a workbook-specific import edge case, fall back to the manual modified `VbaModuleManager`.
+3. Import modules into the workbook before testing VBA changes in Excel.
+4. Export modules back to `CreateLetter.xlsm.modules/` after validated changes.
+5. Verify that workbook runtime behavior does not depend on automatic source-management hooks.
 
 ## Source of Truth and Encoding Policy
 

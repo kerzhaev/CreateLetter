@@ -14,13 +14,13 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 ' ======================================================================
-' Form: frmLetterHistory v1.2.1 - Thin-shell history UI
+' Form: frmLetterHistory v1.2.2 - Thin-shell history UI
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
-' Date: 26.03.2026
-' Purpose: History of sent letters with thin-shell UI, navigation, filtering, and status updates
-' Updates v1.2.1:
-' - Moved history data loading, filtering, and formatting logic into ModuleMain
-' - Reduced form responsibility to UI binding and control orchestration
+' Date: 27.03.2026
+' Purpose: History of sent letters with thin-shell UI, navigation, filtering, status updates, and schema-safe bindings
+' Updates v1.2.2:
+' - Replaced hardcoded history field indexes with shared ModuleMain enums
+' - Kept navigation, export, and status update flow aligned with named letter columns
 ' - Preserved Russian/European date formatting and record navigation workflow
 ' ======================================================================
 Option Explicit
@@ -45,7 +45,7 @@ Private Sub UserForm_Initialize()
     ShowAllLettersOnInit
     InitializeControlValues
     
-    Debug.Print "Letter history form initialized v1.2.1 with thin-shell helpers"
+        Debug.Print "Letter history form initialized v1.2.2 with thin-shell helpers"
 End Sub
 
 Private Sub ConfigureDateFieldRussianFormat()
@@ -94,7 +94,7 @@ End Sub
 
 Private Sub ApplyFormSettings()
     With Me
-        .Caption = "Letter History v1.2.1"
+        .Caption = "Letter History v1.2.2"
         .backColor = RGB(250, 250, 250)
     End With
 End Sub
@@ -206,7 +206,7 @@ Private Sub txtHistorySearch_Change()
             Dim parts() As String
             parts = Split(allLettersData(i), "|")
             If UBound(parts) >= 4 Then
-                Debug.Print "Record " & i & ", sum column: '" & parts(4) & "'"
+                Debug.Print "Record " & i & ", sum column: '" & parts(HistoryPartDocumentSum) & "'"
             End If
         Next i
         Debug.Print "=================="
@@ -251,10 +251,10 @@ Private Sub lstLetterHistory_Click()
             On Error Resume Next
             
             If Not txtSumDocument Is Nothing Then
-                txtSumDocument.Value = parts(4)
+                txtSumDocument.Value = parts(HistoryPartDocumentSum)
             End If
             
-            ParseReturnStatus parts(5)
+            ParseReturnStatus parts(HistoryPartReturnStatus)
             
             On Error GoTo 0
         End If
@@ -291,7 +291,7 @@ Private Sub NavigateToSelectedRecord()
         Dim parts() As String
         If TryParseLetterHistoryRecord(letterData, parts) Then
             Dim rowNumber As Long
-            rowNumber = CLng(parts(8))
+            rowNumber = CLng(parts(HistoryPartRowNumber))
             
             ' Getting "Letters" sheet
             Dim ws As Worksheet
@@ -305,7 +305,7 @@ Private Sub NavigateToSelectedRecord()
             ' IMPROVED: Activate Excel and jump to record
             Application.Visible = True
             ws.Activate
-            ws.Cells(rowNumber, 1).Select
+            ws.Cells(rowNumber, LetterColumnAddressee).Select
             
             ' Highlight record row
             With ws.Rows(rowNumber).Interior
@@ -314,7 +314,7 @@ Private Sub NavigateToSelectedRecord()
             End With
             
             ' NEW: Show info in Excel status bar
-            Application.StatusBar = "Selected record: " & parts(0) & " | " & parts(1) & " | " & parts(2)
+            Application.StatusBar = "Selected record: " & parts(HistoryPartAddressee) & " | " & parts(HistoryPartOutgoingNumber) & " | " & parts(HistoryPartOutgoingDate)
             
             ' Remove highlight after 5 seconds
             Application.OnTime Now + TimeValue("00:00:05"), "ClearHighlight"
@@ -455,7 +455,7 @@ Private Sub btnUpdateStatus_Click()
         Dim parts() As String
         If TryParseLetterHistoryRecord(letterData, parts) Then
             Dim rowNumber As Long
-            rowNumber = CLng(parts(8))
+            rowNumber = CLng(parts(HistoryPartRowNumber))
             Dim returnStatus As String
             returnStatus = BuildLetterReturnStatus((Not chkReceived Is Nothing And chkReceived.Value), ControlValueOrDefault("dtpReturnDate"))
             
@@ -512,14 +512,14 @@ Private Sub btnExportToExcel_Click()
     Set exportWs = exportWb.Worksheets(1)
     
     With exportWs
-        .Cells(1, 1).Value = "Addressee"
-        .Cells(1, 2).Value = "Outgoing Number"
-        .Cells(1, 3).Value = "Outgoing Date"
-        .Cells(1, 4).Value = "Attachment Name"
-        .Cells(1, 5).Value = "Document Sum"
-        .Cells(1, 6).Value = "Return Mark"
-        .Cells(1, 7).Value = "Executor Name"
-        .Cells(1, 8).Value = "Send Type"
+        .Cells(1, LetterColumnAddressee).Value = "Addressee"
+        .Cells(1, LetterColumnOutgoingNumber).Value = "Outgoing Number"
+        .Cells(1, LetterColumnOutgoingDate).Value = "Outgoing Date"
+        .Cells(1, LetterColumnAttachmentText).Value = "Attachment Name"
+        .Cells(1, LetterColumnDocumentSum).Value = "Document Sum"
+        .Cells(1, LetterColumnReturnStatus).Value = "Return Mark"
+        .Cells(1, LetterColumnExecutor).Value = "Executor Name"
+        .Cells(1, LetterColumnDocumentType).Value = "Send Type"
         
         With .Range("A1:H1")
             .Font.Bold = True
@@ -536,15 +536,15 @@ Private Sub btnExportToExcel_Click()
         Dim parts() As String
         parts = Split(letterData, "|")
         
-        If UBound(parts) >= 7 Then
-            exportWs.Cells(i + 1, 1).Value = parts(0)
-            exportWs.Cells(i + 1, 2).Value = parts(1)
-            exportWs.Cells(i + 1, 3).Value = parts(2)
-            exportWs.Cells(i + 1, 4).Value = parts(3)
-            exportWs.Cells(i + 1, 5).Value = parts(4)
-            exportWs.Cells(i + 1, 6).Value = parts(5)
-            exportWs.Cells(i + 1, 7).Value = parts(6)
-            exportWs.Cells(i + 1, 8).Value = parts(7)
+        If UBound(parts) >= HistoryPartDocumentType Then
+            exportWs.Cells(i + 1, LetterColumnAddressee).Value = parts(HistoryPartAddressee)
+            exportWs.Cells(i + 1, LetterColumnOutgoingNumber).Value = parts(HistoryPartOutgoingNumber)
+            exportWs.Cells(i + 1, LetterColumnOutgoingDate).Value = parts(HistoryPartOutgoingDate)
+            exportWs.Cells(i + 1, LetterColumnAttachmentText).Value = parts(HistoryPartAttachmentText)
+            exportWs.Cells(i + 1, LetterColumnDocumentSum).Value = parts(HistoryPartDocumentSum)
+            exportWs.Cells(i + 1, LetterColumnReturnStatus).Value = parts(HistoryPartReturnStatus)
+            exportWs.Cells(i + 1, LetterColumnExecutor).Value = parts(HistoryPartExecutor)
+            exportWs.Cells(i + 1, LetterColumnDocumentType).Value = parts(HistoryPartDocumentType)
         End If
     Next i
     

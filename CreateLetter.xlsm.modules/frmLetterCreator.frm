@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-   Caption         =   "Letter Builder v1.6.3"
+   Caption         =   "Letter Builder v1.6.4"
    ClientHeight    =   10155
    ClientLeft      =   120
    ClientTop       =   465
@@ -14,10 +14,10 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.3 - Thin-shell MultiPage wizard for letter creation
-' Version : 1.6.3 - 26.03.2026
+' Form    : frmLetterCreator v1.6.4 - Thin-shell MultiPage wizard for letter creation
+' Version : 1.6.4 - 27.03.2026
 ' Author  : Kerzhaev Evgeniy, FKU "95 FES" MO RF
-' Purpose : UI orchestration for letter creation, address entry, attachments, and summary flow
+' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
 ' ======================================================================
 
 Option Explicit
@@ -305,7 +305,7 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = "Letter Builder v1.6.3"
+    Me.Caption = "Letter Builder v1.6.4"
     
     On Error Resume Next
     
@@ -889,15 +889,15 @@ Public Sub EditDocumentRequisites()
         docArray = documentsList.item(contextMenuSelectedIndex + 1)
         
         If IsArray(docArray) Then
-            If UBound(docArray) >= 4 Then
-                txtDocNumber.Value = docArray(1)
-                txtDocDate.Value = docArray(2)
-                txtDocCopies.Value = docArray(3)
-                txtDocSheets.Value = docArray(4)
+            If UBound(docArray) >= DocumentIndexSheets Then
+                txtDocNumber.Value = docArray(DocumentIndexNumber)
+                txtDocDate.Value = docArray(DocumentIndexDate)
+                txtDocCopies.Value = docArray(DocumentIndexCopies)
+                txtDocSheets.Value = docArray(DocumentIndexSheets)
             End If
             
-            If UBound(docArray) >= 5 And Not txtDocumentSum Is Nothing Then
-                txtDocumentSum.Value = docArray(5)
+            If UBound(docArray) >= DocumentIndexSum And Not txtDocumentSum Is Nothing Then
+                txtDocumentSum.Value = docArray(DocumentIndexSum)
             End If
         End If
     End If
@@ -1055,29 +1055,29 @@ End Function
 '  AUXILIARY FUNCTIONS FOR ADDRESS
 '=====================================================================
 Private Function CreateAddressArray() As Variant
-    Dim arr(6) As String
+    Dim arr(AddressIndexPhone) As String
     
     On Error Resume Next
-    arr(0) = Me.Controls("txtAddressee").Value
-    arr(1) = Me.Controls("txtStreet").Value
-    arr(2) = Me.Controls("txtCity").Value
-    arr(3) = Me.Controls("txtDistrict").Value
-    arr(4) = Me.Controls("txtRegion").Value
-    arr(5) = Me.Controls("txtPostalCode").Value
-    arr(6) = Me.Controls("txtAddresseePhone").Value
+    arr(AddressIndexAddressee) = Me.Controls("txtAddressee").Value
+    arr(AddressIndexStreet) = Me.Controls("txtStreet").Value
+    arr(AddressIndexCity) = Me.Controls("txtCity").Value
+    arr(AddressIndexDistrict) = Me.Controls("txtDistrict").Value
+    arr(AddressIndexRegion) = Me.Controls("txtRegion").Value
+    arr(AddressIndexPostalCode) = Me.Controls("txtPostalCode").Value
+    arr(AddressIndexPhone) = Me.Controls("txtAddresseePhone").Value
     On Error GoTo 0
     
     CreateAddressArray = arr
 End Function
 
 Private Sub ApplyAddressPartsToControls(addressParts As Variant)
-    Me.Controls("txtAddressee").Value = addressParts(0)
-    Me.Controls("txtStreet").Value = addressParts(1)
-    Me.Controls("txtCity").Value = addressParts(2)
-    Me.Controls("txtDistrict").Value = addressParts(3)
-    Me.Controls("txtRegion").Value = addressParts(4)
-    Me.Controls("txtPostalCode").Value = addressParts(5)
-    Me.Controls("txtAddresseePhone").Value = addressParts(6)
+    Me.Controls("txtAddressee").Value = addressParts(AddressPartAddressee)
+    Me.Controls("txtStreet").Value = addressParts(AddressPartStreet)
+    Me.Controls("txtCity").Value = addressParts(AddressPartCity)
+    Me.Controls("txtDistrict").Value = addressParts(AddressPartDistrict)
+    Me.Controls("txtRegion").Value = addressParts(AddressPartRegion)
+    Me.Controls("txtPostalCode").Value = addressParts(AddressPartPostalCode)
+    Me.Controls("txtAddresseePhone").Value = addressParts(AddressPartPhone)
 End Sub
 
 Private Function GetControlText(controlName As String) As String
