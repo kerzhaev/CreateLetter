@@ -58,3 +58,5 @@ The next bounded feature stages for code quality and maintainability are:
   Keep internal ASCII keys in workbook storage while converting history search/export surfaces back to localized display labels for operators.
 - [x] `pisces/feature-22-history-output-refactor`
   Move history export and search-hint output workflows from `frmLetterHistory` into `ModuleMain` so the form remains a thin orchestration shell.
+- [x] `pisces/feature-23-creator-summary-and-menu-refactor`
+  Move creator progress/counter captions and document-action menu text assembly into `ModuleMain` so `frmLetterCreator` keeps only UI wiring.

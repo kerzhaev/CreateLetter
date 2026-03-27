@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.17 — 27.03.2026
+' Version: 1.6.18 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.17
+'                    SCHEMA CONSTANTS v1.6.18
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -102,7 +102,7 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    CORE HELPERS v1.6.17
+'                    CORE HELPERS v1.6.18
 ' ======================================================================
 Private g_WordApp As Object
 Private g_WordAppOwned As Boolean
@@ -1481,6 +1481,27 @@ Public Function BuildSummaryAttachmentsText(documentsList As Collection) As Stri
     Next i
     
     BuildSummaryAttachmentsText = attachmentText
+End Function
+
+Public Function BuildCreatorProgressCaption(currentStep As Long, totalPages As Long) As String
+    BuildCreatorProgressCaption = t("form.letter_creator.progress.page", "Step") & " " & currentStep & " " & t("common.of", "of") & " " & totalPages
+End Function
+
+Public Function BuildCreatorSelectedDocumentsCaption(documentCount As Long) As String
+    BuildCreatorSelectedDocumentsCaption = t("form.letter_creator.attachments_count", "Selected documents:") & " " & documentCount
+End Function
+
+Public Function GetDocumentActionsMenuPrompt() As String
+    GetDocumentActionsMenuPrompt = t("form.letter_creator.menu.document_actions_prompt", "Select action:") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.edit", "1 - Edit details") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.duplicate", "2 - Duplicate document") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.remove", "3 - Remove from list") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.move_up", "4 - Move up") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.move_down", "5 - Move down")
+End Function
+
+Public Function GetDocumentActionsMenuTitle() As String
+    GetDocumentActionsMenuTitle = t("form.letter_creator.menu.document_actions_title", "Document actions")
 End Function
 
 Public Function GetDocumentDisplayItems(documentsList As Collection) As Collection

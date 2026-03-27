@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-   Caption         =   "Letter Builder v1.6.7"
+   Caption         =   "Letter Builder v1.6.8"
    ClientHeight    =   10155
    ClientLeft      =   120
    ClientTop       =   465
@@ -15,8 +15,8 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.7 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
-' Version : 1.6.7 - 27.03.2026
+' Form    : frmLetterCreator v1.6.8 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
+' Version : 1.6.8 - 27.03.2026
 ' Author  : Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
 ' ======================================================================
@@ -70,8 +70,8 @@ Private Sub ConfigureDocumentSumField()
 End Sub
 
 Private Sub InitializeProgressInfo()
-    lblProgressInfo.Caption = BuildProgressCaption(1)
-    lblAttachmentsCount.Caption = BuildSelectedDocumentsCaption(0)
+    lblProgressInfo.Caption = BuildCreatorProgressCaption(1, TOTAL_PAGES)
+    lblAttachmentsCount.Caption = BuildCreatorSelectedDocumentsCaption(0)
 End Sub
 
 '------------------------------------------------------------
@@ -295,7 +295,7 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = t("form.letter_creator.title", "Letter Builder") & " v1.6.7"
+    Me.Caption = t("form.letter_creator.title", "Letter Builder") & " v1.6.8"
     
     On Error Resume Next
     
@@ -493,7 +493,7 @@ Private Sub SwitchToPage(pg As Integer)
     If pg < 0 Or pg > TOTAL_PAGES - 1 Then Exit Sub
     
     mpgWizard.value = pg
-    lblProgressInfo.Caption = BuildProgressCaption(pg + 1)
+    lblProgressInfo.Caption = BuildCreatorProgressCaption(pg + 1, TOTAL_PAGES)
     
     btnPrevious.Enabled = (pg > 0)
     
@@ -853,13 +853,7 @@ Private Sub ShowSimpleContextMenu()
     On Error GoTo MenuError
     
     Dim menuChoice As String
-    menuChoice = InputBox(t("form.letter_creator.menu.document_actions_prompt", "Select action:") & vbCrLf & _
-                         t("form.letter_creator.menu.document_action.edit", "1 - Edit details") & vbCrLf & _
-                         t("form.letter_creator.menu.document_action.duplicate", "2 - Duplicate document") & vbCrLf & _
-                         t("form.letter_creator.menu.document_action.remove", "3 - Remove from list") & vbCrLf & _
-                         t("form.letter_creator.menu.document_action.move_up", "4 - Move up") & vbCrLf & _
-                         t("form.letter_creator.menu.document_action.move_down", "5 - Move down"), _
-                         t("form.letter_creator.menu.document_actions_title", "Document actions"), "1")
+    menuChoice = InputBox(GetDocumentActionsMenuPrompt(), GetDocumentActionsMenuTitle(), "1")
     
     Select Case menuChoice
         Case "1": EditDocumentRequisites
@@ -977,7 +971,7 @@ End Sub
 
 Private Sub UpdateSelectedDocumentsCaption()
     If Not lblAttachmentsCount Is Nothing Then
-        lblAttachmentsCount.Caption = BuildSelectedDocumentsCaption(documentsList.count)
+        lblAttachmentsCount.Caption = BuildCreatorSelectedDocumentsCaption(documentsList.count)
     End If
 End Sub
 
@@ -1246,11 +1240,4 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     End If
 End Sub
 
-Private Function BuildProgressCaption(currentStep As Long) As String
-    BuildProgressCaption = t("form.letter_creator.progress.page", "Step") & " " & currentStep & " " & t("common.of", "of") & " " & TOTAL_PAGES
-End Function
-
-Private Function BuildSelectedDocumentsCaption(documentCount As Long) As String
-    BuildSelectedDocumentsCaption = t("form.letter_creator.attachments_count", "Selected documents:") & " " & documentCount
-End Function
 
