@@ -75,6 +75,19 @@ def read_source_text(source_file: Path) -> str:
     return source_file.read_text()
 
 
+def sanitize_module_source(source_text: str) -> str:
+    sanitized_lines: list[str] = []
+
+    for line in source_text.splitlines():
+        # VB attributes belong to exported files, but AddFromString cannot
+        # accept them inside the code pane of an existing component.
+        if line.strip().startswith("Attribute VB_Name ="):
+            continue
+        sanitized_lines.append(line)
+
+    return "\r\n".join(sanitized_lines)
+
+
 def sync_component(project, source_file: Path) -> str:
     component_name = source_file.stem
     existing_component = get_component_by_name(project, component_name)
@@ -91,7 +104,7 @@ def sync_component(project, source_file: Path) -> str:
             code_module = existing_component.CodeModule
             if code_module.CountOfLines > 0:
                 code_module.DeleteLines(1, code_module.CountOfLines)
-            code_module.AddFromString(read_source_text(source_file))
+            code_module.AddFromString(sanitize_module_source(read_source_text(source_file)))
             return existing_component.Name
 
         project.VBComponents.Remove(existing_component)
