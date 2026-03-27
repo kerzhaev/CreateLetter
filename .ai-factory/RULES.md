@@ -22,3 +22,4 @@
 - Use `scripts/create_restore_point.ps1 -Label "<feature-name>"` for restore points; do not substitute other parameter names.
 - Do not drive business/status logic from localized English literals like `"RECEIVED"`; use neutral helpers or data-derived checks so Russian and English localizations behave the same.
 - When localizing a workflow, include fallback document-generation text and runtime `MsgBox` paths in `ModuleMain`, not only form captions/tooltips.
+- Combo-box display labels may be localized, but persisted workbook values and business-logic comparisons must use stable English ASCII internal keys.

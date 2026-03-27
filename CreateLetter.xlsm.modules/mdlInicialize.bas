@@ -42,13 +42,13 @@ Private Sub CreateAddressesSheet()
     
     ' Create headers (CHANGE: added 7th column "Phone")
     With ws
-        .Cells(1, 1).Value = "Recipient Name"
-        .Cells(1, 2).Value = "Street"
-        .Cells(1, 3).Value = "City"
-        .Cells(1, 4).Value = "District"
-        .Cells(1, 5).Value = "Region"
-        .Cells(1, 6).Value = "Postal Code"
-        .Cells(1, 7).Value = "Phone"
+        .Cells(1, 1).value = "Recipient Name"
+        .Cells(1, 2).value = "Street"
+        .Cells(1, 3).value = "City"
+        .Cells(1, 4).value = "District"
+        .Cells(1, 5).value = "Region"
+        .Cells(1, 6).value = "Postal Code"
+        .Cells(1, 7).value = "Phone"
         
         ' Headers formatting (using standard VBA constants)
         With .Range("A1:G1")
@@ -73,14 +73,14 @@ Private Sub CreateLettersSheet()
     
     ' Create headers
     With ws
-        .Cells(1, 1).Value = "Addressee"
-        .Cells(1, 2).Value = "Outgoing Number"
-        .Cells(1, 3).Value = "Outgoing Date"
-        .Cells(1, 4).Value = "Attachment Name"
-        .Cells(1, 5).Value = "Document Sum"
-        .Cells(1, 6).Value = "Return Mark"
-        .Cells(1, 7).Value = "Executor Name"
-        .Cells(1, 8).Value = "Send Type"
+        .Cells(1, 1).value = "Addressee"
+        .Cells(1, 2).value = "Outgoing Number"
+        .Cells(1, 3).value = "Outgoing Date"
+        .Cells(1, 4).value = "Attachment Name"
+        .Cells(1, 5).value = "Document Sum"
+        .Cells(1, 6).value = "Return Mark"
+        .Cells(1, 7).value = "Executor Name"
+        .Cells(1, 8).value = "Send Type"
         
         ' Headers formatting
         With .Range("A1:H1")
@@ -105,42 +105,42 @@ Private Sub CreateSettingsSheet()
     
     ' Attachment types table
     With ws
-        .Cells(1, 1).Value = "Attachments"
+        .Cells(1, 1).value = "Attachments"
         .Cells(1, 1).Font.Bold = True
         .Cells(1, 1).Interior.ColorIndex = 35  ' Light green
         
         ' Examples of attachment types
-        .Cells(2, 1).Value = "Outgoing notice"
-        .Cells(3, 1).Value = "Material acceptance certificate"
-        .Cells(4, 1).Value = "Transfer of FA, IA, NPA"
-        .Cells(5, 1).Value = "Invoice"
-        .Cells(6, 1).Value = "Waybill"
-        .Cells(7, 1).Value = "Certificate of completion"
+        .Cells(2, 1).value = "Outgoing notice"
+        .Cells(3, 1).value = "Material acceptance certificate"
+        .Cells(4, 1).value = "Transfer of FA, IA, NPA"
+        .Cells(5, 1).value = "Invoice"
+        .Cells(6, 1).value = "Waybill"
+        .Cells(7, 1).value = "Certificate of completion"
         
         ' Executors table
-        .Cells(1, 3).Value = "Executor Name"
-        .Cells(1, 4).Value = "Phone"
+        .Cells(1, 3).value = "Executor Name"
+        .Cells(1, 4).value = "Phone"
         .Cells(1, 3).Font.Bold = True
         .Cells(1, 4).Font.Bold = True
         .Cells(1, 3).Interior.ColorIndex = 36  ' Light yellow
         .Cells(1, 4).Interior.ColorIndex = 36  ' Light yellow
         
         ' Examples of executors
-        .Cells(2, 3).Value = "Kerzhaev E.A."
-        .Cells(2, 4).Value = "8-928-123-45-67"
-        .Cells(3, 3).Value = "Ivanov I.I."
-        .Cells(3, 4).Value = "8-928-234-56-78"
-        .Cells(4, 3).Value = "Petrov P.P."
-        .Cells(4, 4).Value = "8-928-345-67-89"
+        .Cells(2, 3).value = "Kerzhaev E.A."
+        .Cells(2, 4).value = "8-928-123-45-67"
+        .Cells(3, 3).value = "Ivanov I.I."
+        .Cells(3, 4).value = "8-928-234-56-78"
+        .Cells(4, 3).value = "Petrov P.P."
+        .Cells(4, 4).value = "8-928-345-67-89"
         
         ' Letter texts table
-        .Cells(1, 6).Value = "Text"
+        .Cells(1, 6).value = "Text"
         .Cells(1, 6).Font.Bold = True
         .Cells(1, 6).Interior.ColorIndex = 34  ' Light pink
         
         ' Text examples (CHANGE: first letter is lowercase)
-        .Cells(2, 6).Value = "forwarding the following documents to your address for confirmation"
-        .Cells(3, 6).Value = "forwarding confirmed accounting documents to your address"
+        .Cells(2, 6).value = "forwarding the following documents to your address for confirmation"
+        .Cells(3, 6).value = "forwarding confirmed accounting documents to your address"
         
         ' Creating a structured table in column F
         Dim textRange As Range

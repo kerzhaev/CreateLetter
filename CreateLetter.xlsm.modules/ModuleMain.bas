@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.12 — 27.03.2026
+' Version: 1.6.14 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.12
+'                    SCHEMA CONSTANTS v1.6.14
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -17,6 +17,20 @@ Private Const TextTableRowOwnForConfirmation As Long = 1
 Private Const TextTableRowConfirmedDocuments As Long = 2
 Private Const AddressesTableName As String = "tblAddresses"
 Private Const LettersTableName As String = "tblLetters"
+Private Const DocumentTypeKeyConfirmed As String = "confirmed_documents"
+Private Const DocumentTypeKeyOwnConfirmation As String = "own_for_confirmation"
+Private Const LetterTypeKeyRegular As String = "regular"
+Private Const LetterTypeKeyFOU As String = "fou"
+Private Const LetterTemplateFileNameRegular As String = "LetterTemplate.docx"
+Private Const LetterTemplateFileNameFOU As String = "LetterTemplateFOU.docx"
+Private Const TemplatePlaceholderRecipientName As String = "RecipientName"
+Private Const TemplatePlaceholderRecipientAddress As String = "RecipientAddress"
+Private Const TemplatePlaceholderOutgoingNumber As String = "OutgoingNumber"
+Private Const TemplatePlaceholderOutgoingDate As String = "OutgoingDate"
+Private Const TemplatePlaceholderExecutorName As String = "ExecutorName"
+Private Const TemplatePlaceholderExecutorPhone As String = "ExecutorPhone"
+Private Const TemplatePlaceholderLetterText As String = "LetterText"
+Private Const TemplatePlaceholderAttachmentsList As String = "AttachmentsList"
 
 Public Enum AddressColumns
     AddressColumnAddressee = 1
@@ -88,30 +102,117 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.9
+'                    CORE HELPERS v1.6.14
 ' ======================================================================
 Private g_WordApp As Object
 Private g_WordAppOwned As Boolean
 
+Public Sub PopulateDocumentTypeOptions(targetControl As Object)
+    On Error Resume Next
+    targetControl.Clear
+    targetControl.AddItem GetDocumentTypeDisplayLabel(DocumentTypeKeyConfirmed)
+    targetControl.AddItem GetDocumentTypeDisplayLabel(DocumentTypeKeyOwnConfirmation)
+    targetControl.ListIndex = 0
+    On Error GoTo 0
+End Sub
+
+Public Sub PopulateLetterTypeOptions(targetControl As Object)
+    On Error Resume Next
+    targetControl.Clear
+    targetControl.AddItem GetLetterTypeDisplayLabel(LetterTypeKeyRegular)
+    targetControl.AddItem GetLetterTypeDisplayLabel(LetterTypeKeyFOU)
+    targetControl.ListIndex = 0
+    On Error GoTo 0
+End Sub
+
+Public Function NormalizeDocumentTypeKey(documentType As String) As String
+    Dim normalizedText As String
+    normalizedText = UCase$(Trim$(documentType))
+
+    If normalizedText = UCase$(DocumentTypeKeyOwnConfirmation) Or _
+       normalizedText = UCase$(T("form.letter_creator.option.document_type.own_confirmation", "Own for confirmation")) Or _
+       normalizedText = "OWN FOR CONFIRMATION" Then
+        NormalizeDocumentTypeKey = DocumentTypeKeyOwnConfirmation
+        Exit Function
+    End If
+
+    If normalizedText = UCase$(DocumentTypeKeyConfirmed) Or _
+       normalizedText = UCase$(T("form.letter_creator.option.document_type.confirmed", "Third-party confirmed documents")) Or _
+       normalizedText = "THIRD-PARTY CONFIRMED DOCUMENTS" Then
+        NormalizeDocumentTypeKey = DocumentTypeKeyConfirmed
+        Exit Function
+    End If
+
+    NormalizeDocumentTypeKey = Trim$(documentType)
+End Function
+
+Public Function ResolveDocumentTypeStorageValue(documentType As String) As String
+    Dim normalizedKey As String
+    normalizedKey = NormalizeDocumentTypeKey(documentType)
+
+    If normalizedKey = DocumentTypeKeyOwnConfirmation Or normalizedKey = DocumentTypeKeyConfirmed Then
+        ResolveDocumentTypeStorageValue = normalizedKey
+    ElseIf Len(Trim$(documentType)) = 0 Then
+        ResolveDocumentTypeStorageValue = ""
+    Else
+        ResolveDocumentTypeStorageValue = DocumentTypeKeyConfirmed
+    End If
+End Function
+
+Public Function GetDocumentTypeDisplayLabel(documentType As String) As String
+    Select Case NormalizeDocumentTypeKey(documentType)
+        Case DocumentTypeKeyOwnConfirmation
+            GetDocumentTypeDisplayLabel = T("form.letter_creator.option.document_type.own_confirmation", "Own for confirmation")
+        Case DocumentTypeKeyConfirmed
+            GetDocumentTypeDisplayLabel = T("form.letter_creator.option.document_type.confirmed", "Third-party confirmed documents")
+        Case Else
+            GetDocumentTypeDisplayLabel = Trim$(documentType)
+    End Select
+End Function
+
+Public Function NormalizeLetterTypeKey(letterType As String) As String
+    Dim normalizedText As String
+    normalizedText = UCase$(Trim$(letterType))
+
+    If normalizedText = UCase$(LetterTypeKeyFOU) Or _
+       normalizedText = UCase$(T("form.letter_creator.option.letter_type.fou", "FOU (For Official Use)")) Then
+        NormalizeLetterTypeKey = LetterTypeKeyFOU
+    Else
+        NormalizeLetterTypeKey = LetterTypeKeyRegular
+    End If
+End Function
+
+Public Function GetLetterTypeDisplayLabel(letterType As String) As String
+    If NormalizeLetterTypeKey(letterType) = LetterTypeKeyFOU Then
+        GetLetterTypeDisplayLabel = T("form.letter_creator.option.letter_type.fou", "FOU (For Official Use)")
+    Else
+        GetLetterTypeDisplayLabel = T("form.letter_creator.option.letter_type.regular", "Regular")
+    End If
+End Function
+
+Public Function IsAlternateLetterTypeSelection(letterType As String) As Boolean
+    IsAlternateLetterTypeSelection = (NormalizeLetterTypeKey(letterType) = LetterTypeKeyFOU)
+End Function
+
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
     If Len(Trim(addressee)) = 0 Then
-        ValidateRequiredFields = T("validation.creator.page.addressee_required", "Fill in the 'Addressee' field.")
+        ValidateRequiredFields = t("validation.creator.page.addressee_required", "Fill in the 'Addressee' field.")
         Exit Function
     End If
     
     If Len(Trim(city)) = 0 Then
-        ValidateRequiredFields = T("validation.creator.page.city_required", "Fill in the 'City' field. This field is required.")
+        ValidateRequiredFields = t("validation.creator.page.city_required", "Fill in the 'City' field. This field is required.")
         Exit Function
     End If
     
     If Len(Trim(region)) = 0 Then
-        ValidateRequiredFields = T("validation.creator.page.region_required", "Fill in the 'Region' field. This field is required.")
+        ValidateRequiredFields = t("validation.creator.page.region_required", "Fill in the 'Region' field. This field is required.")
         Exit Function
     End If
     
     If Len(Trim(postalCode)) = 0 Then
-        ValidateRequiredFields = T("validation.creator.page.postal_code_required", "Fill in the 'Postal code' field. This field is required.")
+        ValidateRequiredFields = t("validation.creator.page.postal_code_required", "Fill in the 'Postal code' field. This field is required.")
         Exit Function
     End If
     
@@ -126,63 +227,63 @@ Public Function ValidateCreatorPage(pageIndex As Integer, addressee As String, c
         Case 0
             If Len(Trim(addressee)) = 0 Then
                 focusControlName = "txtAddressee"
-                ValidateCreatorPage = T("validation.creator.page.addressee_required", "Fill in the 'Addressee' field.")
+                ValidateCreatorPage = t("validation.creator.page.addressee_required", "Fill in the 'Addressee' field.")
                 Exit Function
             End If
             
             If Len(Trim(city)) = 0 Then
                 focusControlName = "txtCity"
-                ValidateCreatorPage = T("validation.creator.page.city_required", "Fill in the 'City' field. This field is required.")
+                ValidateCreatorPage = t("validation.creator.page.city_required", "Fill in the 'City' field. This field is required.")
                 Exit Function
             End If
             
             If Len(Trim(region)) = 0 Then
                 focusControlName = "txtRegion"
-                ValidateCreatorPage = T("validation.creator.page.region_required", "Fill in the 'Region' field. This field is required.")
+                ValidateCreatorPage = t("validation.creator.page.region_required", "Fill in the 'Region' field. This field is required.")
                 Exit Function
             End If
             
             If Len(Trim(postalCode)) = 0 Then
                 focusControlName = "txtPostalCode"
-                ValidateCreatorPage = T("validation.creator.page.postal_code_required", "Fill in the 'Postal code' field. This field is required.")
+                ValidateCreatorPage = t("validation.creator.page.postal_code_required", "Fill in the 'Postal code' field. This field is required.")
                 Exit Function
             End If
             
             If Len(Trim(phoneNumber)) > 0 And Not IsPhoneNumberValid(phoneNumber) Then
                 focusControlName = "txtAddresseePhone"
-                ValidateCreatorPage = T("validation.creator.page.phone_invalid", "Enter a valid addressee phone number.")
+                ValidateCreatorPage = t("validation.creator.page.phone_invalid", "Enter a valid addressee phone number.")
                 Exit Function
             End If
             
         Case 1
             If Len(Trim(letterNumber)) = 0 Then
                 focusControlName = "txtLetterNumber"
-                ValidateCreatorPage = T("validation.creator.page.letter_number_required", "Enter the outgoing letter number.")
+                ValidateCreatorPage = t("validation.creator.page.letter_number_required", "Enter the outgoing letter number.")
                 Exit Function
             End If
             
             If Len(Trim(letterDateText)) = 0 Then
                 focusControlName = "txtLetterDate"
-                ValidateCreatorPage = T("validation.creator.page.letter_date_required", "Enter the letter date.")
+                ValidateCreatorPage = t("validation.creator.page.letter_date_required", "Enter the letter date.")
                 Exit Function
             End If
             
             If Len(Trim(executor)) = 0 Then
                 focusControlName = "cmbExecutor"
-                ValidateCreatorPage = T("validation.creator.page.executor_required", "Select an executor. This field is required.")
+                ValidateCreatorPage = t("validation.creator.page.executor_required", "Select an executor. This field is required.")
                 Exit Function
             End If
             
             Dim parsedDate As Date
             If Not TryParseDate(letterDateText, parsedDate) Then
                 focusControlName = "txtLetterDate"
-                ValidateCreatorPage = T("validation.creator.page.letter_date_invalid", "Invalid letter date format.")
+                ValidateCreatorPage = t("validation.creator.page.letter_date_invalid", "Invalid letter date format.")
                 Exit Function
             End If
             
         Case 2
             If documentsCount = 0 Then
-                ValidateCreatorPage = T("validation.creator.page.document_required", "Add at least one attachment document.")
+                ValidateCreatorPage = t("validation.creator.page.document_required", "Add at least one attachment document.")
                 Exit Function
             End If
     End Select
@@ -194,49 +295,49 @@ Public Function ValidateCreatorSubmission(addressee As String, city As String, r
     
     If Len(Trim(addressee)) = 0 Then
         focusControlName = "txtAddressee"
-        ValidateCreatorSubmission = T("validation.creator.submit.addressee_required", "Addressee is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.addressee_required", "Addressee is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(city)) = 0 Then
         focusControlName = "txtCity"
-        ValidateCreatorSubmission = T("validation.creator.submit.city_required", "City is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.city_required", "City is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(region)) = 0 Then
         focusControlName = "txtRegion"
-        ValidateCreatorSubmission = T("validation.creator.submit.region_required", "Region is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.region_required", "Region is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(postalCode)) = 0 Then
         focusControlName = "txtPostalCode"
-        ValidateCreatorSubmission = T("validation.creator.submit.postal_code_required", "Postal code is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.postal_code_required", "Postal code is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(letterNumber)) = 0 Then
         focusControlName = "txtLetterNumber"
-        ValidateCreatorSubmission = T("validation.creator.submit.letter_number_required", "Letter number is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.letter_number_required", "Letter number is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(letterDateText)) = 0 Then
         focusControlName = "txtLetterDate"
-        ValidateCreatorSubmission = T("validation.creator.submit.letter_date_required", "Letter date is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.letter_date_required", "Letter date is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(executor)) = 0 Then
         focusControlName = "cmbExecutor"
-        ValidateCreatorSubmission = T("validation.creator.submit.executor_required", "Executor is not selected.")
+        ValidateCreatorSubmission = t("validation.creator.submit.executor_required", "Executor is not selected.")
         Exit Function
     End If
     
     If documentsCount = 0 Then
         focusControlName = "txtAttachmentSearch"
-        ValidateCreatorSubmission = T("validation.creator.submit.document_required", "Add at least one document.")
+        ValidateCreatorSubmission = t("validation.creator.submit.document_required", "Add at least one document.")
         Exit Function
     End If
 End Function
@@ -431,7 +532,7 @@ Private Function ReadWorksheetMatrix(ws As Worksheet, firstColumn As Long, lastC
         Exit Function
     End If
     
-    ReadWorksheetMatrix = sourceRange.Value
+    ReadWorksheetMatrix = sourceRange.value
 End Function
 
 Private Function GetStructuredDataStartRow(ws As Worksheet, firstColumn As Long, lastColumn As Long, Optional preferredTableName As String = "") As Long
@@ -537,18 +638,18 @@ Public Function TryParseAddressListItem(addressItem As String, ByRef addressPart
     TryParseAddressListItem = False
     
     If InStr(addressItem, " | ") = 0 Then
-        errorMessage = T("validation.address.record_invalid", "Invalid address record format.")
+        errorMessage = t("validation.address.record_invalid", "Invalid address record format.")
         Exit Function
     End If
     
     addressParts = Split(addressItem, " | ")
     If UBound(addressParts) < 7 Then
-        errorMessage = T("validation.address.record_incomplete", "Address data is incomplete.")
+        errorMessage = t("validation.address.record_incomplete", "Address data is incomplete.")
         Exit Function
     End If
     
     If Not IsNumeric(addressParts(AddressPartRowNumber)) Then
-        errorMessage = T("validation.address.row_invalid", "Address row reference is invalid.")
+        errorMessage = t("validation.address.row_invalid", "Address row reference is invalid.")
         Exit Function
     End If
     
@@ -558,12 +659,12 @@ End Function
 
 Public Function ValidateAddressCreateRequest(addressee As String, isDuplicate As Boolean) As String
     If Len(Trim(addressee)) = 0 Then
-        ValidateAddressCreateRequest = T("validation.address.create.addressee_required", "Enter the addressee name.")
+        ValidateAddressCreateRequest = t("validation.address.create.addressee_required", "Enter the addressee name.")
         Exit Function
     End If
     
     If isDuplicate Then
-        ValidateAddressCreateRequest = T("validation.address.create.duplicate", "This address already exists.")
+        ValidateAddressCreateRequest = t("validation.address.create.duplicate", "This address already exists.")
         Exit Function
     End If
     
@@ -572,12 +673,12 @@ End Function
 
 Public Function ValidateAddressEditRequest(selectedRow As Long, isDuplicate As Boolean) As String
     If selectedRow <= 1 Then
-        ValidateAddressEditRequest = T("validation.address.edit.selection_required", "Select an address to edit.")
+        ValidateAddressEditRequest = t("validation.address.edit.selection_required", "Select an address to edit.")
         Exit Function
     End If
     
     If isDuplicate Then
-        ValidateAddressEditRequest = T("validation.address.edit.duplicate", "An address with the same data already exists.")
+        ValidateAddressEditRequest = t("validation.address.edit.duplicate", "An address with the same data already exists.")
         Exit Function
     End If
     
@@ -586,7 +687,7 @@ End Function
 
 Public Function ValidateAddressDeleteRequest(selectedRow As Long) As String
     If selectedRow = 0 Then
-        ValidateAddressDeleteRequest = T("validation.address.delete.selection_required", "Select an address to delete.")
+        ValidateAddressDeleteRequest = t("validation.address.delete.selection_required", "Select an address to delete.")
     Else
         ValidateAddressDeleteRequest = ""
     End If
@@ -671,7 +772,7 @@ Public Function FormatLetterHistoryDisplay(letterData As String) As String
                                  formattedSum & " | " & _
                                  statusText & " | " & _
                                  parts(HistoryPartExecutor) & " | " & _
-                                 parts(HistoryPartDocumentType)
+                                 GetDocumentTypeDisplayLabel(parts(HistoryPartDocumentType))
 End Function
 
 Public Function TryParseLetterHistoryRecord(letterData As String, ByRef parts As Variant) As Boolean
@@ -681,9 +782,9 @@ End Function
 
 Public Function BuildLetterReturnStatus(isReceived As Boolean, returnDateText As String) As String
     If isReceived Then
-        BuildLetterReturnStatus = Format(ResolveLetterDateOrToday(returnDateText), "dd.mm.yyyy") & T("history.status.received_suffix", " received")
+        BuildLetterReturnStatus = Format(ResolveLetterDateOrToday(returnDateText), "dd.mm.yyyy") & t("history.status.received_suffix", " received")
     Else
-        BuildLetterReturnStatus = T("history.status.not_received", "not received")
+        BuildLetterReturnStatus = t("history.status.not_received", "not received")
     End If
 End Function
 
@@ -713,18 +814,18 @@ Public Sub UpdateLetterHistoryRow(rowNumber As Long, sumValue As String, returnS
     Set ws = ThisWorkbook.Worksheets("Letters")
     
     If Len(Trim(sumValue)) = 0 Then
-        ws.Cells(rowNumber, LetterColumnDocumentSum).Value = ""
+        ws.Cells(rowNumber, LetterColumnDocumentSum).value = ""
     ElseIf IsNumeric(sumValue) Then
-        ws.Cells(rowNumber, LetterColumnDocumentSum).Value = CDbl(sumValue)
+        ws.Cells(rowNumber, LetterColumnDocumentSum).value = CDbl(sumValue)
     Else
-        ws.Cells(rowNumber, LetterColumnDocumentSum).Value = sumValue
+        ws.Cells(rowNumber, LetterColumnDocumentSum).value = sumValue
     End If
     
-    ws.Cells(rowNumber, LetterColumnReturnStatus).Value = returnStatus
+    ws.Cells(rowNumber, LetterColumnReturnStatus).value = returnStatus
     Exit Sub
     
 UpdateError:
-    Err.Raise Err.Number, "UpdateLetterHistoryRow", Err.Description
+    Err.Raise Err.number, "UpdateLetterHistoryRow", Err.description
 End Sub
 
 Private Function BuildLetterHistoryRecord(ws As Worksheet, rowNumber As Long) As String
@@ -801,7 +902,7 @@ Private Function GetHistoryCellValueSafe(ws As Worksheet, rowNumber As Long, col
     On Error Resume Next
     
     Dim cellValue As Variant
-    cellValue = ws.Cells(rowNumber, columnNumber).Value
+    cellValue = ws.Cells(rowNumber, columnNumber).value
     
     If columnNumber = LetterColumnDocumentSum Then
         If IsNumeric(cellValue) And cellValue <> 0 Then
@@ -848,9 +949,9 @@ End Function
 
 Private Function BuildHistoryStatusLabel(returnStatus As String) As String
     If HasReturnStatusDate(returnStatus) Then
-        BuildHistoryStatusLabel = T("history.status.received_label", "Received ") & returnStatus
+        BuildHistoryStatusLabel = t("history.status.received_label", "Received ") & returnStatus
     Else
-        BuildHistoryStatusLabel = T("history.status.pending_label", "Pending ") & returnStatus
+        BuildHistoryStatusLabel = t("history.status.pending_label", "Pending ") & returnStatus
     End If
 End Function
 
@@ -906,7 +1007,7 @@ Public Function GetCurrentUserFIO() As String
 End Function
 
 Public Function GetExecutorPhone(executorFIO As String) As String
-    GetExecutorPhone = T("common.not_specified", "Not specified")
+    GetExecutorPhone = t("common.not_specified", "Not specified")
     
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Settings")
@@ -927,13 +1028,13 @@ Public Function GetExecutorPhone(executorFIO As String) As String
 End Function
 
 Private Sub WriteAddressRow(ws As Worksheet, rowNumber As Long, addressArray As Variant)
-    ws.Cells(rowNumber, AddressColumnAddressee).Value = addressArray(AddressIndexAddressee)
-    ws.Cells(rowNumber, AddressColumnStreet).Value = addressArray(AddressIndexStreet)
-    ws.Cells(rowNumber, AddressColumnCity).Value = addressArray(AddressIndexCity)
-    ws.Cells(rowNumber, AddressColumnDistrict).Value = addressArray(AddressIndexDistrict)
-    ws.Cells(rowNumber, AddressColumnRegion).Value = addressArray(AddressIndexRegion)
-    ws.Cells(rowNumber, AddressColumnPostalCode).Value = addressArray(AddressIndexPostalCode)
-    ws.Cells(rowNumber, AddressColumnPhone).Value = FormatPhoneNumber(CStr(addressArray(AddressIndexPhone)))
+    ws.Cells(rowNumber, AddressColumnAddressee).value = addressArray(AddressIndexAddressee)
+    ws.Cells(rowNumber, AddressColumnStreet).value = addressArray(AddressIndexStreet)
+    ws.Cells(rowNumber, AddressColumnCity).value = addressArray(AddressIndexCity)
+    ws.Cells(rowNumber, AddressColumnDistrict).value = addressArray(AddressIndexDistrict)
+    ws.Cells(rowNumber, AddressColumnRegion).value = addressArray(AddressIndexRegion)
+    ws.Cells(rowNumber, AddressColumnPostalCode).value = addressArray(AddressIndexPostalCode)
+    ws.Cells(rowNumber, AddressColumnPhone).value = FormatPhoneNumber(CStr(addressArray(AddressIndexPhone)))
 End Sub
 
 Private Function AddressColumnFromIndex(addressIndex As AddressArrayIndexes) As AddressColumns
@@ -1073,9 +1174,9 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     
     ' DEBUG: Writing basic data
     Debug.Print "=== BEFORE writing basic data ==="
-    ws.Cells(newRow, LetterColumnAddressee).Value = addressee
-    ws.Cells(newRow, LetterColumnOutgoingNumber).Value = letterNumber
-    ws.Cells(newRow, LetterColumnOutgoingDate).Value = letterDate
+    ws.Cells(newRow, LetterColumnAddressee).value = addressee
+    ws.Cells(newRow, LetterColumnOutgoingNumber).value = letterNumber
+    ws.Cells(newRow, LetterColumnOutgoingDate).value = letterDate
     Debug.Print "=== AFTER writing basic data ==="
     
     ' DEBUG: Formatting attachments
@@ -1088,7 +1189,7 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     
     ' DEBUG: Writing to Excel
     Debug.Print "=== BEFORE writing to Excel cell (4) ==="
-    ws.Cells(newRow, LetterColumnAttachmentText).Value = attachmentText
+    ws.Cells(newRow, LetterColumnAttachmentText).value = attachmentText
     Debug.Print "=== AFTER writing to Excel cell (4) ==="
     
     ' DEBUG: Sum calculation
@@ -1100,19 +1201,19 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     ' DEBUG: Writing sum
     Debug.Print "=== BEFORE writing sum to cell (5) ==="
     If totalSum > 0 Then
-        ws.Cells(newRow, LetterColumnDocumentSum).Value = totalSum
+        ws.Cells(newRow, LetterColumnDocumentSum).value = totalSum
         Debug.Print "Written totalSum: " & totalSum
     Else
-        ws.Cells(newRow, LetterColumnDocumentSum).Value = ""
+        ws.Cells(newRow, LetterColumnDocumentSum).value = ""
         Debug.Print "Written empty sum"
     End If
     Debug.Print "=== AFTER writing sum to cell (5) ==="
     
     ' DEBUG: Writing remaining data
     Debug.Print "=== BEFORE writing remaining cells ==="
-    ws.Cells(newRow, LetterColumnReturnStatus).Value = ""
-    ws.Cells(newRow, LetterColumnExecutor).Value = executor
-    ws.Cells(newRow, LetterColumnDocumentType).Value = documentType
+    ws.Cells(newRow, LetterColumnReturnStatus).value = ""
+    ws.Cells(newRow, LetterColumnExecutor).value = executor
+    ws.Cells(newRow, LetterColumnDocumentType).value = documentType
     Debug.Print "=== AFTER writing remaining cells ==="
     
     Debug.Print "=== DEBUG SaveLetterInfoWithSum SUCCESS END ==="
@@ -1402,7 +1503,7 @@ Public Function GetSharedWordApplication() As Object
 CreateFailed:
     Set g_WordApp = Nothing
     g_WordAppOwned = False
-    Err.Raise Err.Number, "GetSharedWordApplication", Err.Description
+    Err.Raise Err.number, "GetSharedWordApplication", Err.description
 End Function
 
 Public Sub ResetSharedWordApplication()
@@ -1468,7 +1569,7 @@ Private Function TrySaveCurrentWorkbook(ByRef errorMessage As String) As Boolean
     Exit Function
     
 SaveFailed:
-    errorMessage = Err.Description
+    errorMessage = Err.description
     TrySaveCurrentWorkbook = False
 End Function
 
@@ -1497,7 +1598,7 @@ End Function
 Private Function TryFallbackReplaceWordContent(wordDoc As Object, findText As String, replaceText As String) As Boolean
     On Error GoTo FallbackFailed
     
-    wordDoc.Content.Text = Replace(wordDoc.Content.Text, findText, Left$(replaceText, 200))
+    wordDoc.content.Text = Replace(wordDoc.content.Text, findText, Left$(replaceText, 200))
     TryFallbackReplaceWordContent = True
     Exit Function
     
@@ -1518,15 +1619,15 @@ Public Sub CreateLetterDocument(addressee As String, addressArray As Variant, le
     Dim templatePath As String
     templatePath = GetLetterTemplatePath(useAlternateTemplate)
     
-    If Dir(templatePath) <> "" Then
-        Set wordDoc = wordApp.Documents.Open(templatePath)
+    If dir(templatePath) <> "" Then
+        Set wordDoc = wordApp.documents.Open(templatePath)
         If Not wordDoc Is Nothing Then
             FillWordTemplateData wordDoc, addressee, addressArray, letterNumber, letterDateRaw, executor, documentType, documentsList
             GoTo SaveDocument
         End If
     End If
     
-    Set wordDoc = wordApp.Documents.Add
+    Set wordDoc = wordApp.documents.Add
     CreateLetterDocumentFromScratch wordDoc, addressee, addressArray, letterNumber, letterDateRaw, executor, documentType, documentsList
     
 SaveDocument:
@@ -1552,7 +1653,7 @@ SaveDocument:
     Exit Sub
     
 ErrorHandler:
-    MsgBox T("core.letter.error.create_document", "Error creating letter: ") & Err.Description, vbCritical
+    MsgBox T("core.letter.error.create_document", "Error creating letter: ") & Err.description, vbCritical
     If Not wordDoc Is Nothing Then
         wordDoc.Close False
     End If
@@ -1578,19 +1679,19 @@ Public Sub FillWordTemplateData(wordDoc As Object, addresseeText As String, addr
     phoneText = GetExecutorPhone(executorText)
     letterText = GetDocumentTypeText(documentType)
     
-    SafeReplaceInWord wordDoc, "RecipientName", addresseeText
-    SafeReplaceInWord wordDoc, "RecipientAddress", addressText
-    SafeReplaceInWord wordDoc, "OutgoingNumber", numberText
-    SafeReplaceInWord wordDoc, "OutgoingDate", dateText
-    SafeReplaceInWord wordDoc, "ExecutorName", executorText
-    SafeReplaceInWord wordDoc, "ExecutorPhone", phoneText
-    SafeReplaceInWord wordDoc, "LetterText", letterText
+    SafeReplaceInWord wordDoc, TemplatePlaceholderRecipientName, addresseeText
+    SafeReplaceInWord wordDoc, TemplatePlaceholderRecipientAddress, addressText
+    SafeReplaceInWord wordDoc, TemplatePlaceholderOutgoingNumber, numberText
+    SafeReplaceInWord wordDoc, TemplatePlaceholderOutgoingDate, dateText
+    SafeReplaceInWord wordDoc, TemplatePlaceholderExecutorName, executorText
+    SafeReplaceInWord wordDoc, TemplatePlaceholderExecutorPhone, phoneText
+    SafeReplaceInWord wordDoc, TemplatePlaceholderLetterText, letterText
     
     ReplaceAttachmentsInTemplateWithFontAndSum wordDoc, documentsList, 10
     Exit Sub
     
 TemplateError:
-    MsgBox T("core.letter.error.template_fill", "Template filling error: ") & Err.Description, vbCritical
+    MsgBox T("core.letter.error.template_fill", "Template filling error: ") & Err.description, vbCritical
 End Sub
 
 Public Sub CreateLetterDocumentFromScratch(wordDoc As Object, addresseeText As String, addressArray As Variant, numberText As String, rawDateText As String, executorText As String, documentType As String, documentsList As Collection)
@@ -1613,12 +1714,12 @@ Public Sub CreateLetterDocumentFromScratch(wordDoc As Object, addresseeText As S
     content = content & T("core.letter.fallback.ref_no", "Ref. No.: ") & numberText & vbCrLf
     content = content & T("core.letter.fallback.date", "Date: ") & dateText & vbCrLf & vbCrLf
     
-    wordDoc.Content.Text = content
+    wordDoc.content.Text = content
     AppendAttachmentsToDocumentWithFontAndSum wordDoc, documentsList, 10
     Exit Sub
     
 ScratchError:
-    MsgBox T("core.letter.error.create_fallback", "Letter creation error: ") & Err.Description, vbCritical
+    MsgBox T("core.letter.error.create_fallback", "Letter creation error: ") & Err.description, vbCritical
 End Sub
 
 Public Sub ReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
@@ -1631,7 +1732,7 @@ Public Sub ReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documen
         .ClearFormatting
         .Forward = True
         .Wrap = 1
-        .Text = "AttachmentsList"
+        .Text = TemplatePlaceholderAttachmentsList
         
         If .Execute Then
             Dim startPos As Long
@@ -1659,7 +1760,7 @@ Public Sub ReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documen
     Exit Sub
     
 ReplaceError:
-    Err.Raise Err.Number, "ReplaceAttachmentsInTemplateWithFontAndSum", Err.Description
+    Err.Raise Err.number, "ReplaceAttachmentsInTemplateWithFontAndSum", Err.description
 End Sub
 
 Public Sub AppendAttachmentsToDocumentWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
@@ -1693,7 +1794,7 @@ Public Sub AppendAttachmentsToDocumentWithFontAndSum(wordDoc As Object, document
     Exit Sub
     
 AppendError:
-    Err.Raise Err.Number, "AppendAttachmentsToDocumentWithFontAndSum", Err.Description
+    Err.Raise Err.number, "AppendAttachmentsToDocumentWithFontAndSum", Err.description
 End Sub
 
 Public Function CalculateTotalDocumentsSum(documents As Collection) As Double
@@ -1865,11 +1966,11 @@ Public Function HasAddressDataChanged(rowNumber As Long, newAddressArray As Vari
         Dim columnNumber As AddressColumns
         
         columnNumber = AddressColumnFromIndex(i)
-        sheetValue = UCase(Trim(CStr(ws.Cells(rowNumber, columnNumber).Value)))
+        sheetValue = UCase(Trim(CStr(ws.Cells(rowNumber, columnNumber).value)))
         formValue = UCase(Trim(CStr(newAddressArray(i))))
         
         If sheetValue <> formValue Then
-            Debug.Print "Change in column " & columnNumber & ": '" & ws.Cells(rowNumber, columnNumber).Value & "' -> '" & newAddressArray(i) & "'"
+            Debug.Print "Change in column " & columnNumber & ": '" & ws.Cells(rowNumber, columnNumber).value & "' -> '" & newAddressArray(i) & "'"
             HasAddressDataChanged = True
             Exit Function
         End If
@@ -1878,7 +1979,7 @@ Public Function HasAddressDataChanged(rowNumber As Long, newAddressArray As Vari
     Exit Function
     
 CompareError:
-    Debug.Print "Error comparing address data: " & Err.Description
+    Debug.Print "Error comparing address data: " & Err.description
     HasAddressDataChanged = False
 End Function
 
@@ -1957,7 +2058,11 @@ Public Sub StartFormirovanieLetters()
 End Sub
 
 Public Function GetDocumentTypeText(documentType As String) As String
-    GetDocumentTypeText = "forwarding confirmed accounting documents to your address"
+    If NormalizeDocumentTypeKey(documentType) = DocumentTypeKeyOwnConfirmation Then
+        GetDocumentTypeText = T("core.letter.text.own_confirmation", "forwarding the following documents to your address for confirmation")
+    Else
+        GetDocumentTypeText = T("core.letter.text.confirmed", "forwarding confirmed accounting documents to your address")
+    End If
     
     On Error GoTo ReadTextError
     Dim ws As Worksheet
@@ -1971,10 +2076,10 @@ Public Function GetDocumentTypeText(documentType As String) As String
     If Not tbl Is Nothing Then
         If tbl.ListRows.count >= 1 Then
             Dim textResult As String
-            If UCase(Trim(documentType)) = "OWN FOR CONFIRMATION" Then
-                textResult = Trim(tbl.DataBodyRange.Cells(TextTableRowOwnForConfirmation, TextTableColumnBody).Value)
+            If NormalizeDocumentTypeKey(documentType) = DocumentTypeKeyOwnConfirmation Then
+                textResult = Trim(tbl.DataBodyRange.Cells(TextTableRowOwnForConfirmation, TextTableColumnBody).value)
             ElseIf tbl.ListRows.count >= TextTableRowConfirmedDocuments Then
-                textResult = Trim(tbl.DataBodyRange.Cells(TextTableRowConfirmedDocuments, TextTableColumnBody).Value)
+                textResult = Trim(tbl.DataBodyRange.Cells(TextTableRowConfirmedDocuments, TextTableColumnBody).value)
             End If
             
             If Len(textResult) > 0 Then
@@ -1987,13 +2092,13 @@ Public Function GetDocumentTypeText(documentType As String) As String
     Exit Function
     
 ReadTextError:
-    Debug.Print "GetDocumentTypeText fallback used: " & Err.Description
+    Debug.Print "GetDocumentTypeText fallback used: " & Err.description
 End Function
 
 Public Sub SafeReplaceInWord(wordDoc As Object, findText As String, replaceText As String)
     On Error GoTo ReplaceError
     
-    If findText = "ExecutorPhone" Then
+    If findText = TemplatePlaceholderExecutorPhone Then
         Debug.Print "Attempting to replace ExecutorPhone with: '" & replaceText & "'"
         Debug.Print "Replacement text length: " & Len(replaceText)
     End If
@@ -2016,8 +2121,8 @@ Public Sub SafeReplaceInWord(wordDoc As Object, findText As String, replaceText 
             .Execute Replace:=2
         End With
         
-        If findText = "ExecutorPhone" Then
-            Debug.Print "Replacement done. Checking result..."
+    If findText = TemplatePlaceholderExecutorPhone Then
+        Debug.Print "Replacement done. Checking result..."
             Dim rng As Object
             Set rng = wordDoc.content
             With rng.Find
@@ -2036,7 +2141,7 @@ Public Sub SafeReplaceInWord(wordDoc As Object, findText As String, replaceText 
 ReplaceError:
     Debug.Print "Error replacing '" & findText & "': " & Err.description
     If Not TryFallbackReplaceWordContent(wordDoc, findText, replaceText) Then
-        Err.Raise Err.Number, "SafeReplaceInWord", Err.Description
+        Err.Raise Err.number, "SafeReplaceInWord", Err.description
     End If
 End Sub
 
@@ -2152,7 +2257,7 @@ Public Sub FormatAttachmentsInWord(rng As Object, Optional fontSize As Integer =
     Exit Sub
     
 FormatError:
-    Err.Raise Err.Number, "FormatAttachmentsInWord", Err.Description
+    Err.Raise Err.number, "FormatAttachmentsInWord", Err.description
 End Sub
 
 Public Function GenerateFileNameWithExecutor(addressee As String, letterNumber As String, executor As String) As String
@@ -2170,9 +2275,9 @@ End Function
 
 Private Function GetLetterTemplatePath(useAlternateTemplate As Boolean) As String
     If useAlternateTemplate Then
-        GetLetterTemplatePath = ThisWorkbook.Path & "\LetterTemplateFOU.docx"
+        GetLetterTemplatePath = ThisWorkbook.Path & "\" & LetterTemplateFileNameFOU
     Else
-        GetLetterTemplatePath = ThisWorkbook.Path & "\LetterTemplate.docx"
+        GetLetterTemplatePath = ThisWorkbook.Path & "\" & LetterTemplateFileNameRegular
     End If
 End Function
 
@@ -2233,7 +2338,7 @@ Public Sub ShowLetterHistoryModeless()
     If Not existingForm Is Nothing Then
         existingForm.SetFocus
         existingForm.ZOrder 0
-        MsgBox T("form.letter_history.msg.already_open", "Letter history form is already open!"), vbInformation
+        MsgBox t("form.letter_history.msg.already_open", "Letter history form is already open!"), vbInformation
     Else
         Load frmLetterHistory
         frmLetterHistory.Show vbModeless
@@ -2243,7 +2348,7 @@ Public Sub ShowLetterHistoryModeless()
     Exit Sub
     
 ShowHistoryError:
-    MsgBox T("form.letter_history.msg.open_error", "Error opening letter history form: ") & Err.description, vbCritical
+    MsgBox t("form.letter_history.msg.open_error", "Error opening letter history form: ") & Err.description, vbCritical
 End Sub
 
 Public Sub ClearAddressHighlight()

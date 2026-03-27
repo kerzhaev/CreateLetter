@@ -32,15 +32,15 @@ Public Sub WriteAuditLog(action As String, details As String, Optional recipient
     ipAddress = GetLocalIPAddress()
     
     With auditSheet
-        .Cells(lastRow, 1).Value = Format(Now, "dd.mm.yyyy")           ' Date
-        .Cells(lastRow, 2).Value = Format(Now, "hh:mm:ss")             ' Time
-        .Cells(lastRow, 3).Value = userName                            ' User
-        .Cells(lastRow, 4).Value = computerName                        ' Computer
-        .Cells(lastRow, 5).Value = ipAddress                           ' IP Address
-        .Cells(lastRow, 6).Value = action                              ' Action
-        .Cells(lastRow, 7).Value = details                             ' Details
-        .Cells(lastRow, 8).Value = recipient                           ' Letter Recipient
-        .Cells(lastRow, 9).Value = Application.Version                 ' Excel Version
+        .Cells(lastRow, 1).value = Format(Now, "dd.mm.yyyy")           ' Date
+        .Cells(lastRow, 2).value = Format(Now, "hh:mm:ss")             ' Time
+        .Cells(lastRow, 3).value = userName                            ' User
+        .Cells(lastRow, 4).value = computerName                        ' Computer
+        .Cells(lastRow, 5).value = ipAddress                           ' IP Address
+        .Cells(lastRow, 6).value = action                              ' Action
+        .Cells(lastRow, 7).value = details                             ' Details
+        .Cells(lastRow, 8).value = recipient                           ' Letter Recipient
+        .Cells(lastRow, 9).value = Application.Version                 ' Excel Version
         
         ' Color highlighting by action type
         Select Case action
@@ -81,15 +81,15 @@ Private Function GetOrCreateAuditSheet() As Worksheet
             .Visible = xlSheetVeryHidden  ' Hide the sheet
             
             ' Headers
-            .Cells(1, 1).Value = "Date"
-            .Cells(1, 2).Value = "Time"
-            .Cells(1, 3).Value = "User"
-            .Cells(1, 4).Value = "Computer"
-            .Cells(1, 5).Value = "IP Address"
-            .Cells(1, 6).Value = "Action"
-            .Cells(1, 7).Value = "Details"
-            .Cells(1, 8).Value = "Recipient"
-            .Cells(1, 9).Value = "Excel Version"
+            .Cells(1, 1).value = "Date"
+            .Cells(1, 2).value = "Time"
+            .Cells(1, 3).value = "User"
+            .Cells(1, 4).value = "Computer"
+            .Cells(1, 5).value = "IP Address"
+            .Cells(1, 6).value = "Action"
+            .Cells(1, 7).value = "Details"
+            .Cells(1, 8).value = "Recipient"
+            .Cells(1, 9).value = "Excel Version"
             
             ' Headers formatting
             With .Range("A1:I1")
@@ -137,8 +137,8 @@ Private Sub CleanOldAuditEntries(auditSheet As Worksheet, daysToKeep As Integer)
     Dim i As Long
     For i = lastRow To 2 Step -1
         Dim logDate As Date
-        If IsDate(auditSheet.Cells(i, 1).Value) Then
-            logDate = CDate(auditSheet.Cells(i, 1).Value)
+        If IsDate(auditSheet.Cells(i, 1).value) Then
+            logDate = CDate(auditSheet.Cells(i, 1).value)
             
             ' Delete records older than the specified number of days
             If Date - logDate > daysToKeep Then
@@ -176,17 +176,17 @@ Public Sub GenerateAuditReport(Optional daysBack As Integer = 30)
     
     ' Report headers
     With reportWs
-        .Cells(1, 1).Value = "AUDIT REPORT FOR 'LETTER GENERATION' SYSTEM"
-        .Cells(2, 1).Value = "Period: " & Format(Date - daysBack, "dd.mm.yyyy") & " - " & Format(Date, "dd.mm.yyyy")
-        .Cells(3, 1).Value = "Report generation date: " & Format(Now, "dd.mm.yyyy hh:mm")
+        .Cells(1, 1).value = "AUDIT REPORT FOR 'LETTER GENERATION' SYSTEM"
+        .Cells(2, 1).value = "Period: " & Format(Date - daysBack, "dd.mm.yyyy") & " - " & Format(Date, "dd.mm.yyyy")
+        .Cells(3, 1).value = "Report generation date: " & Format(Now, "dd.mm.yyyy hh:mm")
         
-        .Cells(5, 1).Value = "Date"
-        .Cells(5, 2).Value = "Time"
-        .Cells(5, 3).Value = "User"
-        .Cells(5, 4).Value = "Computer"
-        .Cells(5, 5).Value = "Action"
-        .Cells(5, 6).Value = "Details"
-        .Cells(5, 7).Value = "Recipient"
+        .Cells(5, 1).value = "Date"
+        .Cells(5, 2).value = "Time"
+        .Cells(5, 3).value = "User"
+        .Cells(5, 4).value = "Computer"
+        .Cells(5, 5).value = "Action"
+        .Cells(5, 6).value = "Details"
+        .Cells(5, 7).value = "Recipient"
         
         .Range("A1").Font.Size = 14
         .Range("A1").Font.Bold = True
@@ -199,18 +199,18 @@ Public Sub GenerateAuditReport(Optional daysBack As Integer = 30)
     targetRow = 6
     
     For sourceRow = 2 To auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row
-        If IsDate(auditSheet.Cells(sourceRow, 1).Value) Then
+        If IsDate(auditSheet.Cells(sourceRow, 1).value) Then
             Dim entryDate As Date
-            entryDate = CDate(auditSheet.Cells(sourceRow, 1).Value)
+            entryDate = CDate(auditSheet.Cells(sourceRow, 1).value)
             
             If Date - entryDate <= daysBack Then
-                reportWs.Cells(targetRow, 1).Value = auditSheet.Cells(sourceRow, 1).Value  ' Date
-                reportWs.Cells(targetRow, 2).Value = auditSheet.Cells(sourceRow, 2).Value  ' Time
-                reportWs.Cells(targetRow, 3).Value = auditSheet.Cells(sourceRow, 3).Value  ' User
-                reportWs.Cells(targetRow, 4).Value = auditSheet.Cells(sourceRow, 4).Value  ' Computer
-                reportWs.Cells(targetRow, 5).Value = auditSheet.Cells(sourceRow, 6).Value  ' Action
-                reportWs.Cells(targetRow, 6).Value = auditSheet.Cells(sourceRow, 7).Value  ' Details
-                reportWs.Cells(targetRow, 7).Value = auditSheet.Cells(sourceRow, 8).Value  ' Recipient
+                reportWs.Cells(targetRow, 1).value = auditSheet.Cells(sourceRow, 1).value  ' Date
+                reportWs.Cells(targetRow, 2).value = auditSheet.Cells(sourceRow, 2).value  ' Time
+                reportWs.Cells(targetRow, 3).value = auditSheet.Cells(sourceRow, 3).value  ' User
+                reportWs.Cells(targetRow, 4).value = auditSheet.Cells(sourceRow, 4).value  ' Computer
+                reportWs.Cells(targetRow, 5).value = auditSheet.Cells(sourceRow, 6).value  ' Action
+                reportWs.Cells(targetRow, 6).value = auditSheet.Cells(sourceRow, 7).value  ' Details
+                reportWs.Cells(targetRow, 7).value = auditSheet.Cells(sourceRow, 8).value  ' Recipient
                 targetRow = targetRow + 1
             End If
         End If
@@ -240,8 +240,8 @@ Public Sub ShowUsageStatistics()
     Dim i As Long
     For i = 2 To auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row
         Dim action As String, user As String
-        action = auditSheet.Cells(i, 6).Value
-        user = auditSheet.Cells(i, 3).Value
+        action = auditSheet.Cells(i, 6).value
+        user = auditSheet.Cells(i, 3).value
         
         If action = AUDIT_OPEN_FILE1 Then totalSessions = totalSessions + 1
         If action = AUDIT_CREATE_LETTER Then totalLetters = totalLetters + 1

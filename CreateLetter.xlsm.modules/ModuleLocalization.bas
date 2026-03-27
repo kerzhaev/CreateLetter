@@ -2,7 +2,7 @@ Attribute VB_Name = "ModuleLocalization"
 ' ======================================================================
 ' Module: ModuleLocalization
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
-' Version: 1.3.0 - 27.03.2026
+' Version: 1.4.1 - 27.03.2026
 ' Notes:
 ' - This module does not change workbook schema.
 ' - Workbook sheet-based localization is optional and loaded only if present.
@@ -17,8 +17,8 @@ Private Const LOCALIZATION_SHEET_NAME As String = "Localization"
 Private localizationCache As Object
 Private activeLanguageCode As String
 
-Public Function T(ByVal key As String, Optional ByVal fallback As String = "") As String
-    T = Translate(key, fallback)
+Public Function t(ByVal key As String, Optional ByVal fallback As String = "") As String
+    t = Translate(key, fallback)
 End Function
 
 Public Function Translate(ByVal key As String, Optional ByVal fallback As String = "") As String
@@ -98,7 +98,7 @@ Public Function GetLocalizationStats() As String
     EnsureLocalizationLoaded
     
     Dim stats As String
-    stats = "Localization entries: " & localizationCache.Count & vbCrLf & _
+    stats = "Localization entries: " & localizationCache.count & vbCrLf & _
             "Active language: " & GetAppLanguage() & vbCrLf & _
             "Default language: " & DEFAULT_LANGUAGE_CODE
     
@@ -288,6 +288,14 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "en", "form.letter_creator.menu.document_action.move_up", "4 - Move up"
     AddTranslation "ru", "form.letter_creator.menu.document_action.move_down", "5 - Переместить вниз"
     AddTranslation "en", "form.letter_creator.menu.document_action.move_down", "5 - Move down"
+    AddTranslation "ru", "form.letter_creator.option.document_type.confirmed", "Чужие подтвержденные документы"
+    AddTranslation "en", "form.letter_creator.option.document_type.confirmed", "Third-party confirmed documents"
+    AddTranslation "ru", "form.letter_creator.option.document_type.own_confirmation", "Свои для подтверждения"
+    AddTranslation "en", "form.letter_creator.option.document_type.own_confirmation", "Own for confirmation"
+    AddTranslation "ru", "form.letter_creator.option.letter_type.regular", "Обычное"
+    AddTranslation "en", "form.letter_creator.option.letter_type.regular", "Regular"
+    AddTranslation "ru", "form.letter_creator.option.letter_type.fou", "ДСП"
+    AddTranslation "en", "form.letter_creator.option.letter_type.fou", "FOU (For Official Use)"
     AddTranslation "ru", "validation.creator.page.addressee_required", "Заполните поле 'Адресат'."
     AddTranslation "en", "validation.creator.page.addressee_required", "Fill in the 'Addressee' field."
     AddTranslation "ru", "validation.creator.page.city_required", "Заполните поле 'Город'. Это обязательное поле."
@@ -492,6 +500,10 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "en", "core.letter.fallback.ref_no", "Ref. No.: "
     AddTranslation "ru", "core.letter.fallback.date", "Дата: "
     AddTranslation "en", "core.letter.fallback.date", "Date: "
+    AddTranslation "ru", "core.letter.text.confirmed", "направляем подтвержденные бухгалтерские документы в ваш адрес"
+    AddTranslation "en", "core.letter.text.confirmed", "forwarding confirmed accounting documents to your address"
+    AddTranslation "ru", "core.letter.text.own_confirmation", "направляем следующие документы в ваш адрес для подтверждения"
+    AddTranslation "en", "core.letter.text.own_confirmation", "forwarding the following documents to your address for confirmation"
     AddTranslation "ru", "core.form.open_creator_error", "Не удалось открыть форму создания письма: "
     AddTranslation "en", "core.form.open_creator_error", "Failed to open letter creation form: "
     AddTranslation "ru", "status.ready", "Готово"
@@ -515,7 +527,7 @@ Private Sub LoadLocalizationFromWorkbook()
     If ws Is Nothing Then Exit Sub
     
     Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+    lastRow = ws.Cells(ws.Rows.count, 1).End(xlUp).Row
     
     If lastRow < 2 Then Exit Sub
     
@@ -525,11 +537,11 @@ Private Sub LoadLocalizationFromWorkbook()
         Dim entryRu As String
         Dim entryEn As String
         
-        entryKey = NormalizeLocalizationKey(CStr(ws.Cells(rowIndex, 1).Value))
+        entryKey = NormalizeLocalizationKey(CStr(ws.Cells(rowIndex, 1).value))
         If Len(entryKey) = 0 Then GoTo NextRow
         
-        entryRu = CStr(ws.Cells(rowIndex, 2).Value)
-        entryEn = CStr(ws.Cells(rowIndex, 3).Value)
+        entryRu = CStr(ws.Cells(rowIndex, 2).value)
+        entryEn = CStr(ws.Cells(rowIndex, 3).value)
         
         If Len(entryRu) > 0 Then AddTranslation "ru", entryKey, entryRu
         If Len(entryEn) > 0 Then AddTranslation "en", entryKey, entryEn
@@ -540,7 +552,7 @@ NextRow:
     Exit Sub
     
 LoadError:
-    Debug.Print "Localization load skipped: " & Err.Description
+    Debug.Print "Localization load skipped: " & Err.description
 End Sub
 
 Private Sub AddTranslation(ByVal languageCode As String, ByVal key As String, ByVal value As String)

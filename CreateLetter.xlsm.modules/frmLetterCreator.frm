@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-   Caption         =   "Letter Builder v1.6.5"
+   Caption         =   "Letter Builder v1.6.7"
    ClientHeight    =   10155
    ClientLeft      =   120
    ClientTop       =   465
@@ -13,9 +13,10 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.5 - Thin-shell MultiPage wizard with workbook-backed localization
-' Version : 1.6.5 - 27.03.2026
+' Form    : frmLetterCreator v1.6.7 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
+' Version : 1.6.7 - 27.03.2026
 ' Author  : Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
 ' ======================================================================
@@ -58,8 +59,8 @@ Private Sub ConfigureDocumentSumField()
         With txtDocumentSum
             .Font.Name = "Segoe UI"
             .Font.Size = 10
-            .ControlTipText = T("form.letter_creator.tip.document_sum", "Document sum in rubles (optional). For example: 125000")
-            .Value = ""
+            .ControlTipText = t("form.letter_creator.tip.document_sum", "Document sum in rubles (optional). For example: 125000")
+            .value = ""
             .backColor = RGB(255, 255, 255)
         End With
         Debug.Print "Document sum field configured"
@@ -79,22 +80,11 @@ End Sub
 Private Sub InitializeControlValues()
     On Error Resume Next
     
-    Me.Controls("txtLetterDate").Value = Format(Date, "dd.mm.yyyy")
-    Me.Controls("txtLetterNumber").Value = "7/"
+    Me.Controls("txtLetterDate").value = Format(Date, "dd.mm.yyyy")
+    Me.Controls("txtLetterNumber").value = "7/"
     
-    With Me.Controls("cmbDocumentType")
-        .Clear
-        .AddItem "Third-party confirmed documents"
-        .AddItem "Own for confirmation"
-        .ListIndex = 0
-    End With
-    
-    With Me.Controls("cmbLetterType")
-        .Clear
-        .AddItem "Regular"
-        .AddItem "FOU (For Official Use)"
-        .ListIndex = 0
-    End With
+    PopulateDocumentTypeOptions Me.Controls("cmbDocumentType")
+    PopulateLetterTypeOptions Me.Controls("cmbLetterType")
     
     selectedAddressRow = 0
     On Error GoTo 0
@@ -140,7 +130,7 @@ Private Sub txtDocumentSum_Change()
     
     If Not txtDocumentSum Is Nothing Then
         Dim currentValue As String
-        currentValue = Trim(txtDocumentSum.Value)
+        currentValue = Trim(txtDocumentSum.value)
         
         If Len(currentValue) > 0 And Not IsNumeric(currentValue) Then
             txtDocumentSum.backColor = RGB(255, 240, 240)
@@ -223,7 +213,7 @@ Private Sub btnLetterHistory_Click()
     Exit Sub
     
 HistoryError:
-    MsgBox T("form.letter_creator.msg.history_open_error", "Error opening history form: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.history_open_error", "Error opening history form: ") & Err.description, vbCritical
 End Sub
 
 '------------------------------------------------------------
@@ -232,7 +222,7 @@ End Sub
 Private Sub btnClearSearch_Click()
     On Error Resume Next
     
-    Me.Controls("txtAddressSearch").Value = ""
+    Me.Controls("txtAddressSearch").value = ""
     Me.Controls("lstAddresses").Clear
     
     ClearAllAddressFields
@@ -257,7 +247,7 @@ Private Sub ClearAllAddressFields()
     For i = LBound(addressFields) To UBound(addressFields)
         Set ctrl = Me.Controls(addressFields(i))
         If Not ctrl Is Nothing Then
-            ctrl.Value = ""
+            ctrl.value = ""
             ctrl.backColor = RGB(255, 255, 255)
             Debug.Print "Cleared field: " & addressFields(i)
         End If
@@ -272,25 +262,25 @@ End Sub
 Private Sub CheckRequiredFields()
     On Error Resume Next
     
-    If Len(Trim(Me.Controls("txtCity").Value)) = 0 Then
+    If Len(Trim(Me.Controls("txtCity").value)) = 0 Then
         Me.Controls("txtCity").backColor = RGB(255, 240, 240)
     Else
         Me.Controls("txtCity").backColor = RGB(240, 255, 240)
     End If
     
-    If Len(Trim(Me.Controls("txtRegion").Value)) = 0 Then
+    If Len(Trim(Me.Controls("txtRegion").value)) = 0 Then
         Me.Controls("txtRegion").backColor = RGB(255, 240, 240)
     Else
         Me.Controls("txtRegion").backColor = RGB(240, 255, 240)
     End If
     
-    If Len(Trim(Me.Controls("txtPostalCode").Value)) = 0 Then
+    If Len(Trim(Me.Controls("txtPostalCode").value)) = 0 Then
         Me.Controls("txtPostalCode").backColor = RGB(255, 240, 240)
     Else
         Me.Controls("txtPostalCode").backColor = RGB(240, 255, 240)
     End If
     
-    If Me.Controls("cmbExecutor").ListIndex < 0 Or Len(Trim(Me.Controls("cmbExecutor").Value)) = 0 Then
+    If Me.Controls("cmbExecutor").ListIndex < 0 Or Len(Trim(Me.Controls("cmbExecutor").value)) = 0 Then
         Me.Controls("cmbExecutor").backColor = RGB(255, 240, 240)
     Else
         Me.Controls("cmbExecutor").backColor = RGB(240, 255, 240)
@@ -305,51 +295,51 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = T("form.letter_creator.title", "Letter Builder") & " v1.6.5"
+    Me.Caption = t("form.letter_creator.title", "Letter Builder") & " v1.6.7"
     
     On Error Resume Next
     
     If Not lstSelectedAttachments Is Nothing Then
         lstSelectedAttachments.Font.Size = 9
-        lstSelectedAttachments.ControlTipText = T("form.letter_creator.tip.selected_attachments", "Hover over the item to see the full name")
+        lstSelectedAttachments.ControlTipText = t("form.letter_creator.tip.selected_attachments", "Hover over the item to see the full name")
         lstSelectedAttachments.IntegralHeight = False
     End If
     
     If Not btnEditAddress Is Nothing Then
-        btnEditAddress.Caption = T("form.letter_creator.caption.edit_address", "Edit address")
-        btnEditAddress.ControlTipText = T("form.letter_creator.tip.edit_address", "Edit selected address")
+        btnEditAddress.Caption = t("form.letter_creator.caption.edit_address", "Edit address")
+        btnEditAddress.ControlTipText = t("form.letter_creator.tip.edit_address", "Edit selected address")
         btnEditAddress.Enabled = False
     End If
     
     If Not btnDeleteAddress Is Nothing Then
-        btnDeleteAddress.Caption = T("form.letter_creator.caption.delete_address", "Delete address")
-        btnDeleteAddress.ControlTipText = T("form.letter_creator.tip.delete_address", "Delete selected address")
+        btnDeleteAddress.Caption = t("form.letter_creator.caption.delete_address", "Delete address")
+        btnDeleteAddress.ControlTipText = t("form.letter_creator.tip.delete_address", "Delete selected address")
         btnDeleteAddress.Enabled = False
     End If
     
     If Not txtAddresseePhone Is Nothing Then
-        txtAddresseePhone.ControlTipText = T("form.letter_creator.tip.phone", "Addressee phone (format: 8-xxx-xxx-xx-xx)")
+        txtAddresseePhone.ControlTipText = t("form.letter_creator.tip.phone", "Addressee phone (format: 8-xxx-xxx-xx-xx)")
         txtAddresseePhone.Enabled = True
         txtAddresseePhone.backColor = RGB(255, 255, 255)
     End If
     
     If Not btnLetterHistory Is Nothing Then
         With btnLetterHistory
-            .Caption = T("form.letter_creator.caption.letter_history", "Letters History")
+            .Caption = t("form.letter_creator.caption.letter_history", "Letters History")
             .Font.Name = "Segoe UI"
             .Font.Size = 10
             .Font.Bold = True
             .backColor = RGB(156, 39, 176)
             .ForeColor = RGB(255, 255, 255)
-            .ControlTipText = T("form.letter_creator.tip.letter_history", "Open sent letters history form")
+            .ControlTipText = t("form.letter_creator.tip.letter_history", "Open sent letters history form")
         End With
     End If
     
     On Error GoTo 0
     
-    txtAddressSearch.ControlTipText = T("form.letter_creator.tip.address_search", "Enter part of the name to search for the addressee")
-    txtLetterNumber.ControlTipText = T("form.letter_creator.tip.letter_number", "Enter the number after 7/ (for example: 125 becomes 7/125)")
-    txtLetterDate.ControlTipText = T("form.letter_creator.tip.letter_date", "Format: dd.mm.yyyy")
+    txtAddressSearch.ControlTipText = t("form.letter_creator.tip.address_search", "Enter part of the name to search for the addressee")
+    txtLetterNumber.ControlTipText = t("form.letter_creator.tip.letter_number", "Enter the number after 7/ (for example: 125 becomes 7/125)")
+    txtLetterDate.ControlTipText = t("form.letter_creator.tip.letter_date", "Format: dd.mm.yyyy")
 End Sub
 
 Private Sub ApplyLocalizedStaticCaptions()
@@ -399,16 +389,16 @@ Private Sub ApplyLocalizedStaticCaptions()
     SetLocalizedCaption "btnDeleteAddress", "form.letter_creator.caption.delete_address", "Delete address"
     SetLocalizedCaption "btnLetterHistory", "form.letter_creator.caption.letter_history", "Letters History"
 
-    mpgWizard.Pages(0).Caption = T("form.letter_creator.page.step_1", "Step 1: Addressee")
-    mpgWizard.Pages(1).Caption = T("form.letter_creator.page.step_2", "Step 2: Letter")
-    mpgWizard.Pages(2).Caption = T("form.letter_creator.page.step_3", "Step 3: Attachments")
-    mpgWizard.Pages(3).Caption = T("form.letter_creator.page.step_4", "Step 4: Create")
+    mpgWizard.Pages(0).Caption = t("form.letter_creator.page.step_1", "Step 1: Addressee")
+    mpgWizard.Pages(1).Caption = t("form.letter_creator.page.step_2", "Step 2: Letter")
+    mpgWizard.Pages(2).Caption = t("form.letter_creator.page.step_3", "Step 3: Attachments")
+    mpgWizard.Pages(3).Caption = t("form.letter_creator.page.step_4", "Step 4: Create")
 
     On Error GoTo 0
 End Sub
 
 Private Sub SetLocalizedCaption(controlName As String, localizationKey As String, fallbackText As String)
-    SetControlCaption controlName, T(localizationKey, fallbackText)
+    SetControlCaption controlName, t(localizationKey, fallbackText)
 End Sub
 
 Private Sub SetControlCaption(controlName As String, captionText As String)
@@ -427,7 +417,7 @@ Private Sub txtAddresseePhone_Change()
     On Error Resume Next
     
     Dim currentValue As String, cursorPos As Long
-    currentValue = Me.Controls("txtAddresseePhone").Value
+    currentValue = Me.Controls("txtAddresseePhone").value
     cursorPos = Me.Controls("txtAddresseePhone").SelStart
     
     If Len(currentValue) >= 7 Then
@@ -435,7 +425,7 @@ Private Sub txtAddresseePhone_Change()
         formattedPhone = FormatPhoneNumber(currentValue)
         
         If formattedPhone <> currentValue Then
-            Me.Controls("txtAddresseePhone").Value = formattedPhone
+            Me.Controls("txtAddresseePhone").value = formattedPhone
             Me.Controls("txtAddresseePhone").SelStart = WorksheetFunction.Min(cursorPos + (Len(formattedPhone) - Len(currentValue)), Len(formattedPhone))
         End If
     End If
@@ -465,11 +455,11 @@ End Sub
 '------------------------------------------------------------
 Private Sub ClearDocumentFields()
     On Error Resume Next
-    If Not txtDocNumber Is Nothing Then txtDocNumber.Value = ""
-    If Not txtDocDate Is Nothing Then txtDocDate.Value = ""
-    If Not txtDocCopies Is Nothing Then txtDocCopies.Value = ""
-    If Not txtDocSheets Is Nothing Then txtDocSheets.Value = ""
-    If Not txtDocumentSum Is Nothing Then txtDocumentSum.Value = ""
+    If Not txtDocNumber Is Nothing Then txtDocNumber.value = ""
+    If Not txtDocDate Is Nothing Then txtDocDate.value = ""
+    If Not txtDocCopies Is Nothing Then txtDocCopies.value = ""
+    If Not txtDocSheets Is Nothing Then txtDocSheets.value = ""
+    If Not txtDocumentSum Is Nothing Then txtDocumentSum.value = ""
     On Error GoTo 0
 End Sub
 
@@ -477,11 +467,11 @@ End Sub
 '                       NAVIGATION
 '=====================================================================
 Private Sub btnPrevious_Click()
-    If mpgWizard.Value > 0 Then SwitchToPage mpgWizard.Value - 1
+    If mpgWizard.value > 0 Then SwitchToPage mpgWizard.value - 1
 End Sub
 
 Private Sub btnNext_Click()
-    Dim cur As Integer: cur = mpgWizard.Value
+    Dim cur As Integer: cur = mpgWizard.value
     
     If Not ValidatePage(cur) Then Exit Sub
     
@@ -490,7 +480,7 @@ Private Sub btnNext_Click()
             UpdateSummaryInfo
             CreateWordLetter
             SaveLetterToDatabase
-            MsgBox T("form.letter_creator.msg.letter_created", "Letter created successfully!"), vbInformation
+            MsgBox t("form.letter_creator.msg.letter_created", "Letter created successfully!"), vbInformation
             Unload Me
         End If
     Else
@@ -502,19 +492,19 @@ End Sub
 Private Sub SwitchToPage(pg As Integer)
     If pg < 0 Or pg > TOTAL_PAGES - 1 Then Exit Sub
     
-    mpgWizard.Value = pg
+    mpgWizard.value = pg
     lblProgressInfo.Caption = BuildProgressCaption(pg + 1)
     
     btnPrevious.Enabled = (pg > 0)
     
     If pg = TOTAL_PAGES - 1 Then
-        btnNext.Caption = T("form.letter_creator.caption.create_letter", "CREATE LETTER")
+        btnNext.Caption = t("form.letter_creator.caption.create_letter", "CREATE LETTER")
         btnNext.backColor = RGB(76, 175, 80)
         btnNext.ForeColor = RGB(255, 255, 255)
         btnNext.Font.Bold = True
         btnNext.Font.Size = 11
     Else
-        btnNext.Caption = T("form.letter_creator.caption.next", "Next >")
+        btnNext.Caption = t("form.letter_creator.caption.next", "Next >")
         btnNext.backColor = RGB(240, 240, 240)
         btnNext.ForeColor = RGB(0, 0, 0)
         btnNext.Font.Bold = False
@@ -574,14 +564,14 @@ Private Sub txtLetterNumber_Change()
     On Error Resume Next
     If Not txtLetterNumber Is Nothing Then
         Dim currentValue As String
-        currentValue = txtLetterNumber.Value
+        currentValue = txtLetterNumber.value
         
         If Left(currentValue, 2) <> "7/" Then
             Dim numericPart As String
             numericPart = Replace(currentValue, "7/", "")
             
-            txtLetterNumber.Value = "7/" & numericPart
-            txtLetterNumber.SelStart = Len(txtLetterNumber.Value)
+            txtLetterNumber.value = "7/" & numericPart
+            txtLetterNumber.SelStart = Len(txtLetterNumber.value)
         End If
     End If
     On Error GoTo 0
@@ -619,9 +609,9 @@ Private Sub txtAddressSearch_Change()
         
         ResetAddressFormState
         
-        If Len(Trim(Me.Controls("txtAddressSearch").Value)) > 0 Then
+        If Len(Trim(Me.Controls("txtAddressSearch").value)) > 0 Then
             Dim res As Collection, i As Long
-            Set res = GetCachedAddresses(Me.Controls("txtAddressSearch").Value)
+            Set res = GetCachedAddresses(Me.Controls("txtAddressSearch").value)
             For i = 1 To res.count
                 Me.Controls("lstAddresses").AddItem res(i)
             Next i
@@ -697,7 +687,7 @@ Private Sub btnSaveNewAddress_Click()
     End If
     
     SaveNewAddress addressArray
-    MsgBox T("form.letter_creator.msg.address_saved", "Address saved."), vbInformation
+    MsgBox t("form.letter_creator.msg.address_saved", "Address saved."), vbInformation
     
     ClearAddressCache
     
@@ -727,7 +717,7 @@ Private Sub btnEditAddress_Click()
     ClearAddressCache
     txtAddressSearch_Change
     
-    MsgBox T("form.letter_creator.msg.address_updated", "Address updated successfully."), vbInformation
+    MsgBox t("form.letter_creator.msg.address_updated", "Address updated successfully."), vbInformation
     On Error GoTo 0
 End Sub
 
@@ -742,9 +732,9 @@ Private Sub btnDeleteAddress_Click()
         Exit Sub
     End If
     
-    If MsgBox(T("form.letter_creator.msg.address_delete_confirm", "Are you sure you want to delete this address?"), vbYesNo + vbQuestion + vbDefaultButton2) = vbYes Then
+    If MsgBox(t("form.letter_creator.msg.address_delete_confirm", "Are you sure you want to delete this address?"), vbYesNo + vbQuestion + vbDefaultButton2) = vbYes Then
         DeleteExistingAddress selectedAddressRow
-        MsgBox T("form.letter_creator.msg.address_deleted", "Address deleted successfully."), vbInformation
+        MsgBox t("form.letter_creator.msg.address_deleted", "Address deleted successfully."), vbInformation
         
         ClearAddressFields
         ClearAddressCache
@@ -757,17 +747,17 @@ Private Sub btnDeleteAddress_Click()
     Exit Sub
     
 DeleteError:
-    MsgBox T("form.letter_creator.msg.address_delete_error", "Error deleting address: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.address_delete_error", "Error deleting address: ") & Err.description, vbCritical
 End Sub
 
 Private Sub ClearAddressFields()
     On Error Resume Next
-    If Not txtAddressee Is Nothing Then txtAddressee.Value = ""
-    If Not txtStreet Is Nothing Then txtStreet.Value = ""
-    If Not txtCity Is Nothing Then txtCity.Value = ""
-    If Not txtDistrict Is Nothing Then txtDistrict.Value = ""
-    If Not txtRegion Is Nothing Then txtRegion.Value = ""
-    If Not txtPostalCode Is Nothing Then txtPostalCode.Value = ""
+    If Not txtAddressee Is Nothing Then txtAddressee.value = ""
+    If Not txtStreet Is Nothing Then txtStreet.value = ""
+    If Not txtCity Is Nothing Then txtCity.value = ""
+    If Not txtDistrict Is Nothing Then txtDistrict.value = ""
+    If Not txtRegion Is Nothing Then txtRegion.value = ""
+    If Not txtPostalCode Is Nothing Then txtPostalCode.value = ""
     On Error GoTo 0
 End Sub
 
@@ -778,9 +768,9 @@ Private Sub txtAttachmentSearch_Change()
     On Error Resume Next
     If Not lstAvailableAttachments Is Nothing Then
         lstAvailableAttachments.Clear
-        If Len(Trim(txtAttachmentSearch.Value)) > 0 Then
+        If Len(Trim(txtAttachmentSearch.value)) > 0 Then
             Dim res As Collection, i As Long
-            Set res = GetCachedAttachments(txtAttachmentSearch.Value)
+            Set res = GetCachedAttachments(txtAttachmentSearch.value)
             For i = 1 To res.count: lstAvailableAttachments.AddItem res(i): Next i
         End If
     End If
@@ -810,18 +800,18 @@ Private Sub btnAddAttachment_Click()
     On Error Resume Next
     
     If lstAvailableAttachments Is Nothing Or lstAvailableAttachments.ListIndex < 0 Then
-        MsgBox T("form.letter_creator.msg.select_document_left", "Select a document in the left list."), vbExclamation
+        MsgBox t("form.letter_creator.msg.select_document_left", "Select a document in the left list."), vbExclamation
         Exit Sub
     End If
     
     Dim docArr As Variant
     docArr = CreateDocumentArrayWithSum( _
         lstAvailableAttachments.List(lstAvailableAttachments.ListIndex), _
-        Trim(IIf(txtDocNumber Is Nothing, "", txtDocNumber.Value)), _
-        Trim(IIf(txtDocDate Is Nothing, "", txtDocDate.Value)), _
-        Trim(IIf(txtDocCopies Is Nothing, "", txtDocCopies.Value)), _
-        Trim(IIf(txtDocSheets Is Nothing, "", txtDocSheets.Value)), _
-        Trim(IIf(txtDocumentSum Is Nothing, "", txtDocumentSum.Value)))
+        Trim(IIf(txtDocNumber Is Nothing, "", txtDocNumber.value)), _
+        Trim(IIf(txtDocDate Is Nothing, "", txtDocDate.value)), _
+        Trim(IIf(txtDocCopies Is Nothing, "", txtDocCopies.value)), _
+        Trim(IIf(txtDocSheets Is Nothing, "", txtDocSheets.value)), _
+        Trim(IIf(txtDocumentSum Is Nothing, "", txtDocumentSum.value)))
     
     documentsList.Add docArr
     SyncSelectedAttachmentsList
@@ -834,7 +824,7 @@ Private Sub btnRemoveAttachment_Click()
     On Error Resume Next
     
     If lstSelectedAttachments Is Nothing Or lstSelectedAttachments.ListIndex < 0 Then
-        MsgBox T("form.letter_creator.msg.select_document_right", "Select a document in the right list."), vbExclamation
+        MsgBox t("form.letter_creator.msg.select_document_right", "Select a document in the right list."), vbExclamation
         Exit Sub
     End If
     
@@ -863,13 +853,13 @@ Private Sub ShowSimpleContextMenu()
     On Error GoTo MenuError
     
     Dim menuChoice As String
-    menuChoice = InputBox(T("form.letter_creator.menu.document_actions_prompt", "Select action:") & vbCrLf & _
-                         T("form.letter_creator.menu.document_action.edit", "1 - Edit details") & vbCrLf & _
-                         T("form.letter_creator.menu.document_action.duplicate", "2 - Duplicate document") & vbCrLf & _
-                         T("form.letter_creator.menu.document_action.remove", "3 - Remove from list") & vbCrLf & _
-                         T("form.letter_creator.menu.document_action.move_up", "4 - Move up") & vbCrLf & _
-                         T("form.letter_creator.menu.document_action.move_down", "5 - Move down"), _
-                         T("form.letter_creator.menu.document_actions_title", "Document actions"), "1")
+    menuChoice = InputBox(t("form.letter_creator.menu.document_actions_prompt", "Select action:") & vbCrLf & _
+                         t("form.letter_creator.menu.document_action.edit", "1 - Edit details") & vbCrLf & _
+                         t("form.letter_creator.menu.document_action.duplicate", "2 - Duplicate document") & vbCrLf & _
+                         t("form.letter_creator.menu.document_action.remove", "3 - Remove from list") & vbCrLf & _
+                         t("form.letter_creator.menu.document_action.move_up", "4 - Move up") & vbCrLf & _
+                         t("form.letter_creator.menu.document_action.move_down", "5 - Move down"), _
+                         t("form.letter_creator.menu.document_actions_title", "Document actions"), "1")
     
     Select Case menuChoice
         Case "1": EditDocumentRequisites
@@ -894,14 +884,14 @@ Public Sub EditDocumentRequisites()
         
         If IsArray(docArray) Then
             If UBound(docArray) >= DocumentIndexSheets Then
-                txtDocNumber.Value = docArray(DocumentIndexNumber)
-                txtDocDate.Value = docArray(DocumentIndexDate)
-                txtDocCopies.Value = docArray(DocumentIndexCopies)
-                txtDocSheets.Value = docArray(DocumentIndexSheets)
+                txtDocNumber.value = docArray(DocumentIndexNumber)
+                txtDocDate.value = docArray(DocumentIndexDate)
+                txtDocCopies.value = docArray(DocumentIndexCopies)
+                txtDocSheets.value = docArray(DocumentIndexSheets)
             End If
             
             If UBound(docArray) >= DocumentIndexSum And Not txtDocumentSum Is Nothing Then
-                txtDocumentSum.Value = docArray(DocumentIndexSum)
+                txtDocumentSum.value = docArray(DocumentIndexSum)
             End If
         End If
     End If
@@ -926,7 +916,7 @@ Public Sub DuplicateDocument()
     Exit Sub
     
 DuplicateError:
-    MsgBox T("form.letter_creator.msg.duplicate_document_error", "Error duplicating document: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.duplicate_document_error", "Error duplicating document: ") & Err.description, vbCritical
 End Sub
 
 Public Sub RemoveSelectedDocument()
@@ -998,19 +988,19 @@ Private Sub UpdateSummaryInfo()
     On Error Resume Next
     
     If Not lblSummaryRecipient Is Nothing Then
-        lblSummaryRecipient.Caption = IIf(txtAddressee Is Nothing, "", txtAddressee.Value)
+        lblSummaryRecipient.Caption = IIf(txtAddressee Is Nothing, "", txtAddressee.value)
     End If
     
     If Not lblSummaryNumber Is Nothing Then
-        lblSummaryNumber.Caption = IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.Value)
+        lblSummaryNumber.Caption = IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.value)
     End If
     
     If Not lblSummaryDate Is Nothing Then
-        lblSummaryDate.Caption = IIf(txtLetterDate Is Nothing, "", txtLetterDate.Value)
+        lblSummaryDate.Caption = IIf(txtLetterDate Is Nothing, "", txtLetterDate.value)
     End If
     
     If Not lblSummaryExecutor Is Nothing Then
-        lblSummaryExecutor.Caption = IIf(cmbExecutor Is Nothing, "", cmbExecutor.Value)
+        lblSummaryExecutor.Caption = IIf(cmbExecutor Is Nothing, "", cmbExecutor.value)
     End If
     
     If Not lblSummaryDocsCount Is Nothing Then
@@ -1020,7 +1010,7 @@ Private Sub UpdateSummaryInfo()
     If Not txtFinalAttachments Is Nothing Then
         Dim attachmentText As String
         attachmentText = BuildSummaryAttachmentsText(documentsList)
-        txtFinalAttachments.Value = attachmentText
+        txtFinalAttachments.value = attachmentText
     End If
     
     On Error GoTo 0
@@ -1062,31 +1052,31 @@ Private Function CreateAddressArray() As Variant
     Dim arr(AddressIndexPhone) As String
     
     On Error Resume Next
-    arr(AddressIndexAddressee) = Me.Controls("txtAddressee").Value
-    arr(AddressIndexStreet) = Me.Controls("txtStreet").Value
-    arr(AddressIndexCity) = Me.Controls("txtCity").Value
-    arr(AddressIndexDistrict) = Me.Controls("txtDistrict").Value
-    arr(AddressIndexRegion) = Me.Controls("txtRegion").Value
-    arr(AddressIndexPostalCode) = Me.Controls("txtPostalCode").Value
-    arr(AddressIndexPhone) = Me.Controls("txtAddresseePhone").Value
+    arr(AddressIndexAddressee) = Me.Controls("txtAddressee").value
+    arr(AddressIndexStreet) = Me.Controls("txtStreet").value
+    arr(AddressIndexCity) = Me.Controls("txtCity").value
+    arr(AddressIndexDistrict) = Me.Controls("txtDistrict").value
+    arr(AddressIndexRegion) = Me.Controls("txtRegion").value
+    arr(AddressIndexPostalCode) = Me.Controls("txtPostalCode").value
+    arr(AddressIndexPhone) = Me.Controls("txtAddresseePhone").value
     On Error GoTo 0
     
     CreateAddressArray = arr
 End Function
 
 Private Sub ApplyAddressPartsToControls(addressParts As Variant)
-    Me.Controls("txtAddressee").Value = addressParts(AddressPartAddressee)
-    Me.Controls("txtStreet").Value = addressParts(AddressPartStreet)
-    Me.Controls("txtCity").Value = addressParts(AddressPartCity)
-    Me.Controls("txtDistrict").Value = addressParts(AddressPartDistrict)
-    Me.Controls("txtRegion").Value = addressParts(AddressPartRegion)
-    Me.Controls("txtPostalCode").Value = addressParts(AddressPartPostalCode)
-    Me.Controls("txtAddresseePhone").Value = addressParts(AddressPartPhone)
+    Me.Controls("txtAddressee").value = addressParts(AddressPartAddressee)
+    Me.Controls("txtStreet").value = addressParts(AddressPartStreet)
+    Me.Controls("txtCity").value = addressParts(AddressPartCity)
+    Me.Controls("txtDistrict").value = addressParts(AddressPartDistrict)
+    Me.Controls("txtRegion").value = addressParts(AddressPartRegion)
+    Me.Controls("txtPostalCode").value = addressParts(AddressPartPostalCode)
+    Me.Controls("txtAddresseePhone").value = addressParts(AddressPartPhone)
 End Sub
 
 Private Function GetControlText(controlName As String) As String
     On Error Resume Next
-    GetControlText = Trim(CStr(Me.Controls(controlName).Value))
+    GetControlText = Trim(CStr(Me.Controls(controlName).value))
     On Error GoTo 0
 End Function
 
@@ -1113,30 +1103,30 @@ Private Sub CreateWordLetter()
     On Error GoTo ErrorHandler
     
     CreateLetterDocument _
-        IIf(txtAddressee Is Nothing, "", txtAddressee.Value), _
+        IIf(txtAddressee Is Nothing, "", txtAddressee.value), _
         CreateAddressArray(), _
-        IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.Value), _
-        IIf(txtLetterDate Is Nothing, "", txtLetterDate.Value), _
-        IIf(cmbExecutor Is Nothing, "", cmbExecutor.Value), _
-        IIf(cmbDocumentType Is Nothing, "", cmbDocumentType.Value), _
-        (Not cmbLetterType Is Nothing And cmbLetterType.ListIndex = 1), _
+        IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.value), _
+        IIf(txtLetterDate Is Nothing, "", txtLetterDate.value), _
+        IIf(cmbExecutor Is Nothing, "", cmbExecutor.value), _
+        IIf(cmbDocumentType Is Nothing, "", ResolveDocumentTypeStorageValue(cmbDocumentType.value)), _
+        IsAlternateLetterTypeSelection(IIf(cmbLetterType Is Nothing, "", cmbLetterType.value)), _
         documentsList
     Exit Sub
 
 ErrorHandler:
-    MsgBox T("form.letter_creator.msg.create_letter_error", "Error creating letter: ") & Err.Description, vbCritical
+    MsgBox t("form.letter_creator.msg.create_letter_error", "Error creating letter: ") & Err.description, vbCritical
 End Sub
 
 '=====================================================================
 '      SAVING TO DATABASE WITH SUM
 '=====================================================================
 Private Sub SaveLetterToDatabase()
-    SaveLetterInfoWithSum IIf(txtAddressee Is Nothing, "", txtAddressee.Value), _
-                          IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.Value), _
+    SaveLetterInfoWithSum IIf(txtAddressee Is Nothing, "", txtAddressee.value), _
+                          IIf(txtLetterNumber Is Nothing, "", txtLetterNumber.value), _
                           ResolveLetterDateOrToday(GetControlText("txtLetterDate")), documentsList, _
-                          IIf(cmbExecutor Is Nothing, "", cmbExecutor.Value), _
+                          IIf(cmbExecutor Is Nothing, "", cmbExecutor.value), _
                           IIf(cmbDocumentType Is Nothing, "", _
-                              IIf(cmbDocumentType.ListIndex >= 0, cmbDocumentType.Value, ""))
+                              IIf(cmbDocumentType.ListIndex >= 0, ResolveDocumentTypeStorageValue(cmbDocumentType.value), ""))
 End Sub
 
 '=====================================================================
@@ -1207,7 +1197,7 @@ Private Sub AutoResizeTextBoxHeight(controlName As String)
         Dim textLength As Long
         Dim linesCount As Long
         
-        textLength = Len(ctrl.Value)
+        textLength = Len(ctrl.value)
         linesCount = Int(textLength / 40) + 1
         
         If linesCount < 1 Then linesCount = 1
@@ -1238,7 +1228,7 @@ End Sub
 '  CANCEL AND CLOSE BUTTONS
 '=====================================================================
 Private Sub btnCancel_Click()
-    If MsgBox(T("dialog.cancel_letter_creation", "Cancel letter creation?"), vbYesNo + vbQuestion) = vbYes Then
+    If MsgBox(t("dialog.cancel_letter_creation", "Cancel letter creation?"), vbYesNo + vbQuestion) = vbYes Then
         ClearCache
         Unload Me
     End If
@@ -1246,7 +1236,7 @@ End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If documentsList.count > 0 Then
-        If MsgBox(T("dialog.discard_unsaved_documents", "Unsaved documents will be lost. Close?"), vbYesNo + vbQuestion) = vbNo Then
+        If MsgBox(t("dialog.discard_unsaved_documents", "Unsaved documents will be lost. Close?"), vbYesNo + vbQuestion) = vbNo Then
             Cancel = True
         Else
             ClearCache
@@ -1257,10 +1247,10 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
 End Sub
 
 Private Function BuildProgressCaption(currentStep As Long) As String
-    BuildProgressCaption = T("form.letter_creator.progress.page", "Step") & " " & currentStep & " " & T("common.of", "of") & " " & TOTAL_PAGES
+    BuildProgressCaption = t("form.letter_creator.progress.page", "Step") & " " & currentStep & " " & t("common.of", "of") & " " & TOTAL_PAGES
 End Function
 
 Private Function BuildSelectedDocumentsCaption(documentCount As Long) As String
-    BuildSelectedDocumentsCaption = T("form.letter_creator.attachments_count", "Selected documents:") & " " & documentCount
+    BuildSelectedDocumentsCaption = t("form.letter_creator.attachments_count", "Selected documents:") & " " & documentCount
 End Function
 

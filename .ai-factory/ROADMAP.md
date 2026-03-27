@@ -50,3 +50,5 @@ The next bounded feature stages for code quality and maintainability are:
   Move `frmLetterHistory` captions, tooltips, search/export/status dialogs, and history status text onto workbook-backed localization keys without relying on English-only status parsing.
 - [x] `pisces/feature-18-localize-core-runtime-messages`
   Move remaining `ModuleMain` runtime messages and fallback Word letter text onto workbook-backed localization keys so localization no longer stops at the form layer.
+- [x] `pisces/feature-19-internal-key-migration`
+  Separate localized UI labels from persisted internal values for document types, letter types, and Word placeholder identifiers so business logic no longer depends on display text.
