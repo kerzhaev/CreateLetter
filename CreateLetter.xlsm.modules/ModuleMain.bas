@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.16 — 27.03.2026
+' Version: 1.6.17 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.16
+'                    SCHEMA CONSTANTS v1.6.17
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -102,7 +102,7 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    CORE HELPERS v1.6.16
+'                    CORE HELPERS v1.6.17
 ' ======================================================================
 Private g_WordApp As Object
 Private g_WordAppOwned As Boolean
@@ -788,6 +788,46 @@ Public Function BuildLetterReturnStatus(isReceived As Boolean, returnDateText As
     End If
 End Function
 
+Public Function GetLetterHistorySearchHintsText() As String
+    GetLetterHistorySearchHintsText = t("form.letter_history.msg.search_hints_body", _
+                                        "SEARCH HINTS:" & vbCrLf & vbCrLf & _
+                                        "• To search for a sum, enter only numbers: 125000" & vbCrLf & _
+                                        "• The system will find '125000', '125 000', '125000 rub.'" & vbCrLf & _
+                                        "• Search works across all columns simultaneously" & vbCrLf & _
+                                        "• You can search by part of a word or number" & vbCrLf & vbCrLf & _
+                                        "Click 'Refresh data' if you modified Excel manually")
+End Function
+
+Public Sub ExportLetterHistoryRecords(records As Collection)
+    If records Is Nothing Or records.count = 0 Then
+        MsgBox t("form.letter_history.msg.no_export_data", "No data to export."), vbExclamation
+        Exit Sub
+    End If
+
+    On Error GoTo ExportError
+
+    Dim exportWb As Workbook
+    Dim exportWs As Worksheet
+    Set exportWb = Workbooks.Add
+    Set exportWs = exportWb.Worksheets(1)
+
+    WriteLetterHistoryExportHeaders exportWs
+    WriteLetterHistoryExportRecords exportWs, records
+
+    exportWs.Columns("A:H").AutoFit
+    exportWs.Name = t("form.letter_history.export.sheet_name", "Letters history ") & Format(Date, "dd.mm.yyyy")
+    exportWb.Application.Visible = True
+
+    MsgBox t("form.letter_history.msg.export_completed", "Export completed.") & vbCrLf & _
+           t("form.letter_history.msg.records_exported", "Records exported: ") & records.count, _
+           vbInformation, _
+           t("form.letter_history.msg.export_title", "Data export")
+    Exit Sub
+
+ExportError:
+    MsgBox t("form.letter_history.msg.export_error", "Export error: ") & Err.description, vbCritical
+End Sub
+
 Public Function HasReturnStatusDate(returnStatus As String) As Boolean
     HasReturnStatusDate = (Len(ExtractReturnStatusDate(returnStatus)) > 0)
 End Function
@@ -904,6 +944,48 @@ Private Function ExtractDigitsOnly(inputText As String) As String
         End If
     Next i
 End Function
+
+Private Sub WriteLetterHistoryExportHeaders(exportWs As Worksheet)
+    With exportWs
+        .Cells(1, LetterColumnAddressee).value = t("form.letter_history.export.header.addressee", "Addressee")
+        .Cells(1, LetterColumnOutgoingNumber).value = t("form.letter_history.export.header.outgoing_number", "Outgoing Number")
+        .Cells(1, LetterColumnOutgoingDate).value = t("form.letter_history.export.header.outgoing_date", "Outgoing Date")
+        .Cells(1, LetterColumnAttachmentText).value = t("form.letter_history.export.header.attachment_name", "Attachment Name")
+        .Cells(1, LetterColumnDocumentSum).value = t("form.letter_history.export.header.document_sum", "Document Sum")
+        .Cells(1, LetterColumnReturnStatus).value = t("form.letter_history.export.header.return_mark", "Return Mark")
+        .Cells(1, LetterColumnExecutor).value = t("form.letter_history.export.header.executor_name", "Executor Name")
+        .Cells(1, LetterColumnDocumentType).value = t("form.letter_history.export.header.send_type", "Send Type")
+
+        With .Range("A1:H1")
+            .Font.Bold = True
+            .Interior.ColorIndex = 15
+            .Font.ColorIndex = 1
+        End With
+    End With
+End Sub
+
+Private Sub WriteLetterHistoryExportRecords(exportWs As Worksheet, records As Collection)
+    Dim i As Long
+    For i = 1 To records.count
+        WriteLetterHistoryExportRow exportWs, i + 1, CStr(records(i))
+    Next i
+End Sub
+
+Private Sub WriteLetterHistoryExportRow(exportWs As Worksheet, targetRow As Long, letterData As String)
+    Dim parts() As String
+    parts = Split(letterData, "|")
+
+    If UBound(parts) < HistoryPartDocumentType Then Exit Sub
+
+    exportWs.Cells(targetRow, LetterColumnAddressee).value = parts(HistoryPartAddressee)
+    exportWs.Cells(targetRow, LetterColumnOutgoingNumber).value = parts(HistoryPartOutgoingNumber)
+    exportWs.Cells(targetRow, LetterColumnOutgoingDate).value = parts(HistoryPartOutgoingDate)
+    exportWs.Cells(targetRow, LetterColumnAttachmentText).value = parts(HistoryPartAttachmentText)
+    exportWs.Cells(targetRow, LetterColumnDocumentSum).value = parts(HistoryPartDocumentSum)
+    exportWs.Cells(targetRow, LetterColumnReturnStatus).value = parts(HistoryPartReturnStatus)
+    exportWs.Cells(targetRow, LetterColumnExecutor).value = parts(HistoryPartExecutor)
+    exportWs.Cells(targetRow, LetterColumnDocumentType).value = GetDocumentTypeDisplayLabel(parts(HistoryPartDocumentType))
+End Sub
 
 Private Function GetHistoryCellValueSafe(ws As Worksheet, rowNumber As Long, columnNumber As Long) As String
     On Error Resume Next

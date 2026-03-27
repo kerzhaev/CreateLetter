@@ -56,3 +56,5 @@ The next bounded feature stages for code quality and maintainability are:
   Add English-safe public aliases for workbook bootstrap and letter-creator entry points while preserving legacy macro names as compatibility wrappers.
 - [x] `pisces/feature-21-hide-internal-keys-from-user-outputs`
   Keep internal ASCII keys in workbook storage while converting history search/export surfaces back to localized display labels for operators.
+- [x] `pisces/feature-22-history-output-refactor`
+  Move history export and search-hint output workflows from `frmLetterHistory` into `ModuleMain` so the form remains a thin orchestration shell.

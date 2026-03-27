@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterHistory 
-   Caption         =   "Letter History v1.2.4"
+   Caption         =   "Letter History v1.2.5"
    ClientHeight    =   11715
    ClientLeft      =   120
    ClientTop       =   465
@@ -15,11 +15,11 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 ' ======================================================================
-' Form: frmLetterHistory v1.2.4 - Thin-shell history UI with workbook-backed localization
+' Form: frmLetterHistory v1.2.5 - Thin-shell history UI with workbook-backed localization
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Date: 27.03.2026
 ' Purpose: History of sent letters with thin-shell UI, navigation, filtering, status updates, and schema-safe bindings
-' Updates v1.2.4:
+' Updates v1.2.5:
 ' - Moved history captions, tips, dialogs, and search info onto workbook-backed localization keys
 ' - Kept navigation, export, and status update flow aligned with named letter columns
 ' - Preserved Russian/European date formatting and record navigation workflow
@@ -501,64 +501,7 @@ Private Sub btnRefresh_Click()
 End Sub
 
 Private Sub btnExportToExcel_Click()
-    If filteredData.count = 0 Then
-        MsgBox t("form.letter_history.msg.no_export_data", "No data to export."), vbExclamation
-        Exit Sub
-    End If
-    
-    On Error GoTo ExportError
-    
-    Dim exportWb As Workbook
-    Dim exportWs As Worksheet
-    Set exportWb = Workbooks.Add
-    Set exportWs = exportWb.Worksheets(1)
-    
-    With exportWs
-        .Cells(1, LetterColumnAddressee).value = t("form.letter_history.export.header.addressee", "Addressee")
-        .Cells(1, LetterColumnOutgoingNumber).value = t("form.letter_history.export.header.outgoing_number", "Outgoing Number")
-        .Cells(1, LetterColumnOutgoingDate).value = t("form.letter_history.export.header.outgoing_date", "Outgoing Date")
-        .Cells(1, LetterColumnAttachmentText).value = t("form.letter_history.export.header.attachment_name", "Attachment Name")
-        .Cells(1, LetterColumnDocumentSum).value = t("form.letter_history.export.header.document_sum", "Document Sum")
-        .Cells(1, LetterColumnReturnStatus).value = t("form.letter_history.export.header.return_mark", "Return Mark")
-        .Cells(1, LetterColumnExecutor).value = t("form.letter_history.export.header.executor_name", "Executor Name")
-        .Cells(1, LetterColumnDocumentType).value = t("form.letter_history.export.header.send_type", "Send Type")
-        
-        With .Range("A1:H1")
-            .Font.Bold = True
-            .Interior.ColorIndex = 15
-            .Font.ColorIndex = 1
-        End With
-    End With
-    
-    Dim i As Integer
-    For i = 1 To filteredData.count
-        Dim letterData As String
-        letterData = filteredData(i)
-        
-        Dim parts() As String
-        parts = Split(letterData, "|")
-        
-        If UBound(parts) >= HistoryPartDocumentType Then
-            exportWs.Cells(i + 1, LetterColumnAddressee).value = parts(HistoryPartAddressee)
-            exportWs.Cells(i + 1, LetterColumnOutgoingNumber).value = parts(HistoryPartOutgoingNumber)
-            exportWs.Cells(i + 1, LetterColumnOutgoingDate).value = parts(HistoryPartOutgoingDate)
-            exportWs.Cells(i + 1, LetterColumnAttachmentText).value = parts(HistoryPartAttachmentText)
-            exportWs.Cells(i + 1, LetterColumnDocumentSum).value = parts(HistoryPartDocumentSum)
-            exportWs.Cells(i + 1, LetterColumnReturnStatus).value = parts(HistoryPartReturnStatus)
-            exportWs.Cells(i + 1, LetterColumnExecutor).value = parts(HistoryPartExecutor)
-            exportWs.Cells(i + 1, LetterColumnDocumentType).value = GetDocumentTypeDisplayLabel(parts(HistoryPartDocumentType))
-        End If
-    Next i
-    
-    exportWs.Columns("A:H").AutoFit
-    exportWs.Name = t("form.letter_history.export.sheet_name", "Letters history ") & Format(Date, "dd.mm.yyyy")
-    exportWb.Application.Visible = True
-    
-    MsgBox t("form.letter_history.msg.export_completed", "Export completed.") & vbCrLf & t("form.letter_history.msg.records_exported", "Records exported: ") & filteredData.count, vbInformation, t("form.letter_history.msg.export_title", "Data export")
-    Exit Sub
-    
-ExportError:
-    MsgBox t("form.letter_history.msg.export_error", "Export error: ") & Err.description, vbCritical
+    ExportLetterHistoryRecords filteredData
 End Sub
 
 Private Sub btnClose_Click()
@@ -601,11 +544,7 @@ End Sub
 
 
 Private Sub ShowSearchHints()
-    ' NEW FUNCTION: Search hints for the user
-    Dim hintsText As String
-    hintsText = t("form.letter_history.msg.search_hints_body", "SEARCH HINTS:" & vbCrLf & vbCrLf & "• To search for a sum, enter only numbers: 125000" & vbCrLf & "• The system will find '125000', '125 000', '125000 rub.'" & vbCrLf & "• Search works across all columns simultaneously" & vbCrLf & "• You can search by part of a word or number" & vbCrLf & vbCrLf & "Click 'Refresh data' if you modified Excel manually")
-    
-    MsgBox hintsText, vbInformation, t("form.letter_history.msg.search_hints_title", "Search Help")
+    MsgBox GetLetterHistorySearchHintsText(), vbInformation, t("form.letter_history.msg.search_hints_title", "Search Help")
 End Sub
 
 

@@ -25,3 +25,4 @@
 - Combo-box display labels may be localized, but persisted workbook values and business-logic comparisons must use stable English ASCII internal keys.
 - When migrating public VBA identifiers, add English-safe aliases first and keep legacy entry points as thin compatibility wrappers until workbook macros/buttons are switched over.
 - Internal storage keys may live in workbook tables, but every user-facing surface such as history lists, exports, and search hints must convert them back to display labels before showing them.
+- Workbook creation, export formatting, and other non-trivial data-output workflows must live in shared modules, not inside UserForms.
