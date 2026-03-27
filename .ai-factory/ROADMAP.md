@@ -34,5 +34,5 @@ The next bounded feature stages for code quality and maintainability are:
   Replace risky `On Error Resume Next` in workbook/Word/export flows with targeted handlers while leaving harmless UI-formatting fallbacks lightweight.
 - [x] `pisces/feature-10-word-app-singleton`
   Reuse one `Word.Application` instance per session instead of repeatedly creating/attaching per letter generation call.
-- [ ] `pisces/feature-11-listobjects-migration-readiness`
+- [x] `pisces/feature-11-listobjects-migration-readiness`
   Introduce helpers/accessors for `tblAddresses` and `tblLetters`, then gradually move CRUD/search/history flows onto `ListObjects`.

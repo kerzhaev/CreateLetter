@@ -3,18 +3,20 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.8 — 27.03.2026
+' Version: 1.6.9 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.8
+'                    SCHEMA CONSTANTS v1.6.9
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
 Private Const TextTableRowOwnForConfirmation As Long = 1
 Private Const TextTableRowConfirmedDocuments As Long = 2
+Private Const AddressesTableName As String = "tblAddresses"
+Private Const LettersTableName As String = "tblLetters"
 
 Public Enum AddressColumns
     AddressColumnAddressee = 1
@@ -86,7 +88,7 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.8
+'                    NEW FUNCTIONS v1.6.9
 ' ======================================================================
 Private g_WordApp As Object
 Private g_WordAppOwned As Boolean
@@ -361,16 +363,86 @@ Public Function FormatDocumentName(docArray As Variant) As String
     FormatDocumentName = result
 End Function
 
-Private Function ReadWorksheetMatrix(ws As Worksheet, firstColumn As Long, lastColumn As Long) As Variant
+Private Function TryGetWorksheetTable(ws As Worksheet, tableName As String, ByRef targetTable As ListObject) As Boolean
+    On Error GoTo TableMissing
+    
+    Set targetTable = ws.ListObjects(tableName)
+    TryGetWorksheetTable = Not targetTable Is Nothing
+    Exit Function
+    
+TableMissing:
+    Set targetTable = Nothing
+    TryGetWorksheetTable = False
+End Function
+
+Public Function GetAddressesTable() As ListObject
+    Dim ws As Worksheet
+    Dim targetTable As ListObject
+    
+    Set ws = ThisWorkbook.Worksheets("Addresses")
+    If TryGetWorksheetTable(ws, AddressesTableName, targetTable) Then
+        Set GetAddressesTable = targetTable
+    End If
+End Function
+
+Public Function GetLettersTable() As ListObject
+    Dim ws As Worksheet
+    Dim targetTable As ListObject
+    
+    Set ws = ThisWorkbook.Worksheets("Letters")
+    If TryGetWorksheetTable(ws, LettersTableName, targetTable) Then
+        Set GetLettersTable = targetTable
+    End If
+End Function
+
+Public Function GetStructuredTableReadiness() As String
+    Dim readiness As String
+    readiness = "Addresses="
+    readiness = readiness & IIf(GetAddressesTable() Is Nothing, "missing", "present")
+    readiness = readiness & ";Letters="
+    readiness = readiness & IIf(GetLettersTable() Is Nothing, "missing", "present")
+    GetStructuredTableReadiness = readiness
+End Function
+
+Private Function GetStructuredDataRange(ws As Worksheet, firstColumn As Long, lastColumn As Long, Optional preferredTableName As String = "") As Range
+    If Len(preferredTableName) > 0 Then
+        Dim preferredTable As ListObject
+        If TryGetWorksheetTable(ws, preferredTableName, preferredTable) Then
+            If Not preferredTable.DataBodyRange Is Nothing Then
+                Set GetStructuredDataRange = preferredTable.DataBodyRange
+                Exit Function
+            End If
+        End If
+    End If
+    
     Dim lastRow As Long
     lastRow = ws.Cells(ws.Rows.count, firstColumn).End(xlUp).Row
+    If lastRow < FIRST_DATA_ROW Then Exit Function
     
-    If lastRow < FIRST_DATA_ROW Then
+    Set GetStructuredDataRange = ws.Range(ws.Cells(FIRST_DATA_ROW, firstColumn), ws.Cells(lastRow, lastColumn))
+End Function
+
+Private Function ReadWorksheetMatrix(ws As Worksheet, firstColumn As Long, lastColumn As Long, Optional preferredTableName As String = "") As Variant
+    Dim sourceRange As Range
+    Set sourceRange = GetStructuredDataRange(ws, firstColumn, lastColumn, preferredTableName)
+    
+    If sourceRange Is Nothing Then
         ReadWorksheetMatrix = Empty
         Exit Function
     End If
     
-    ReadWorksheetMatrix = ws.Range(ws.Cells(FIRST_DATA_ROW, firstColumn), ws.Cells(lastRow, lastColumn)).Value
+    ReadWorksheetMatrix = sourceRange.Value
+End Function
+
+Private Function GetStructuredDataStartRow(ws As Worksheet, firstColumn As Long, lastColumn As Long, Optional preferredTableName As String = "") As Long
+    Dim sourceRange As Range
+    Set sourceRange = GetStructuredDataRange(ws, firstColumn, lastColumn, preferredTableName)
+    
+    If sourceRange Is Nothing Then
+        GetStructuredDataStartRow = FIRST_DATA_ROW
+    Else
+        GetStructuredDataStartRow = sourceRange.Row
+    End If
 End Function
 
 Private Function MatrixValueOrEmpty(dataMatrix As Variant, rowIndex As Long, columnIndex As Long) As String
@@ -437,8 +509,11 @@ Public Function SearchAddresses(searchTerm As String) As Collection
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
     Dim addressData As Variant
-    addressData = ReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnPhone)
+    addressData = ReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnPhone, AddressesTableName)
     If IsEmpty(addressData) Then Exit Function
+    
+    Dim startRow As Long
+    startRow = GetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnPhone, AddressesTableName)
     
     Dim normalizedSearch As String
     normalizedSearch = UCase$(Trim$(searchTerm))
@@ -446,7 +521,7 @@ Public Function SearchAddresses(searchTerm As String) As Collection
     Dim i As Long
     For i = LBound(addressData, 1) To UBound(addressData, 1)
         If Len(normalizedSearch) = 0 Or InStr(1, UCase$(BuildAddressSearchLineFromMatrix(addressData, i)), normalizedSearch, vbTextCompare) > 0 Then
-            SearchAddresses.Add BuildAddressListItemFromMatrix(addressData, i, i + FIRST_DATA_ROW - 1)
+            SearchAddresses.Add BuildAddressListItemFromMatrix(addressData, i, startRow + i - 1)
         End If
     Next i
     
@@ -530,12 +605,15 @@ Public Function LoadLetterHistoryData() As Collection
     Set ws = ThisWorkbook.Worksheets("Letters")
     
     Dim letterData As Variant
-    letterData = ReadWorksheetMatrix(ws, LetterColumnAddressee, LetterColumnDocumentType)
+    letterData = ReadWorksheetMatrix(ws, LetterColumnAddressee, LetterColumnDocumentType, LettersTableName)
     If IsEmpty(letterData) Then Exit Function
+    
+    Dim startRow As Long
+    startRow = GetStructuredDataStartRow(ws, LetterColumnAddressee, LetterColumnDocumentType, LettersTableName)
     
     Dim i As Long
     For i = LBound(letterData, 1) To UBound(letterData, 1)
-        LoadLetterHistoryData.Add BuildLetterHistoryRecordFromMatrix(letterData, i, i + FIRST_DATA_ROW - 1)
+        LoadLetterHistoryData.Add BuildLetterHistoryRecordFromMatrix(letterData, i, startRow + i - 1)
     Next i
     
     Exit Function
@@ -907,12 +985,15 @@ Public Function IsAddressDuplicate(addressArray As Variant, Optional excludeRow 
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
     Dim addressData As Variant
-    addressData = ReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnPhone)
+    addressData = ReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnPhone, AddressesTableName)
     If IsEmpty(addressData) Then Exit Function
+    
+    Dim startRow As Long
+    startRow = GetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnPhone, AddressesTableName)
     
     Dim i As Long, matchCount As Integer
     For i = LBound(addressData, 1) To UBound(addressData, 1)
-        If i + FIRST_DATA_ROW - 1 = excludeRow Then GoTo NextRow
+        If startRow + i - 1 = excludeRow Then GoTo NextRow
         
         matchCount = 0
         
