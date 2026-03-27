@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.6 — 27.03.2026
+' Version: 1.6.7 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.6
+'                    SCHEMA CONSTANTS v1.6.7
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -86,7 +86,7 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    NEW FUNCTIONS v1.6.6
+'                    NEW FUNCTIONS v1.6.7
 ' ======================================================================
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
@@ -985,13 +985,7 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     
     ' DEBUG: Writing to Excel
     Debug.Print "=== BEFORE writing to Excel cell (4) ==="
-    On Error Resume Next
     ws.Cells(newRow, LetterColumnAttachmentText).Value = attachmentText
-    If Err.number <> 0 Then
-        Debug.Print "ERROR writing to cell (4): " & Err.description & " (Number: " & Err.number & ")"
-        Err.Clear
-    End If
-    On Error GoTo SaveLetterError
     Debug.Print "=== AFTER writing to Excel cell (4) ==="
     
     ' DEBUG: Sum calculation
@@ -1002,7 +996,6 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     
     ' DEBUG: Writing sum
     Debug.Print "=== BEFORE writing sum to cell (5) ==="
-    On Error Resume Next
     If totalSum > 0 Then
         ws.Cells(newRow, LetterColumnDocumentSum).Value = totalSum
         Debug.Print "Written totalSum: " & totalSum
@@ -1010,24 +1003,13 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
         ws.Cells(newRow, LetterColumnDocumentSum).Value = ""
         Debug.Print "Written empty sum"
     End If
-    If Err.number <> 0 Then
-        Debug.Print "ERROR writing to cell (5): " & Err.description & " (Number: " & Err.number & ")"
-        Err.Clear
-    End If
-    On Error GoTo SaveLetterError
     Debug.Print "=== AFTER writing sum to cell (5) ==="
     
     ' DEBUG: Writing remaining data
     Debug.Print "=== BEFORE writing remaining cells ==="
-    On Error Resume Next
     ws.Cells(newRow, LetterColumnReturnStatus).Value = ""
     ws.Cells(newRow, LetterColumnExecutor).Value = executor
     ws.Cells(newRow, LetterColumnDocumentType).Value = documentType
-    If Err.number <> 0 Then
-        Debug.Print "ERROR writing remaining cells: " & Err.description & " (Number: " & Err.number & ")"
-        Err.Clear
-    End If
-    On Error GoTo SaveLetterError
     Debug.Print "=== AFTER writing remaining cells ==="
     
     Debug.Print "=== DEBUG SaveLetterInfoWithSum SUCCESS END ==="
@@ -1268,17 +1250,71 @@ Public Sub MoveDocumentCollectionItemDown(documentsList As Collection, oneBasedI
     documentsList.Add tempDoc, , oneBasedIndex
 End Sub
 
+Private Function TryGetRunningWordApplication(ByRef wordApp As Object) As Boolean
+    On Error GoTo LookupFailed
+    
+    Set wordApp = GetObject(, "Word.Application")
+    TryGetRunningWordApplication = Not wordApp Is Nothing
+    Exit Function
+    
+LookupFailed:
+    Set wordApp = Nothing
+    TryGetRunningWordApplication = False
+End Function
+
+Private Function TrySaveCurrentWorkbook(ByRef errorMessage As String) As Boolean
+    On Error GoTo SaveFailed
+    
+    ThisWorkbook.Save
+    errorMessage = ""
+    TrySaveCurrentWorkbook = True
+    Exit Function
+    
+SaveFailed:
+    errorMessage = Err.Description
+    TrySaveCurrentWorkbook = False
+End Function
+
+Private Sub ApplyWordRangeFontFormatting(targetRange As Object, fontName As String, fontSize As Integer)
+    With targetRange
+        .Font.Name = fontName
+        .Font.Size = fontSize
+        .ParagraphFormat.SpaceAfter = 0
+        .ParagraphFormat.SpaceBefore = 0
+        .ParagraphFormat.LineSpacing = fontSize + 2
+    End With
+End Sub
+
+Private Function TryGetLoadedUserForm(formName As String, ByRef loadedForm As Object) As Boolean
+    On Error GoTo LookupFailed
+    
+    Set loadedForm = VBA.UserForms(formName)
+    TryGetLoadedUserForm = Not loadedForm Is Nothing
+    Exit Function
+    
+LookupFailed:
+    Set loadedForm = Nothing
+    TryGetLoadedUserForm = False
+End Function
+
+Private Function TryFallbackReplaceWordContent(wordDoc As Object, findText As String, replaceText As String) As Boolean
+    On Error GoTo FallbackFailed
+    
+    wordDoc.Content.Text = Replace(wordDoc.Content.Text, findText, Left$(replaceText, 200))
+    TryFallbackReplaceWordContent = True
+    Exit Function
+    
+FallbackFailed:
+    TryFallbackReplaceWordContent = False
+End Function
+
 Public Sub CreateLetterDocument(addressee As String, addressArray As Variant, letterNumber As String, letterDateRaw As String, executor As String, documentType As String, useAlternateTemplate As Boolean, documentsList As Collection)
     Dim wordApp As Object
     Dim wordDoc As Object
     
     On Error GoTo ErrorHandler
     
-    On Error Resume Next
-    Set wordApp = GetObject(, "Word.Application")
-    On Error GoTo ErrorHandler
-    
-    If wordApp Is Nothing Then
+    If Not TryGetRunningWordApplication(wordApp) Then
         Set wordApp = CreateObject("Word.Application")
     End If
     
@@ -1309,10 +1345,13 @@ SaveDocument:
     wordDoc.SaveAs fileName
     Debug.Print "File saved: " & fileName
     
-    On Error Resume Next
-    ThisWorkbook.Save
-    Debug.Print "Excel workbook saved"
-    On Error GoTo ErrorHandler
+    Dim saveWorkbookError As String
+    If TrySaveCurrentWorkbook(saveWorkbookError) Then
+        Debug.Print "Excel workbook saved"
+    Else
+        Debug.Print "Excel workbook save failed: " & saveWorkbookError
+        MsgBox "Letter file was created, but the workbook was not saved: " & saveWorkbookError, vbExclamation
+    End If
     
     wordApp.Visible = True
     wordDoc.Activate
@@ -1323,8 +1362,9 @@ SaveDocument:
     
 ErrorHandler:
     MsgBox "Error creating letter: " & Err.Description, vbCritical
-    On Error Resume Next
-    If Not wordDoc Is Nothing Then wordDoc.Close False
+    If Not wordDoc Is Nothing Then
+        wordDoc.Close False
+    End If
     Set wordDoc = Nothing
     Set wordApp = Nothing
 End Sub
@@ -1388,7 +1428,7 @@ ScratchError:
 End Sub
 
 Public Sub ReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
-    On Error Resume Next
+    On Error GoTo ReplaceError
     
     Dim rng As Object
     Set rng = wordDoc.content
@@ -1422,11 +1462,14 @@ Public Sub ReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documen
         End If
     End With
     
-    On Error GoTo 0
+    Exit Sub
+    
+ReplaceError:
+    Err.Raise Err.Number, "ReplaceAttachmentsInTemplateWithFontAndSum", Err.Description
 End Sub
 
 Public Sub AppendAttachmentsToDocumentWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
-    On Error Resume Next
+    On Error GoTo AppendError
     
     Dim rng As Object
     Set rng = wordDoc.content
@@ -1453,7 +1496,10 @@ Public Sub AppendAttachmentsToDocumentWithFontAndSum(wordDoc As Object, document
     FormatAttachmentsInWord attachmentRange, fontSize
     rng.InsertAfter vbCrLf & vbCrLf
     
-    On Error GoTo 0
+    Exit Sub
+    
+AppendError:
+    Err.Raise Err.Number, "AppendAttachmentsToDocumentWithFontAndSum", Err.Description
 End Sub
 
 Public Function CalculateTotalDocumentsSum(documents As Collection) As Double
@@ -1719,7 +1765,7 @@ End Sub
 Public Function GetDocumentTypeText(documentType As String) As String
     GetDocumentTypeText = "forwarding confirmed accounting documents to your address"
     
-    On Error Resume Next
+    On Error GoTo ReadTextError
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets("Settings")
     
@@ -1744,7 +1790,10 @@ Public Function GetDocumentTypeText(documentType As String) As String
         End If
     End If
     
-    On Error GoTo 0
+    Exit Function
+    
+ReadTextError:
+    Debug.Print "GetDocumentTypeText fallback used: " & Err.Description
 End Function
 
 Public Sub SafeReplaceInWord(wordDoc As Object, findText As String, replaceText As String)
@@ -1775,19 +1824,16 @@ Public Sub SafeReplaceInWord(wordDoc As Object, findText As String, replaceText 
         
         If findText = "ExecutorPhone" Then
             Debug.Print "Replacement done. Checking result..."
-            On Error Resume Next
             Dim rng As Object
             Set rng = wordDoc.content
             With rng.Find
                 .Text = replaceText
                 If .Execute Then
-                    rng.Font.Name = "Times New Roman"
-                    rng.Font.Size = 12
+                    ApplyWordRangeFontFormatting rng, "Times New Roman", 12
                     rng.Font.Color = RGB(0, 0, 0)
                     Debug.Print "Phone formatting applied"
                 End If
             End With
-            On Error GoTo ReplaceError
         End If
     End If
     
@@ -1795,9 +1841,9 @@ Public Sub SafeReplaceInWord(wordDoc As Object, findText As String, replaceText 
     
 ReplaceError:
     Debug.Print "Error replacing '" & findText & "': " & Err.description
-    On Error Resume Next
-    wordDoc.content.Text = Replace(wordDoc.content.Text, findText, Left(replaceText, 200))
-    On Error GoTo 0
+    If Not TryFallbackReplaceWordContent(wordDoc, findText, replaceText) Then
+        Err.Raise Err.Number, "SafeReplaceInWord", Err.Description
+    End If
 End Sub
 
 Public Sub SafeReplaceInWordWithFragments(wordDoc As Object, findText As String, fragments As Collection)
@@ -1823,18 +1869,9 @@ Public Sub SafeReplaceInWordWithFragments(wordDoc As Object, findText As String,
             
             rng.InsertAfter fullText
             
-            On Error Resume Next
             Dim insertedRange As Object
             Set insertedRange = wordDoc.Range(rng.Start, rng.Start + Len(fullText))
-            
-            With insertedRange
-                .Font.Name = "Times New Roman"
-                .Font.Size = 12
-                .ParagraphFormat.SpaceAfter = 0
-                .ParagraphFormat.SpaceBefore = 0
-                .ParagraphFormat.LineSpacing = 14
-            End With
-            On Error GoTo ReplaceError
+            ApplyWordRangeFontFormatting insertedRange, "Times New Roman", 12
         End If
     End With
     
@@ -1915,14 +1952,13 @@ Private Function FindBestBreakPosition(textFragment As String) As Long
 End Function
 
 Public Sub FormatAttachmentsInWord(rng As Object, Optional fontSize As Integer = 10)
-    On Error Resume Next
+    On Error GoTo FormatError
     
-    rng.Font.Size = fontSize
-    rng.ParagraphFormat.SpaceAfter = 0
-    rng.ParagraphFormat.SpaceBefore = 0
-    rng.ParagraphFormat.LineSpacing = fontSize + 2
+    ApplyWordRangeFontFormatting rng, rng.Font.Name, fontSize
+    Exit Sub
     
-    On Error GoTo 0
+FormatError:
+    Err.Raise Err.Number, "FormatAttachmentsInWord", Err.Description
 End Sub
 
 Public Function GenerateFileNameWithExecutor(addressee As String, letterNumber As String, executor As String) As String
@@ -1984,27 +2020,21 @@ Public Sub ClearHighlight()
 End Sub
 
 Public Sub RestoreFocusToHistory()
-    On Error Resume Next
-    
     Dim historyForm As Object
-    Set historyForm = VBA.UserForms("frmLetterHistory")
+    If Not TryGetLoadedUserForm("frmLetterHistory", historyForm) Then Exit Sub
     
     If Not historyForm Is Nothing Then
         historyForm.SetFocus
         historyForm.ZOrder 0
         Debug.Print "Focus returned to letter history form"
     End If
-    
-    On Error GoTo 0
 End Sub
 
 Public Sub ShowLetterHistoryModeless()
     On Error GoTo ShowHistoryError
     
     Dim existingForm As Object
-    On Error Resume Next
-    Set existingForm = VBA.UserForms("frmLetterHistory")
-    On Error GoTo ShowHistoryError
+    Call TryGetLoadedUserForm("frmLetterHistory", existingForm)
     
     If Not existingForm Is Nothing Then
         existingForm.SetFocus
