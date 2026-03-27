@@ -3,18 +3,21 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.19 — 27.03.2026
+' Version: 1.6.21 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.19
+'                    SCHEMA CONSTANTS v1.6.21
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
 Private Const TextTableRowOwnForConfirmation As Long = 1
 Private Const TextTableRowConfirmedDocuments As Long = 2
+Private Const LetterTextsTableName As String = "tblLetterTexts"
+Private Const LegacyLetterTextsTableName As String = "Text"
+Private Const LegacyLetterTextsTableNameCyrillic As String = "Текст"
 Private Const AddressesTableName As String = "tblAddresses"
 Private Const LettersTableName As String = "tblLetters"
 Private Const DocumentTypeKeyConfirmed As String = "confirmed_documents"
@@ -130,14 +133,14 @@ Public Function NormalizeDocumentTypeKey(documentType As String) As String
     normalizedText = UCase$(Trim$(documentType))
 
     If normalizedText = UCase$(DocumentTypeKeyOwnConfirmation) Or _
-       normalizedText = UCase$(T("form.letter_creator.option.document_type.own_confirmation", "Own for confirmation")) Or _
+       normalizedText = UCase$(t("form.letter_creator.option.document_type.own_confirmation", "Own for confirmation")) Or _
        normalizedText = "OWN FOR CONFIRMATION" Then
         NormalizeDocumentTypeKey = DocumentTypeKeyOwnConfirmation
         Exit Function
     End If
 
     If normalizedText = UCase$(DocumentTypeKeyConfirmed) Or _
-       normalizedText = UCase$(T("form.letter_creator.option.document_type.confirmed", "Third-party confirmed documents")) Or _
+       normalizedText = UCase$(t("form.letter_creator.option.document_type.confirmed", "Third-party confirmed documents")) Or _
        normalizedText = "THIRD-PARTY CONFIRMED DOCUMENTS" Then
         NormalizeDocumentTypeKey = DocumentTypeKeyConfirmed
         Exit Function
@@ -162,9 +165,9 @@ End Function
 Public Function GetDocumentTypeDisplayLabel(documentType As String) As String
     Select Case NormalizeDocumentTypeKey(documentType)
         Case DocumentTypeKeyOwnConfirmation
-            GetDocumentTypeDisplayLabel = T("form.letter_creator.option.document_type.own_confirmation", "Own for confirmation")
+            GetDocumentTypeDisplayLabel = t("form.letter_creator.option.document_type.own_confirmation", "Own for confirmation")
         Case DocumentTypeKeyConfirmed
-            GetDocumentTypeDisplayLabel = T("form.letter_creator.option.document_type.confirmed", "Third-party confirmed documents")
+            GetDocumentTypeDisplayLabel = t("form.letter_creator.option.document_type.confirmed", "Third-party confirmed documents")
         Case Else
             GetDocumentTypeDisplayLabel = Trim$(documentType)
     End Select
@@ -175,7 +178,7 @@ Public Function NormalizeLetterTypeKey(letterType As String) As String
     normalizedText = UCase$(Trim$(letterType))
 
     If normalizedText = UCase$(LetterTypeKeyFOU) Or _
-       normalizedText = UCase$(T("form.letter_creator.option.letter_type.fou", "FOU (For Official Use)")) Then
+       normalizedText = UCase$(t("form.letter_creator.option.letter_type.fou", "FOU (For Official Use)")) Then
         NormalizeLetterTypeKey = LetterTypeKeyFOU
     Else
         NormalizeLetterTypeKey = LetterTypeKeyRegular
@@ -184,9 +187,9 @@ End Function
 
 Public Function GetLetterTypeDisplayLabel(letterType As String) As String
     If NormalizeLetterTypeKey(letterType) = LetterTypeKeyFOU Then
-        GetLetterTypeDisplayLabel = T("form.letter_creator.option.letter_type.fou", "FOU (For Official Use)")
+        GetLetterTypeDisplayLabel = t("form.letter_creator.option.letter_type.fou", "FOU (For Official Use)")
     Else
-        GetLetterTypeDisplayLabel = T("form.letter_creator.option.letter_type.regular", "Regular")
+        GetLetterTypeDisplayLabel = t("form.letter_creator.option.letter_type.regular", "Regular")
     End If
 End Function
 
@@ -423,7 +426,7 @@ End Function
 
 Public Function FormatDocumentName(docArray As Variant) As String
     If Not IsArray(docArray) Then
-        FormatDocumentName = T("core.runtime.error.invalid_data_format", "Error: invalid data format")
+        FormatDocumentName = t("core.runtime.error.invalid_data_format", "Error: invalid data format")
         Exit Function
     End If
     
@@ -1154,7 +1157,7 @@ Public Sub SaveNewAddress(addressArray As Variant)
     Exit Sub
     
 SaveError:
-    MsgBox T("core.address.error.save", "Error saving address: ") & Err.description, vbCritical
+    MsgBox t("core.address.error.save", "Error saving address: ") & Err.description, vbCritical
 End Sub
 
 Public Sub UpdateExistingAddress(rowNumber As Long, addressArray As Variant)
@@ -1168,7 +1171,7 @@ Public Sub UpdateExistingAddress(rowNumber As Long, addressArray As Variant)
     Exit Sub
     
 UpdateError:
-    MsgBox T("core.address.error.update", "Error updating address: ") & Err.description, vbCritical
+    MsgBox t("core.address.error.update", "Error updating address: ") & Err.description, vbCritical
 End Sub
 
 Public Sub DeleteExistingAddress(rowNumber As Long)
@@ -1182,7 +1185,7 @@ Public Sub DeleteExistingAddress(rowNumber As Long)
     Exit Sub
     
 DeleteError:
-    MsgBox T("core.address.error.delete", "Error deleting address: ") & Err.description, vbCritical
+    MsgBox t("core.address.error.delete", "Error deleting address: ") & Err.description, vbCritical
 End Sub
 
 Public Function IsAddressDuplicate(addressArray As Variant, Optional excludeRow As Long = 0) As Boolean
@@ -1315,14 +1318,14 @@ SaveLetterError:
     Debug.Print "Error Description: " & Err.description
     Debug.Print "Error Source: " & Err.Source
     Debug.Print "==========================="
-    MsgBox T("core.letter.error.save_info", "Error saving letter info: ") & Err.description, vbCritical
+    MsgBox t("core.letter.error.save_info", "Error saving letter info: ") & Err.description, vbCritical
 End Sub
 
 Public Function FormatAttachmentsListCompactWithSum(documentsList As Collection) As String
     Debug.Print "=== DEBUG FormatAttachmentsListCompactWithSum START ==="
     
     If documentsList Is Nothing Or documentsList.count = 0 Then
-        FormatAttachmentsListCompactWithSum = T("core.attachments.not_specified", "Documents not specified")
+        FormatAttachmentsListCompactWithSum = t("core.attachments.not_specified", "Documents not specified")
         Debug.Print "=== DEBUG FormatAttachmentsListCompactWithSum END (empty) ==="
         Exit Function
     End If
@@ -1363,7 +1366,7 @@ Public Function FormatDocumentNameWithSum(docArray As Variant) As String
     Debug.Print "IsArray: " & IsArray(docArray)
     
     If Not IsArray(docArray) Then
-        FormatDocumentNameWithSum = T("core.runtime.error.invalid_data_format", "Error: invalid data format")
+        FormatDocumentNameWithSum = t("core.runtime.error.invalid_data_format", "Error: invalid data format")
         Debug.Print "ERROR: Not array"
         Debug.Print "=== DEBUG FormatDocumentNameWithSum END ==="
         Exit Function
@@ -1436,7 +1439,7 @@ Public Function FormatAttachmentsListForWordWithSum(documentsList As Collection)
     Set FormatAttachmentsListForWordWithSum = New Collection
     
     If documentsList Is Nothing Or documentsList.count = 0 Then
-        FormatAttachmentsListForWordWithSum.Add T("core.attachments.not_specified_word", "documents not specified;")
+        FormatAttachmentsListForWordWithSum.Add t("core.attachments.not_specified_word", "documents not specified;")
         Exit Function
     End If
     
@@ -1742,7 +1745,7 @@ Public Sub CreateLetterDocument(addressee As String, addressArray As Variant, le
     
 SaveDocument:
     Dim fileName As String
-    fileName = GenerateFileNameWithExecutor(IIf(Len(Trim(addressee)) = 0, T("core.letter.default_file_name", "Letter"), addressee), letterNumber, executor)
+    fileName = GenerateFileNameWithExecutor(IIf(Len(Trim(addressee)) = 0, t("core.letter.default_file_name", "Letter"), addressee), letterNumber, executor)
     
     wordDoc.SaveAs fileName
     Debug.Print "File saved: " & fileName
@@ -1752,7 +1755,7 @@ SaveDocument:
         Debug.Print "Excel workbook saved"
     Else
         Debug.Print "Excel workbook save failed: " & saveWorkbookError
-        MsgBox T("core.letter.warning.workbook_not_saved", "Letter file was created, but the workbook was not saved: ") & saveWorkbookError, vbExclamation
+        MsgBox t("core.letter.warning.workbook_not_saved", "Letter file was created, but the workbook was not saved: ") & saveWorkbookError, vbExclamation
     End If
     
     wordApp.Visible = True
@@ -1763,7 +1766,7 @@ SaveDocument:
     Exit Sub
     
 ErrorHandler:
-    MsgBox T("core.letter.error.create_document", "Error creating letter: ") & Err.description, vbCritical
+    MsgBox t("core.letter.error.create_document", "Error creating letter: ") & Err.description, vbCritical
     If Not wordDoc Is Nothing Then
         wordDoc.Close False
     End If
@@ -1801,7 +1804,7 @@ Public Sub FillWordTemplateData(wordDoc As Object, addresseeText As String, addr
     Exit Sub
     
 TemplateError:
-    MsgBox T("core.letter.error.template_fill", "Template filling error: ") & Err.description, vbCritical
+    MsgBox t("core.letter.error.template_fill", "Template filling error: ") & Err.description, vbCritical
 End Sub
 
 Public Sub CreateLetterDocumentFromScratch(wordDoc As Object, addresseeText As String, addressArray As Variant, numberText As String, rawDateText As String, executorText As String, documentType As String, documentsList As Collection)
@@ -1816,20 +1819,20 @@ Public Sub CreateLetterDocumentFromScratch(wordDoc As Object, addresseeText As S
     letterText = GetDocumentTypeText(documentType)
     dateText = FormatLetterDate(rawDateText)
     
-    content = T("core.letter.fallback.to_commander", "To the Commander of military unit ") & addresseeText & vbCrLf & vbCrLf
+    content = t("core.letter.fallback.to_commander", "To the Commander of military unit ") & addresseeText & vbCrLf & vbCrLf
     content = content & addressText & vbCrLf & vbCrLf & vbCrLf
     content = content & letterText & vbCrLf & vbCrLf
-    content = content & T("core.letter.fallback.executor", "Executor: ") & executorText & vbCrLf
-    content = content & T("core.letter.fallback.phone", "Phone: ") & GetExecutorPhone(executorText) & vbCrLf
-    content = content & T("core.letter.fallback.ref_no", "Ref. No.: ") & numberText & vbCrLf
-    content = content & T("core.letter.fallback.date", "Date: ") & dateText & vbCrLf & vbCrLf
+    content = content & t("core.letter.fallback.executor", "Executor: ") & executorText & vbCrLf
+    content = content & t("core.letter.fallback.phone", "Phone: ") & GetExecutorPhone(executorText) & vbCrLf
+    content = content & t("core.letter.fallback.ref_no", "Ref. No.: ") & numberText & vbCrLf
+    content = content & t("core.letter.fallback.date", "Date: ") & dateText & vbCrLf & vbCrLf
     
     wordDoc.content.Text = content
     AppendAttachmentsToDocumentWithFontAndSum wordDoc, documentsList, 10
     Exit Sub
     
 ScratchError:
-    MsgBox T("core.letter.error.create_fallback", "Letter creation error: ") & Err.description, vbCritical
+    MsgBox t("core.letter.error.create_fallback", "Letter creation error: ") & Err.description, vbCritical
 End Sub
 
 Public Sub ReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
@@ -1880,7 +1883,7 @@ Public Sub AppendAttachmentsToDocumentWithFontAndSum(wordDoc As Object, document
     Set rng = wordDoc.content
     rng.Collapse 0
     
-    rng.InsertAfter T("core.letter.attachment_prefix", "Attachment: ")
+    rng.InsertAfter t("core.letter.attachment_prefix", "Attachment: ")
     
     Dim attachmentFragments As Collection
     Set attachmentFragments = FormatAttachmentsListForWordWithSum(documentsList)
@@ -2163,7 +2166,7 @@ Public Sub ShowLetterCreatorDeferred()
     Exit Sub
     
 DelayedErrorHandler:
-    MsgBox T("core.form.open_creator_error", "Failed to open letter creation form: ") & Err.description, vbCritical
+    MsgBox t("core.form.open_creator_error", "Failed to open letter creation form: ") & Err.description, vbCritical
 End Sub
 
 Public Sub StartFormirovanieLetters()
@@ -2177,9 +2180,9 @@ End Sub
 
 Public Function GetDocumentTypeText(documentType As String) As String
     If NormalizeDocumentTypeKey(documentType) = DocumentTypeKeyOwnConfirmation Then
-        GetDocumentTypeText = T("core.letter.text.own_confirmation", "forwarding the following documents to your address for confirmation")
+        GetDocumentTypeText = t("core.letter.text.own_confirmation", "forwarding the following documents to your address for confirmation")
     Else
-        GetDocumentTypeText = T("core.letter.text.confirmed", "forwarding confirmed accounting documents to your address")
+        GetDocumentTypeText = t("core.letter.text.confirmed", "forwarding confirmed accounting documents to your address")
     End If
     
     On Error GoTo ReadTextError
@@ -2189,7 +2192,7 @@ Public Function GetDocumentTypeText(documentType As String) As String
     If ws Is Nothing Then Exit Function
     
     Dim tbl As ListObject
-    Set tbl = ws.ListObjects("Text")
+    Set tbl = GetLetterTextsTable(ws)
     
     If Not tbl Is Nothing Then
         If tbl.ListRows.count >= 1 Then
@@ -2212,6 +2215,20 @@ Public Function GetDocumentTypeText(documentType As String) As String
 ReadTextError:
     Debug.Print "GetDocumentTypeText fallback used: " & Err.description
 End Function
+
+Private Function GetLetterTextsTable(ws As Worksheet) As ListObject
+    On Error Resume Next
+    Set GetLetterTextsTable = ws.ListObjects(LetterTextsTableName)
+    If GetLetterTextsTable Is Nothing Then
+        Set GetLetterTextsTable = ws.ListObjects(LegacyLetterTextsTableName)
+    End If
+    If GetLetterTextsTable Is Nothing Then
+        Set GetLetterTextsTable = ws.ListObjects(LegacyLetterTextsTableNameCyrillic)
+    End If
+    On Error GoTo 0
+End Function
+
+
 
 Public Sub SafeReplaceInWord(wordDoc As Object, findText As String, replaceText As String)
     On Error GoTo ReplaceError

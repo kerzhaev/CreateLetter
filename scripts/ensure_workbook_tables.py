@@ -2,7 +2,7 @@
 """
 Ensure structured tables exist in the CreateLetter workbook.
 
-This script creates workbook ListObjects for the Addresses and Letters sheets
+This script creates workbook ListObjects for the Addresses, Letters, and Settings sheets
 without changing the existing data layout. It is safe to run multiple times.
 """
 
@@ -19,6 +19,7 @@ import win32com.client
 TABLE_SPECS = (
     ("Addresses", "tblAddresses"),
     ("Letters", "tblLetters"),
+    ("Settings", "tblLetterTexts"),
 )
 
 XL_SRC_RANGE = 1
@@ -36,6 +37,12 @@ def ensure_table(ws, table_name: str) -> str:
     for index in range(1, ws.ListObjects.Count + 1):
         if ws.ListObjects(index).Name == table_name:
             return "existing"
+
+    if table_name == "tblLetterTexts":
+        for index in range(1, ws.ListObjects.Count + 1):
+            if ws.ListObjects(index).Name in {"Text", "Текст"}:
+                ws.ListObjects(index).Name = table_name
+                return "renamed"
 
     used_range = ws.UsedRange
     row_count = used_range.Rows.Count

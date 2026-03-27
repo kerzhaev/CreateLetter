@@ -3,7 +3,7 @@ Attribute VB_Name = "mdlInicialize"
 ' Module: mdlInitialize
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Workbook sheet bootstrap and reset entry points with English-safe public aliases
-' Version: 1.4.2 - 27.03.2026
+' Version: 1.4.5 - 27.03.2026
 ' ======================================================================
 Option Explicit
 
@@ -154,7 +154,7 @@ Private Sub CreateSettingsSheet()
         Dim tbl As ListObject
         Set tbl = .ListObjects.Add(xlSrcRange, textRange, , xlYes)
         If Not tbl Is Nothing Then
-            tbl.Name = "Text"
+            tbl.Name = "tblLetterTexts"
         End If
         On Error GoTo 0
         

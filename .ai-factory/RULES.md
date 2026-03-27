@@ -28,3 +28,5 @@
 - Workbook creation, export formatting, and other non-trivial data-output workflows must live in shared modules, not inside UserForms.
 - Reusable caption builders, menu prompts, and status text assembly belong in shared modules once they stop being purely one-line control assignments.
 - Hidden fallback literals such as unknown user names, unknown month markers, and attachment prefixes must be backed by localization keys instead of hardcoded strings in core modules.
+- When renaming workbook ListObjects, keep a compatibility fallback for the old table name until the bootstrap script and smoke harness both recognize the new schema.
+- COM VBA sync tooling must tolerate legacy exported module encodings during migration; do not assume every historical `.bas/.cls` file is already UTF-8-clean.

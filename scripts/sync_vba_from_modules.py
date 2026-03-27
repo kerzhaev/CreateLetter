@@ -19,6 +19,7 @@ import win32com.client
 
 
 SUPPORTED_EXTENSIONS = (".bas", ".cls", ".frm")
+SOURCE_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "cp1251", "cp866", "mbcs")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -59,6 +60,21 @@ def get_component_by_name(project, component_name: str):
     return None
 
 
+def read_source_text(source_file: Path) -> str:
+    last_error: UnicodeDecodeError | None = None
+
+    for encoding in SOURCE_TEXT_ENCODINGS:
+        try:
+            return source_file.read_text(encoding=encoding)
+        except UnicodeDecodeError as exc:
+            last_error = exc
+
+    if last_error is not None:
+        raise last_error
+
+    return source_file.read_text()
+
+
 def sync_component(project, source_file: Path) -> str:
     component_name = source_file.stem
     existing_component = get_component_by_name(project, component_name)
@@ -70,6 +86,14 @@ def sync_component(project, source_file: Path) -> str:
                 f"Refusing to replace document component '{component_name}'. "
                 "Document modules must be handled separately."
             )
+
+        if source_file.suffix.lower() in {".bas", ".cls"}:
+            code_module = existing_component.CodeModule
+            if code_module.CountOfLines > 0:
+                code_module.DeleteLines(1, code_module.CountOfLines)
+            code_module.AddFromString(read_source_text(source_file))
+            return existing_component.Name
+
         project.VBComponents.Remove(existing_component)
 
     imported_component = project.VBComponents.Import(str(source_file.resolve()))

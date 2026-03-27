@@ -62,3 +62,7 @@ The next bounded feature stages for code quality and maintainability are:
   Move creator progress/counter captions and document-action menu text assembly into `ModuleMain` so `frmLetterCreator` keeps only UI wiring.
 - [x] `pisces/feature-24-hidden-literals-cleanup`
   Replace remaining hardcoded fallback literals in core helpers with localization-backed keys for unknown-user, unknown-month, and attachment-prefix paths.
+- [x] `pisces/feature-25-letter-texts-table-migration`
+  Rename the Settings sheet text table to `tblLetterTexts`, keep fallback compatibility for the legacy `Text` table name, and teach bootstrap/smoke tooling to validate the new schema.
+- [x] `pisces/feature-26-sync-fallback-legacy-encoding`
+  Make the COM sync helper tolerant to legacy exported VBA file encodings, normalize the corrupted cache module source, and verify that schema-migration changes compile cleanly after workbook sync.

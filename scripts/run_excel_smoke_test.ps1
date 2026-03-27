@@ -122,7 +122,8 @@ try {
 
     $structuredTableRequirements = @(
         @{ Sheet = "Addresses"; Table = "tblAddresses" },
-        @{ Sheet = "Letters"; Table = "tblLetters" }
+        @{ Sheet = "Letters"; Table = "tblLetters" },
+        @{ Sheet = "Settings"; Table = "tblLetterTexts" }
     )
 
     foreach ($tableRequirement in $structuredTableRequirements) {
