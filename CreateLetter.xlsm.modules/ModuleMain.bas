@@ -3,13 +3,13 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.6.9 — 27.03.2026
+' Version: 1.6.10 — 27.03.2026
 ' ======================================================================
 
 Option Explicit
 
 ' ======================================================================
-'                    SCHEMA CONSTANTS v1.6.9
+'                    SCHEMA CONSTANTS v1.6.10
 ' ======================================================================
 Public Const FIRST_DATA_ROW As Long = 2
 Private Const TextTableColumnBody As Long = 1
@@ -96,22 +96,22 @@ Private g_WordAppOwned As Boolean
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
     If Len(Trim(addressee)) = 0 Then
-        ValidateRequiredFields = "Fill in the 'Recipient Name' field"
+        ValidateRequiredFields = T("validation.creator.page.addressee_required", "Fill in the 'Addressee' field.")
         Exit Function
     End If
     
     If Len(Trim(city)) = 0 Then
-        ValidateRequiredFields = "Fill in the 'City' field - this is a required field"
+        ValidateRequiredFields = T("validation.creator.page.city_required", "Fill in the 'City' field. This field is required.")
         Exit Function
     End If
     
     If Len(Trim(region)) = 0 Then
-        ValidateRequiredFields = "Fill in the 'Region' field - this is a required field"
+        ValidateRequiredFields = T("validation.creator.page.region_required", "Fill in the 'Region' field. This field is required.")
         Exit Function
     End If
     
     If Len(Trim(postalCode)) = 0 Then
-        ValidateRequiredFields = "Fill in the 'Postal Code' field - this is a required field"
+        ValidateRequiredFields = T("validation.creator.page.postal_code_required", "Fill in the 'Postal code' field. This field is required.")
         Exit Function
     End If
     
@@ -126,63 +126,63 @@ Public Function ValidateCreatorPage(pageIndex As Integer, addressee As String, c
         Case 0
             If Len(Trim(addressee)) = 0 Then
                 focusControlName = "txtAddressee"
-                ValidateCreatorPage = "Fill in the 'Addressee' field."
+                ValidateCreatorPage = T("validation.creator.page.addressee_required", "Fill in the 'Addressee' field.")
                 Exit Function
             End If
             
             If Len(Trim(city)) = 0 Then
                 focusControlName = "txtCity"
-                ValidateCreatorPage = "Fill in the 'City' field. This field is required."
+                ValidateCreatorPage = T("validation.creator.page.city_required", "Fill in the 'City' field. This field is required.")
                 Exit Function
             End If
             
             If Len(Trim(region)) = 0 Then
                 focusControlName = "txtRegion"
-                ValidateCreatorPage = "Fill in the 'Region' field. This field is required."
+                ValidateCreatorPage = T("validation.creator.page.region_required", "Fill in the 'Region' field. This field is required.")
                 Exit Function
             End If
             
             If Len(Trim(postalCode)) = 0 Then
                 focusControlName = "txtPostalCode"
-                ValidateCreatorPage = "Fill in the 'Postal code' field. This field is required."
+                ValidateCreatorPage = T("validation.creator.page.postal_code_required", "Fill in the 'Postal code' field. This field is required.")
                 Exit Function
             End If
             
             If Len(Trim(phoneNumber)) > 0 And Not IsPhoneNumberValid(phoneNumber) Then
                 focusControlName = "txtAddresseePhone"
-                ValidateCreatorPage = "Enter a valid addressee phone number."
+                ValidateCreatorPage = T("validation.creator.page.phone_invalid", "Enter a valid addressee phone number.")
                 Exit Function
             End If
             
         Case 1
             If Len(Trim(letterNumber)) = 0 Then
                 focusControlName = "txtLetterNumber"
-                ValidateCreatorPage = "Enter the outgoing letter number."
+                ValidateCreatorPage = T("validation.creator.page.letter_number_required", "Enter the outgoing letter number.")
                 Exit Function
             End If
             
             If Len(Trim(letterDateText)) = 0 Then
                 focusControlName = "txtLetterDate"
-                ValidateCreatorPage = "Enter the letter date."
+                ValidateCreatorPage = T("validation.creator.page.letter_date_required", "Enter the letter date.")
                 Exit Function
             End If
             
             If Len(Trim(executor)) = 0 Then
                 focusControlName = "cmbExecutor"
-                ValidateCreatorPage = "Select an executor. This field is required."
+                ValidateCreatorPage = T("validation.creator.page.executor_required", "Select an executor. This field is required.")
                 Exit Function
             End If
             
             Dim parsedDate As Date
             If Not TryParseDate(letterDateText, parsedDate) Then
                 focusControlName = "txtLetterDate"
-                ValidateCreatorPage = "Invalid letter date format."
+                ValidateCreatorPage = T("validation.creator.page.letter_date_invalid", "Invalid letter date format.")
                 Exit Function
             End If
             
         Case 2
             If documentsCount = 0 Then
-                ValidateCreatorPage = "Add at least one attachment document."
+                ValidateCreatorPage = T("validation.creator.page.document_required", "Add at least one attachment document.")
                 Exit Function
             End If
     End Select
@@ -194,49 +194,49 @@ Public Function ValidateCreatorSubmission(addressee As String, city As String, r
     
     If Len(Trim(addressee)) = 0 Then
         focusControlName = "txtAddressee"
-        ValidateCreatorSubmission = "Addressee is not filled in."
+        ValidateCreatorSubmission = T("validation.creator.submit.addressee_required", "Addressee is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(city)) = 0 Then
         focusControlName = "txtCity"
-        ValidateCreatorSubmission = "City is not filled in."
+        ValidateCreatorSubmission = T("validation.creator.submit.city_required", "City is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(region)) = 0 Then
         focusControlName = "txtRegion"
-        ValidateCreatorSubmission = "Region is not filled in."
+        ValidateCreatorSubmission = T("validation.creator.submit.region_required", "Region is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(postalCode)) = 0 Then
         focusControlName = "txtPostalCode"
-        ValidateCreatorSubmission = "Postal code is not filled in."
+        ValidateCreatorSubmission = T("validation.creator.submit.postal_code_required", "Postal code is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(letterNumber)) = 0 Then
         focusControlName = "txtLetterNumber"
-        ValidateCreatorSubmission = "Letter number is not filled in."
+        ValidateCreatorSubmission = T("validation.creator.submit.letter_number_required", "Letter number is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(letterDateText)) = 0 Then
         focusControlName = "txtLetterDate"
-        ValidateCreatorSubmission = "Letter date is not filled in."
+        ValidateCreatorSubmission = T("validation.creator.submit.letter_date_required", "Letter date is not filled in.")
         Exit Function
     End If
     
     If Len(Trim(executor)) = 0 Then
         focusControlName = "cmbExecutor"
-        ValidateCreatorSubmission = "Executor is not selected."
+        ValidateCreatorSubmission = T("validation.creator.submit.executor_required", "Executor is not selected.")
         Exit Function
     End If
     
     If documentsCount = 0 Then
         focusControlName = "txtAttachmentSearch"
-        ValidateCreatorSubmission = "Add at least one document."
+        ValidateCreatorSubmission = T("validation.creator.submit.document_required", "Add at least one document.")
         Exit Function
     End If
 End Function
@@ -537,18 +537,18 @@ Public Function TryParseAddressListItem(addressItem As String, ByRef addressPart
     TryParseAddressListItem = False
     
     If InStr(addressItem, " | ") = 0 Then
-        errorMessage = "Invalid address record format."
+        errorMessage = T("validation.address.record_invalid", "Invalid address record format.")
         Exit Function
     End If
     
     addressParts = Split(addressItem, " | ")
     If UBound(addressParts) < 7 Then
-        errorMessage = "Address data is incomplete."
+        errorMessage = T("validation.address.record_incomplete", "Address data is incomplete.")
         Exit Function
     End If
     
     If Not IsNumeric(addressParts(AddressPartRowNumber)) Then
-        errorMessage = "Address row reference is invalid."
+        errorMessage = T("validation.address.row_invalid", "Address row reference is invalid.")
         Exit Function
     End If
     
@@ -558,12 +558,12 @@ End Function
 
 Public Function ValidateAddressCreateRequest(addressee As String, isDuplicate As Boolean) As String
     If Len(Trim(addressee)) = 0 Then
-        ValidateAddressCreateRequest = "Enter the addressee name."
+        ValidateAddressCreateRequest = T("validation.address.create.addressee_required", "Enter the addressee name.")
         Exit Function
     End If
     
     If isDuplicate Then
-        ValidateAddressCreateRequest = "This address already exists."
+        ValidateAddressCreateRequest = T("validation.address.create.duplicate", "This address already exists.")
         Exit Function
     End If
     
@@ -572,12 +572,12 @@ End Function
 
 Public Function ValidateAddressEditRequest(selectedRow As Long, isDuplicate As Boolean) As String
     If selectedRow <= 1 Then
-        ValidateAddressEditRequest = "Select an address to edit."
+        ValidateAddressEditRequest = T("validation.address.edit.selection_required", "Select an address to edit.")
         Exit Function
     End If
     
     If isDuplicate Then
-        ValidateAddressEditRequest = "An address with the same data already exists."
+        ValidateAddressEditRequest = T("validation.address.edit.duplicate", "An address with the same data already exists.")
         Exit Function
     End If
     
@@ -586,7 +586,7 @@ End Function
 
 Public Function ValidateAddressDeleteRequest(selectedRow As Long) As String
     If selectedRow = 0 Then
-        ValidateAddressDeleteRequest = "Select an address to delete."
+        ValidateAddressDeleteRequest = T("validation.address.delete.selection_required", "Select an address to delete.")
     Else
         ValidateAddressDeleteRequest = ""
     End If

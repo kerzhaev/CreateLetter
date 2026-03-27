@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-   Caption         =   "Letter Builder v1.6.4"
+   Caption         =   "Letter Builder v1.6.5"
    ClientHeight    =   10155
    ClientLeft      =   120
    ClientTop       =   465
@@ -14,8 +14,8 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.4 - Thin-shell MultiPage wizard for letter creation
-' Version : 1.6.4 - 27.03.2026
+' Form    : frmLetterCreator v1.6.5 - Thin-shell MultiPage wizard with workbook-backed localization
+' Version : 1.6.5 - 27.03.2026
 ' Author  : Kerzhaev Evgeniy, FKU "95 FES" MO RF
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
 ' ======================================================================
@@ -38,7 +38,7 @@ Private Sub UserForm_Initialize()
     contextMenuSelectedIndex = -1
     
     ConfigureFormAppearance
-    ApplyEnglishStaticCaptions
+    ApplyLocalizedStaticCaptions
     InitializeControlValues
     LoadExecutorsList
     
@@ -58,7 +58,7 @@ Private Sub ConfigureDocumentSumField()
         With txtDocumentSum
             .Font.Name = "Segoe UI"
             .Font.Size = 10
-            .ControlTipText = "Document sum in rubles (optional). For example: 125000"
+            .ControlTipText = T("form.letter_creator.tip.document_sum", "Document sum in rubles (optional). For example: 125000")
             .Value = ""
             .backColor = RGB(255, 255, 255)
         End With
@@ -69,8 +69,8 @@ Private Sub ConfigureDocumentSumField()
 End Sub
 
 Private Sub InitializeProgressInfo()
-    lblProgressInfo.Caption = "Step 1 of " & TOTAL_PAGES
-    lblAttachmentsCount.Caption = "Selected documents: 0"
+    lblProgressInfo.Caption = BuildProgressCaption(1)
+    lblAttachmentsCount.Caption = BuildSelectedDocumentsCaption(0)
 End Sub
 
 '------------------------------------------------------------
@@ -223,7 +223,7 @@ Private Sub btnLetterHistory_Click()
     Exit Sub
     
 HistoryError:
-    MsgBox "Error opening history form: " & Err.description, vbCritical
+    MsgBox T("form.letter_creator.msg.history_open_error", "Error opening history form: ") & Err.description, vbCritical
 End Sub
 
 '------------------------------------------------------------
@@ -305,106 +305,110 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = "Letter Builder v1.6.4"
+    Me.Caption = T("form.letter_creator.title", "Letter Builder") & " v1.6.5"
     
     On Error Resume Next
     
     If Not lstSelectedAttachments Is Nothing Then
         lstSelectedAttachments.Font.Size = 9
-        lstSelectedAttachments.ControlTipText = "Hover over the item to see the full name"
+        lstSelectedAttachments.ControlTipText = T("form.letter_creator.tip.selected_attachments", "Hover over the item to see the full name")
         lstSelectedAttachments.IntegralHeight = False
     End If
     
     If Not btnEditAddress Is Nothing Then
-        btnEditAddress.Caption = "Edit address"
-        btnEditAddress.ControlTipText = "Edit selected address"
+        btnEditAddress.Caption = T("form.letter_creator.caption.edit_address", "Edit address")
+        btnEditAddress.ControlTipText = T("form.letter_creator.tip.edit_address", "Edit selected address")
         btnEditAddress.Enabled = False
     End If
     
     If Not btnDeleteAddress Is Nothing Then
-        btnDeleteAddress.Caption = "Delete address"
-        btnDeleteAddress.ControlTipText = "Delete selected address"
+        btnDeleteAddress.Caption = T("form.letter_creator.caption.delete_address", "Delete address")
+        btnDeleteAddress.ControlTipText = T("form.letter_creator.tip.delete_address", "Delete selected address")
         btnDeleteAddress.Enabled = False
     End If
     
     If Not txtAddresseePhone Is Nothing Then
-        txtAddresseePhone.ControlTipText = "Addressee phone (format: 8-xxx-xxx-xx-xx)"
+        txtAddresseePhone.ControlTipText = T("form.letter_creator.tip.phone", "Addressee phone (format: 8-xxx-xxx-xx-xx)")
         txtAddresseePhone.Enabled = True
         txtAddresseePhone.backColor = RGB(255, 255, 255)
     End If
     
     If Not btnLetterHistory Is Nothing Then
         With btnLetterHistory
-            .Caption = "Letters History"
+            .Caption = T("form.letter_creator.caption.letter_history", "Letters History")
             .Font.Name = "Segoe UI"
             .Font.Size = 10
             .Font.Bold = True
             .backColor = RGB(156, 39, 176)
             .ForeColor = RGB(255, 255, 255)
-            .ControlTipText = "Open sent letters history form"
+            .ControlTipText = T("form.letter_creator.tip.letter_history", "Open sent letters history form")
         End With
     End If
     
     On Error GoTo 0
     
-    txtAddressSearch.ControlTipText = "Enter part of the name to search for the addressee"
-    txtLetterNumber.ControlTipText = "Enter the number after 7/ (for example: 125 becomes 7/125)"
-    txtLetterDate.ControlTipText = "Format: dd.mm.yyyy"
+    txtAddressSearch.ControlTipText = T("form.letter_creator.tip.address_search", "Enter part of the name to search for the addressee")
+    txtLetterNumber.ControlTipText = T("form.letter_creator.tip.letter_number", "Enter the number after 7/ (for example: 125 becomes 7/125)")
+    txtLetterDate.ControlTipText = T("form.letter_creator.tip.letter_date", "Format: dd.mm.yyyy")
 End Sub
 
-Private Sub ApplyEnglishStaticCaptions()
+Private Sub ApplyLocalizedStaticCaptions()
     On Error Resume Next
 
-    SetControlCaption "lblStep1", "Stage:"
+    SetLocalizedCaption "lblStep1", "form.letter_creator.label.stage", "Stage:"
     SetControlCaption "lblStep2", ""
     SetControlCaption "lblStep3", ""
     SetControlCaption "lblStep4", ""
     SetControlCaption "lblStep5", ""
-    SetControlCaption "lblCurrentAction", "Current action"
-    SetControlCaption "Label1", "Search existing addressee"
-    SetControlCaption "Label2", "City"
-    SetControlCaption "Label3", "District"
-    SetControlCaption "Label4", "Region"
-    SetControlCaption "Label5", "Postal code"
-    SetControlCaption "Label6", "Executor"
-    SetControlCaption "Label7", "Letter date"
-    SetControlCaption "Label8", "Letter number"
-    SetControlCaption "Label9", "Search attachment"
-    SetControlCaption "Label10", "Selected attachments"
-    SetControlCaption "Label11", "Document ownership"
-    SetControlCaption "Label13", "Date"
-    SetControlCaption "Label14", "Copies"
-    SetControlCaption "Label15", "Sheets"
-    SetControlCaption "Label16", "Found addresses"
-    SetControlCaption "Label17", "Street, house"
-    SetControlCaption "Label18", "Addressee"
-    SetControlCaption "Label19", "Available attachments"
-    SetControlCaption "Label20", "Number"
-    SetControlCaption "Label21", "Addressee:"
-    SetControlCaption "Label23", "Letter number:"
-    SetControlCaption "Label25", "Date:"
-    SetControlCaption "Label27", "Executor:"
-    SetControlCaption "Label29", "Document count:"
-    SetControlCaption "Label30", "Attachments:"
-    SetControlCaption "Label31", "Document sum"
-    SetControlCaption "lblSelectedDocument", "Selected document:"
-    SetControlCaption "Frame1", "Address details"
-    SetControlCaption "Frame5", "Letter summary"
-    SetControlCaption "btnSaveNewAddress", "Save address"
-    SetControlCaption "btnClearSearch", "Clear"
-    SetControlCaption "btnPrevious", "< Back"
-    SetControlCaption "btnNext", "Next >"
-    SetControlCaption "btnCancel", "Cancel"
-    SetControlCaption "btnEditAddress", "Edit address"
-    SetControlCaption "btnDeleteAddress", "Delete address"
-    SetControlCaption "btnLetterHistory", "Letters History"
+    SetLocalizedCaption "lblCurrentAction", "form.letter_creator.label.current_action", "Current action"
+    SetLocalizedCaption "Label1", "form.letter_creator.label.search_addressee", "Search existing addressee"
+    SetLocalizedCaption "Label2", "form.letter_creator.label.city", "City"
+    SetLocalizedCaption "Label3", "form.letter_creator.label.district", "District"
+    SetLocalizedCaption "Label4", "form.letter_creator.label.region", "Region"
+    SetLocalizedCaption "Label5", "form.letter_creator.label.postal_code", "Postal code"
+    SetLocalizedCaption "Label6", "form.letter_creator.label.executor", "Executor"
+    SetLocalizedCaption "Label7", "form.letter_creator.label.letter_date", "Letter date"
+    SetLocalizedCaption "Label8", "form.letter_creator.label.letter_number", "Letter number"
+    SetLocalizedCaption "Label9", "form.letter_creator.label.search_attachment", "Search attachment"
+    SetLocalizedCaption "Label10", "form.letter_creator.label.selected_attachments", "Selected attachments"
+    SetLocalizedCaption "Label11", "form.letter_creator.label.document_ownership", "Document ownership"
+    SetLocalizedCaption "Label13", "form.letter_creator.label.date", "Date"
+    SetLocalizedCaption "Label14", "form.letter_creator.label.copies", "Copies"
+    SetLocalizedCaption "Label15", "form.letter_creator.label.sheets", "Sheets"
+    SetLocalizedCaption "Label16", "form.letter_creator.label.found_addresses", "Found addresses"
+    SetLocalizedCaption "Label17", "form.letter_creator.label.street_house", "Street, house"
+    SetLocalizedCaption "Label18", "form.letter_creator.label.addressee", "Addressee"
+    SetLocalizedCaption "Label19", "form.letter_creator.label.available_attachments", "Available attachments"
+    SetLocalizedCaption "Label20", "form.letter_creator.label.number", "Number"
+    SetLocalizedCaption "Label21", "form.letter_creator.label.summary_addressee", "Addressee:"
+    SetLocalizedCaption "Label23", "form.letter_creator.label.summary_letter_number", "Letter number:"
+    SetLocalizedCaption "Label25", "form.letter_creator.label.summary_date", "Date:"
+    SetLocalizedCaption "Label27", "form.letter_creator.label.summary_executor", "Executor:"
+    SetLocalizedCaption "Label29", "form.letter_creator.label.summary_document_count", "Document count:"
+    SetLocalizedCaption "Label30", "form.letter_creator.label.summary_attachments", "Attachments:"
+    SetLocalizedCaption "Label31", "form.letter_creator.label.document_sum", "Document sum"
+    SetLocalizedCaption "lblSelectedDocument", "form.letter_creator.label.selected_document", "Selected document:"
+    SetLocalizedCaption "Frame1", "form.letter_creator.frame.address_details", "Address details"
+    SetLocalizedCaption "Frame5", "form.letter_creator.frame.letter_summary", "Letter summary"
+    SetLocalizedCaption "btnSaveNewAddress", "form.letter_creator.caption.save_address", "Save address"
+    SetLocalizedCaption "btnClearSearch", "form.letter_creator.caption.clear_search", "Clear"
+    SetLocalizedCaption "btnPrevious", "form.letter_creator.caption.back", "< Back"
+    SetLocalizedCaption "btnNext", "form.letter_creator.caption.next", "Next >"
+    SetLocalizedCaption "btnCancel", "form.letter_creator.caption.cancel", "Cancel"
+    SetLocalizedCaption "btnEditAddress", "form.letter_creator.caption.edit_address", "Edit address"
+    SetLocalizedCaption "btnDeleteAddress", "form.letter_creator.caption.delete_address", "Delete address"
+    SetLocalizedCaption "btnLetterHistory", "form.letter_creator.caption.letter_history", "Letters History"
 
-    mpgWizard.Pages(0).Caption = "Step 1: Addressee"
-    mpgWizard.Pages(1).Caption = "Step 2: Letter"
-    mpgWizard.Pages(2).Caption = "Step 3: Attachments"
-    mpgWizard.Pages(3).Caption = "Step 4: Create"
+    mpgWizard.Pages(0).Caption = T("form.letter_creator.page.step_1", "Step 1: Addressee")
+    mpgWizard.Pages(1).Caption = T("form.letter_creator.page.step_2", "Step 2: Letter")
+    mpgWizard.Pages(2).Caption = T("form.letter_creator.page.step_3", "Step 3: Attachments")
+    mpgWizard.Pages(3).Caption = T("form.letter_creator.page.step_4", "Step 4: Create")
 
     On Error GoTo 0
+End Sub
+
+Private Sub SetLocalizedCaption(controlName As String, localizationKey As String, fallbackText As String)
+    SetControlCaption controlName, T(localizationKey, fallbackText)
 End Sub
 
 Private Sub SetControlCaption(controlName As String, captionText As String)
@@ -486,7 +490,7 @@ Private Sub btnNext_Click()
             UpdateSummaryInfo
             CreateWordLetter
             SaveLetterToDatabase
-            MsgBox "Letter created successfully!", vbInformation
+            MsgBox T("form.letter_creator.msg.letter_created", "Letter created successfully!"), vbInformation
             Unload Me
         End If
     Else
@@ -499,18 +503,18 @@ Private Sub SwitchToPage(pg As Integer)
     If pg < 0 Or pg > TOTAL_PAGES - 1 Then Exit Sub
     
     mpgWizard.Value = pg
-    lblProgressInfo.Caption = "Step " & pg + 1 & " of " & TOTAL_PAGES
+    lblProgressInfo.Caption = BuildProgressCaption(pg + 1)
     
     btnPrevious.Enabled = (pg > 0)
     
     If pg = TOTAL_PAGES - 1 Then
-        btnNext.Caption = "CREATE LETTER"
+        btnNext.Caption = T("form.letter_creator.caption.create_letter", "CREATE LETTER")
         btnNext.backColor = RGB(76, 175, 80)
         btnNext.ForeColor = RGB(255, 255, 255)
         btnNext.Font.Bold = True
         btnNext.Font.Size = 11
     Else
-        btnNext.Caption = "Next >"
+        btnNext.Caption = T("form.letter_creator.caption.next", "Next >")
         btnNext.backColor = RGB(240, 240, 240)
         btnNext.ForeColor = RGB(0, 0, 0)
         btnNext.Font.Bold = False
@@ -693,7 +697,7 @@ Private Sub btnSaveNewAddress_Click()
     End If
     
     SaveNewAddress addressArray
-    MsgBox "Address saved.", vbInformation
+    MsgBox T("form.letter_creator.msg.address_saved", "Address saved."), vbInformation
     
     ClearAddressCache
     
@@ -723,7 +727,7 @@ Private Sub btnEditAddress_Click()
     ClearAddressCache
     txtAddressSearch_Change
     
-    MsgBox "Address updated successfully.", vbInformation
+    MsgBox T("form.letter_creator.msg.address_updated", "Address updated successfully."), vbInformation
     On Error GoTo 0
 End Sub
 
@@ -738,9 +742,9 @@ Private Sub btnDeleteAddress_Click()
         Exit Sub
     End If
     
-    If MsgBox("Are you sure you want to delete this address?", vbYesNo + vbQuestion + vbDefaultButton2) = vbYes Then
+    If MsgBox(T("form.letter_creator.msg.address_delete_confirm", "Are you sure you want to delete this address?"), vbYesNo + vbQuestion + vbDefaultButton2) = vbYes Then
         DeleteExistingAddress selectedAddressRow
-        MsgBox "Address deleted successfully.", vbInformation
+        MsgBox T("form.letter_creator.msg.address_deleted", "Address deleted successfully."), vbInformation
         
         ClearAddressFields
         ClearAddressCache
@@ -753,7 +757,7 @@ Private Sub btnDeleteAddress_Click()
     Exit Sub
     
 DeleteError:
-    MsgBox "Error deleting address: " & Err.description, vbCritical
+    MsgBox T("form.letter_creator.msg.address_delete_error", "Error deleting address: ") & Err.description, vbCritical
 End Sub
 
 Private Sub ClearAddressFields()
@@ -806,7 +810,7 @@ Private Sub btnAddAttachment_Click()
     On Error Resume Next
     
     If lstAvailableAttachments Is Nothing Or lstAvailableAttachments.ListIndex < 0 Then
-        MsgBox "Select a document in the left list.", vbExclamation
+        MsgBox T("form.letter_creator.msg.select_document_left", "Select a document in the left list."), vbExclamation
         Exit Sub
     End If
     
@@ -830,7 +834,7 @@ Private Sub btnRemoveAttachment_Click()
     On Error Resume Next
     
     If lstSelectedAttachments Is Nothing Or lstSelectedAttachments.ListIndex < 0 Then
-        MsgBox "Select a document in the right list.", vbExclamation
+        MsgBox T("form.letter_creator.msg.select_document_right", "Select a document in the right list."), vbExclamation
         Exit Sub
     End If
     
@@ -859,13 +863,13 @@ Private Sub ShowSimpleContextMenu()
     On Error GoTo MenuError
     
     Dim menuChoice As String
-    menuChoice = InputBox("Select action:" & vbCrLf & _
-                         "1 - Edit details" & vbCrLf & _
-                         "2 - Duplicate document" & vbCrLf & _
-                         "3 - Remove from list" & vbCrLf & _
-                         "4 - Move up" & vbCrLf & _
-                         "5 - Move down", _
-                         "Document actions", "1")
+    menuChoice = InputBox(T("form.letter_creator.menu.document_actions_prompt", "Select action:") & vbCrLf & _
+                         T("form.letter_creator.menu.document_action.edit", "1 - Edit details") & vbCrLf & _
+                         T("form.letter_creator.menu.document_action.duplicate", "2 - Duplicate document") & vbCrLf & _
+                         T("form.letter_creator.menu.document_action.remove", "3 - Remove from list") & vbCrLf & _
+                         T("form.letter_creator.menu.document_action.move_up", "4 - Move up") & vbCrLf & _
+                         T("form.letter_creator.menu.document_action.move_down", "5 - Move down"), _
+                         T("form.letter_creator.menu.document_actions_title", "Document actions"), "1")
     
     Select Case menuChoice
         Case "1": EditDocumentRequisites
@@ -922,7 +926,7 @@ Public Sub DuplicateDocument()
     Exit Sub
     
 DuplicateError:
-    MsgBox "Error duplicating document: " & Err.description, vbCritical
+    MsgBox T("form.letter_creator.msg.duplicate_document_error", "Error duplicating document: ") & Err.description, vbCritical
 End Sub
 
 Public Sub RemoveSelectedDocument()
@@ -983,7 +987,7 @@ End Sub
 
 Private Sub UpdateSelectedDocumentsCaption()
     If Not lblAttachmentsCount Is Nothing Then
-        lblAttachmentsCount.Caption = "Selected documents: " & documentsList.count
+        lblAttachmentsCount.Caption = BuildSelectedDocumentsCaption(documentsList.count)
     End If
 End Sub
 
@@ -1120,7 +1124,7 @@ Private Sub CreateWordLetter()
     Exit Sub
 
 ErrorHandler:
-    MsgBox "Error creating letter: " & Err.Description, vbCritical
+    MsgBox T("form.letter_creator.msg.create_letter_error", "Error creating letter: ") & Err.Description, vbCritical
 End Sub
 
 '=====================================================================
@@ -1234,7 +1238,7 @@ End Sub
 '  CANCEL AND CLOSE BUTTONS
 '=====================================================================
 Private Sub btnCancel_Click()
-    If MsgBox("Cancel letter creation?", vbYesNo + vbQuestion) = vbYes Then
+    If MsgBox(T("dialog.cancel_letter_creation", "Cancel letter creation?"), vbYesNo + vbQuestion) = vbYes Then
         ClearCache
         Unload Me
     End If
@@ -1242,7 +1246,7 @@ End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If documentsList.count > 0 Then
-        If MsgBox("Unsaved documents will be lost. Close?", vbYesNo + vbQuestion) = vbNo Then
+        If MsgBox(T("dialog.discard_unsaved_documents", "Unsaved documents will be lost. Close?"), vbYesNo + vbQuestion) = vbNo Then
             Cancel = True
         Else
             ClearCache
@@ -1251,4 +1255,12 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
         ClearCache
     End If
 End Sub
+
+Private Function BuildProgressCaption(currentStep As Long) As String
+    BuildProgressCaption = T("form.letter_creator.progress.page", "Step") & " " & currentStep & " " & T("common.of", "of") & " " & TOTAL_PAGES
+End Function
+
+Private Function BuildSelectedDocumentsCaption(documentCount As Long) As String
+    BuildSelectedDocumentsCaption = T("form.letter_creator.attachments_count", "Selected documents:") & " " & documentCount
+End Function
 

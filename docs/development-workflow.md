@@ -115,3 +115,4 @@ Use `-RequireLocalizationSheet` after workbook-backed localization becomes part 
 - [Configuration](configuration.md) - Workbook, template, and MCP settings
 - [Maintenance](maintenance.md) - Recovery and safe update checklist
 - [Architecture](architecture.md) - Module boundaries and migration constraints
+- Create restore points with `powershell -ExecutionPolicy Bypass -File .\scripts\create_restore_point.ps1 -Label "<feature-name>"`.

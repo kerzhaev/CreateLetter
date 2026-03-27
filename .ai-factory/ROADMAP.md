@@ -44,3 +44,5 @@ The next bounded feature stages for code quality and maintainability are:
   Materialize the workbook `Localization` sheet from `ModuleLocalization.bas` so localization can evolve in workbook data instead of only built-in VBA defaults.
 - [x] `pisces/feature-15-localization-smoke-diagnostics`
   Extend the smoke harness with an explicit `Localization` worksheet gate so workbook-backed localization regressions are caught automatically.
+- [x] `pisces/feature-16-localize-creator-ui-slice`
+  Move `frmLetterCreator` captions, tips, dialogs, and creator/address validation messages onto workbook-backed localization keys while keeping English fallbacks safe.

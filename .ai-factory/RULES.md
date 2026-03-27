@@ -19,3 +19,4 @@
 - If a feature changes workbook structure, extend the smoke harness to assert the new structure so the same regression is caught automatically next time.
 - When code already contains a workbook-backed fallback path, prefer bootstrapping the corresponding workbook sheet/table through automation instead of hardcoding more defaults in VBA.
 - When a new workbook-backed localization or schema artifact becomes part of the baseline, add an explicit smoke-test flag for it instead of relying on ad-hoc manual checks.
+- Use `scripts/create_restore_point.ps1 -Label "<feature-name>"` for restore points; do not substitute other parameter names.
