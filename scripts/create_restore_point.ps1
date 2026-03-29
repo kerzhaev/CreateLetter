@@ -35,6 +35,7 @@ New-Item -ItemType Directory -Path $restoreDir -Force | Out-Null
 
 $workbookPath = Join-Path $repoRoot "CreateLetter.xlsm"
 $modulesPath = Join-Path $repoRoot "CreateLetter.xlsm.modules"
+$documentModulesPath = Join-Path $repoRoot "CreateLetter.xlsm.document-modules"
 
 if (-not (Test-Path $workbookPath)) {
     throw "Workbook not found: $workbookPath"
@@ -44,8 +45,13 @@ if (-not (Test-Path $modulesPath)) {
     throw "Modules directory not found: $modulesPath"
 }
 
+if (-not (Test-Path $documentModulesPath)) {
+    throw "Document-modules directory not found: $documentModulesPath"
+}
+
 Copy-Item $workbookPath -Destination (Join-Path $restoreDir "CreateLetter.xlsm")
 Copy-Item $modulesPath -Destination (Join-Path $restoreDir "CreateLetter.xlsm.modules") -Recurse
+Copy-Item $documentModulesPath -Destination (Join-Path $restoreDir "CreateLetter.xlsm.document-modules") -Recurse
 
 $readmePath = Join-Path $restoreDir "README.txt"
 @(
@@ -56,6 +62,7 @@ $readmePath = Join-Path $restoreDir "README.txt"
     "Rollback inputs:"
     "  - Workbook snapshot: CreateLetter.xlsm"
     "  - Module snapshot: CreateLetter.xlsm.modules"
+    "  - Document-module snapshot: CreateLetter.xlsm.document-modules"
     ""
     "Usage:"
     "  Restore the workbook file and module folder from this directory before retrying or rolling back a feature stage."

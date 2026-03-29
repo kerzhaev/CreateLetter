@@ -13,7 +13,7 @@ Before pushing the repository publicly:
 powershell -ExecutionPolicy Bypass -File .\scripts\run_excel_smoke_test.ps1 -RequireLocalizationModule -RequireStructuredTables -RequireLocalizationSheet
 ```
 
-3. Confirm that `CreateLetter.xlsm.modules/` is synchronized with the local `CreateLetter.xlsm`.
+3. Confirm that `CreateLetter.xlsm.modules/` and `CreateLetter.xlsm.document-modules/` are synchronized with the local `CreateLetter.xlsm`.
 4. Confirm that local-only folders and binaries are not staged:
    - `filesarchive/`
    - `Backups/`

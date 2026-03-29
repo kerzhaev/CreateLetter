@@ -21,6 +21,9 @@ The goal is simple:
 │   ├── UserFormA.frm
 │   ├── UserFormA.frx
 │   └── clsSomething.cls
+├── Workbook.xlsm.document-modules/
+│   ├── ThisWorkbook.cls
+│   └── Sheet1.cls
 ├── scripts/
 │   ├── sync_vba_from_modules.py
 │   ├── run_excel_smoke_test.ps1
@@ -38,7 +41,7 @@ The goal is simple:
 ### 1. Treat exported text as the source of truth
 
 - Keep `.bas`, `.frm`, `.cls` under version control.
-- Keep workbook and worksheet document modules under version control as `.cls` too.
+- Keep workbook and worksheet document modules under version control as `.cls` too, but in a separate `Workbook.xlsm.document-modules/` directory so manual import tools do not treat them as ordinary classes.
 - Treat the workbook binary as a runtime artifact, not the primary review surface.
 - Export validated workbook changes back into the source folder if a manual VBE change was required.
 
@@ -48,6 +51,7 @@ Use a dedicated script that snapshots both:
 
 - the workbook binary;
 - the exported source folder.
+- the exported document-modules folder.
 
 This makes rollback cheap and removes fear from iterative refactors.
 
@@ -93,7 +97,7 @@ It should verify:
 Responsibilities:
 
 - open workbook via COM;
-- import/update standard modules, class modules, document modules, and forms;
+- import/update standard modules, class modules, forms, and document modules from their separate source directories;
 - preserve true class modules as classes;
 - strip export-only metadata before VBE text insertion;
 - tolerate legacy encodings during migration.
@@ -110,7 +114,8 @@ Must handle:
 Responsibilities:
 
 - open workbook via COM;
-- export standard modules, class modules, document modules, and forms;
+- export standard modules, class modules, and forms into `Workbook.xlsm.modules/`;
+- export document modules into `Workbook.xlsm.document-modules/`;
 - normalize exported text artifacts back to UTF-8;
 - keep hidden workbook/sheet fixes from living only inside the binary workbook.
 
@@ -232,8 +237,8 @@ Workbook and worksheet code modules are easy to forget because they are not visi
 
 Rule:
 
-- always export `ThisWorkbook` and non-empty sheet modules into the source folder;
-- include them in the same review/sync workflow as ordinary modules;
+- always export `ThisWorkbook` and non-empty sheet modules into `Workbook.xlsm.document-modules/`;
+- include them in the same review/sync workflow as ordinary modules, but keep them out of manual import folders used by generic VBA module managers;
 - treat missing document-module source files as a workflow failure, not as an acceptable omission.
 
 ### Encoding drift
@@ -265,6 +270,7 @@ For each feature:
 At minimum, copy the following ideas:
 
 - source-managed `Workbook.xlsm.modules/`;
+- separate `Workbook.xlsm.document-modules/`;
 - COM sync helper;
 - restore point script;
 - smoke harness with explicit feature flags;

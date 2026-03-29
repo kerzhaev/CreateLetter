@@ -28,6 +28,7 @@ Copy these files into a new repository that roughly looks like this:
 .
 ├── Workbook.xlsm
 ├── Workbook.xlsm.modules/
+├── Workbook.xlsm.document-modules/
 ├── scripts/
 ├── customUI/
 └── filesarchive/
@@ -37,10 +38,11 @@ Copy these files into a new repository that roughly looks like this:
 
 1. Copy the starter kit files into the new repository.
 2. Rename `Workbook.xlsm` references inside the scripts if your workbook file uses a different name.
-3. Create the exported source folder, for example:
+3. Create the exported source folders, for example:
 
 ```text
 Workbook.xlsm.modules/
+Workbook.xlsm.document-modules/
 ```
 
 4. Adjust the smoke script defaults:
@@ -56,13 +58,13 @@ Workbook.xlsm.modules/
 2. If the workbook was edited directly in Excel/VBE, export first:
 
 ```powershell
-python .\scripts\export_vba_to_modules.py .\Workbook.xlsm .\Workbook.xlsm.modules
+python .\scripts\export_vba_to_modules.py .\Workbook.xlsm .\Workbook.xlsm.modules .\Workbook.xlsm.document-modules
 ```
 
 3. Run:
 
 ```powershell
-python .\scripts\sync_vba_from_modules.py .\Workbook.xlsm .\Workbook.xlsm.modules
+python .\scripts\sync_vba_from_modules.py .\Workbook.xlsm .\Workbook.xlsm.modules .\Workbook.xlsm.document-modules
 ```
 
 4. If you use Ribbon XML, run:
@@ -86,7 +88,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\create_restore_point.ps1 -Lab
 ## Important limitations
 
 - `.cls` files must be real class modules inside `VBProject`.
-- workbook and worksheet document modules should also be exported and tracked as `.cls` files.
+- workbook and worksheet document modules should also be exported and tracked as `.cls` files in `Workbook.xlsm.document-modules/`, not mixed into the folder used by generic manual module import tools.
 - `Attribute VB_*` lines are export metadata only; do not paste them into the VBE code pane.
 - `.frm` files can depend on `.frx` resources; keep the matching `.frx` next to the form when needed.
 - Ribbon package checks should inspect a temporary workbook copy, not a COM-opened locked file.

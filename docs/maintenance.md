@@ -7,7 +7,7 @@
 1. Create a restore point with `.\scripts\create_restore_point.ps1 -Label <feature-name>`.
 2. Import VBA modules manually through the modified `VbaModuleManager` workflow.
 3. Apply scoped changes in the current `pisces/<feature-name>` branch only.
-4. Export modules back to `CreateLetter.xlsm.modules/`.
+4. Export modules back to `CreateLetter.xlsm.modules/` and document modules back to `CreateLetter.xlsm.document-modules/`.
 5. Validate the smoke-test user flows in Excel.
 6. Run the verification step before merging to `main`.
 
@@ -19,7 +19,7 @@
 ## VBA Export/Import Tooling
 
 - Use the modified manual `VbaModuleManager` flow as the primary sync mechanism.
-- Keep `CreateLetter.xlsm.modules/` aligned with the workbook before and after each tested change.
+- Keep `CreateLetter.xlsm.modules/` and `CreateLetter.xlsm.document-modules/` aligned with the workbook before and after each tested change.
 - Use helper tooling only when it does not replace the manual sync contract defined for this project.
 
 ## Regression Checklist

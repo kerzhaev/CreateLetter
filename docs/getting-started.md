@@ -12,7 +12,8 @@
 
 ## Project Files
 
-- `CreateLetter.xlsm.modules/`: source-managed VBA modules and forms
+- `CreateLetter.xlsm.modules/`: source-managed VBA standard modules, class modules, and forms
+- `CreateLetter.xlsm.document-modules/`: source-managed workbook and worksheet document modules
 - `scripts/`: local automation helpers
 
 ## First Run

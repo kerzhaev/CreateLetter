@@ -3,9 +3,10 @@
 Synchronize exported VBA source files back into the workbook through Excel COM.
 
 This script treats `CreateLetter.xlsm.modules/` as the authoritative text source
-and updates matching standard modules, class modules, document modules, and
-user forms in the target workbook. It is intended for local developer
-automation only and does not hook into workbook runtime events.
+for standard modules, class modules, and user forms, plus
+`CreateLetter.xlsm.document-modules/` for workbook/sheet document modules.
+It updates matching components in the target workbook and is intended for local
+developer automation only. It does not hook into workbook runtime events.
 """
 
 from __future__ import annotations
@@ -24,10 +25,16 @@ SOURCE_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "cp1251", "cp866", "mbcs")
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Sync VBA modules/forms from exported source files into an XLSM workbook."
+        description="Sync VBA modules/forms/document modules from exported source files into an XLSM workbook."
     )
     parser.add_argument("workbook", type=Path, help="Path to the target .xlsm workbook")
-    parser.add_argument("modules_dir", type=Path, help="Directory with exported VBA source files")
+    parser.add_argument("modules_dir", type=Path, help="Directory with exported standard modules, class modules, and forms")
+    parser.add_argument(
+        "document_modules_dir",
+        nargs="?",
+        type=Path,
+        help="Directory with exported workbook/sheet document modules (.cls). Defaults to <workbook>.document-modules next to the workbook.",
+    )
     parser.add_argument(
         "--visible",
         action="store_true",
@@ -36,19 +43,30 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def validate_paths(workbook: Path, modules_dir: Path) -> None:
+def derive_document_modules_dir(workbook: Path, document_modules_dir: Path | None) -> Path:
+    if document_modules_dir is not None:
+        return document_modules_dir
+    return workbook.parent / f"{workbook.name}.document-modules"
+
+
+def validate_paths(workbook: Path, modules_dir: Path, document_modules_dir: Path) -> None:
     if not workbook.exists():
         raise FileNotFoundError(f"Workbook not found: {workbook}")
     if not modules_dir.exists():
         raise FileNotFoundError(f"Modules directory not found: {modules_dir}")
+    if not document_modules_dir.exists():
+        raise FileNotFoundError(f"Document-modules directory not found: {document_modules_dir}")
 
 
-def iter_source_files(modules_dir: Path) -> list[Path]:
-    source_files: list[Path] = []
+def iter_source_files(modules_dir: Path, document_modules_dir: Path) -> list[tuple[Path, bool]]:
+    source_files: list[tuple[Path, bool]] = []
     for extension in SUPPORTED_EXTENSIONS:
-        source_files.extend(sorted(modules_dir.glob(f"*{extension}")))
+        source_files.extend((path, False) for path in sorted(modules_dir.glob(f"*{extension}")))
+    source_files.extend((path, True) for path in sorted(document_modules_dir.glob("*.cls")))
     if not source_files:
-        raise FileNotFoundError(f"No VBA source files found in {modules_dir}")
+        raise FileNotFoundError(
+            f"No VBA source files found in {modules_dir} or {document_modules_dir}"
+        )
     return source_files
 
 
@@ -97,7 +115,7 @@ def sanitize_module_source(source_text: str) -> str:
     return "\r\n".join(sanitized_lines)
 
 
-def sync_component(project, source_file: Path) -> str:
+def sync_component(project, source_file: Path, is_document_module: bool) -> str:
     component_name = source_file.stem
     existing_component = get_component_by_name(project, component_name)
     suffix = source_file.suffix.lower()
@@ -118,7 +136,17 @@ def sync_component(project, source_file: Path) -> str:
             code_module.AddFromString(sanitize_module_source(read_source_text(source_file)))
             return existing_component.Name
 
+        if is_document_module:
+            raise RuntimeError(
+                f"Document module source '{source_file.name}' matched non-document component type {component_type}"
+            )
+
         project.VBComponents.Remove(existing_component)
+
+    if is_document_module:
+        raise RuntimeError(
+            f"Document module '{component_name}' does not exist in the workbook and cannot be created as a normal class module"
+        )
 
     if suffix == ".cls":
         class_component = project.VBComponents.Add(2)
@@ -133,9 +161,15 @@ def sync_component(project, source_file: Path) -> str:
     return imported_component.Name
 
 
-def sync_workbook(workbook_path: Path, modules_dir: Path, visible: bool = False) -> int:
-    validate_paths(workbook_path, modules_dir)
-    source_files = iter_source_files(modules_dir)
+def sync_workbook(
+    workbook_path: Path,
+    modules_dir: Path,
+    document_modules_dir: Path | None = None,
+    visible: bool = False,
+) -> int:
+    resolved_document_modules_dir = derive_document_modules_dir(workbook_path, document_modules_dir)
+    validate_paths(workbook_path, modules_dir, resolved_document_modules_dir)
+    source_files = iter_source_files(modules_dir, resolved_document_modules_dir)
 
     pythoncom.CoInitialize()
     excel = win32com.client.DispatchEx("Excel.Application")
@@ -149,8 +183,8 @@ def sync_workbook(workbook_path: Path, modules_dir: Path, visible: bool = False)
         workbook = excel.Workbooks.Open(str(workbook_path.resolve()))
         project = workbook.VBProject
 
-        for source_file in source_files:
-            synced_name = sync_component(project, source_file)
+        for source_file, is_document_module in source_files:
+            synced_name = sync_component(project, source_file, is_document_module)
             synced_count += 1
             print(f"SYNCED {source_file.name} -> {synced_name}")
 
@@ -168,7 +202,12 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        synced_count = sync_workbook(args.workbook, args.modules_dir, visible=args.visible)
+        synced_count = sync_workbook(
+            args.workbook,
+            args.modules_dir,
+            document_modules_dir=args.document_modules_dir,
+            visible=args.visible,
+        )
     except Exception as exc:  # noqa: BLE001 - explicit developer tooling script
         print(f"SYNC ERROR: {exc}", file=sys.stderr)
         return 1

@@ -36,6 +36,7 @@ Each restore point must contain:
 
 - `CreateLetter.xlsm`
 - `CreateLetter.xlsm.modules/`
+- `CreateLetter.xlsm.document-modules/`
 
 Restore points are stored under `filesarchive/restore-point-<label>-<timestamp>/`.
 
@@ -53,24 +54,25 @@ Developer contract:
 1. Prefer exporting and synchronizing VBA automatically before asking for manual import:
 
 ```powershell
-python .\scripts\export_vba_to_modules.py .\CreateLetter.xlsm .\CreateLetter.xlsm.modules
+python .\scripts\export_vba_to_modules.py .\CreateLetter.xlsm .\CreateLetter.xlsm.modules .\CreateLetter.xlsm.document-modules
 ```
 
 2. Synchronize modules/forms/document modules back into the workbook before testing VBA changes in Excel:
 
 ```powershell
-python .\scripts\sync_vba_from_modules.py .\CreateLetter.xlsm .\CreateLetter.xlsm.modules
+python .\scripts\sync_vba_from_modules.py .\CreateLetter.xlsm .\CreateLetter.xlsm.modules .\CreateLetter.xlsm.document-modules
 ```
 
-3. If automatic export/sync fails because of COM/VBProject access or a workbook-specific import edge case, fall back to the manual modified `VbaModuleManager`.
-4. Export modules back to `CreateLetter.xlsm.modules/` after validated workbook-side changes.
+3. If automatic export/sync fails because of COM/VBProject access or a workbook-specific import edge case, fall back to the manual modified `VbaModuleManager` only for `CreateLetter.xlsm.modules/`.
+4. Export modules back to `CreateLetter.xlsm.modules/` and document modules back to `CreateLetter.xlsm.document-modules/` after validated workbook-side changes.
 5. Verify that workbook runtime behavior does not depend on automatic source-management hooks.
 
 Document-module note:
 
 - Workbook and worksheet document modules are part of the source-managed contour.
-- Keep `.cls` exports for `ЭтаКнига`, `Лист1`, `Лист2`, `Лист3`, `Лист4` in `CreateLetter.xlsm.modules/`.
+- Keep `.cls` exports for `ЭтаКнига`, `Лист1`, `Лист2`, `Лист3`, `Лист4` in `CreateLetter.xlsm.document-modules/`.
 - Changes made only in hidden workbook/sheet code must be exported back into the repository before the feature is considered complete.
+- Do not point manual `VbaModuleManager` import at `CreateLetter.xlsm.document-modules/`; those files must be updated through COM sync so existing document modules are edited in place.
 
 Class-module note:
 
@@ -100,7 +102,8 @@ This helper materializes the workbook `Localization` sheet from built-in transla
 
 ## Source of Truth and Encoding Policy
 
-- `CreateLetter.xlsm.modules/` is the source of truth for VBA text artifacts.
+- `CreateLetter.xlsm.modules/` is the source of truth for standard VBA modules, class modules, and forms.
+- `CreateLetter.xlsm.document-modules/` is the source of truth for workbook and worksheet document modules.
 - Workbook behavior must remain stable even if source-management tooling is not invoked by end users.
 - UTF-8 is the target baseline for text artifacts consumed by Git and AI agents.
 - If an import/export step produces ANSI or CP1251-only artifacts, stop the migration and stabilize source-management before changing business logic.
@@ -128,7 +131,7 @@ Use `-RequireStructuredTables` after workbook schema stages that depend on `tblA
 Use `-RequireLocalizationSheet` after workbook-backed localization becomes part of the expected schema.
 Use `-RequireRibbonCustomization` after source-managed Ribbon changes or package customization work.
 Use `-RequireAddressGroupColumn` after address-schema stages that depend on the optional `AddressGroup` column in `tblAddresses`.
-The smoke harness also verifies that source files exist for all workbook and worksheet document modules.
+The smoke harness also verifies that source files exist for all workbook and worksheet document modules in `CreateLetter.xlsm.document-modules/`.
 
 ## Reusable COM Pattern
 

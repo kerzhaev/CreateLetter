@@ -89,7 +89,7 @@ function Get-TableColumnNames {
 function Test-DocumentModuleSourceCoverage {
     param(
         [object]$Workbook,
-        [string]$ModulesDirectory
+        [string]$DocumentModulesDirectory
     )
 
     $missingModules = New-Object 'System.Collections.Generic.List[string]'
@@ -100,7 +100,7 @@ function Test-DocumentModuleSourceCoverage {
             continue
         }
 
-        $expectedPath = Join-Path $ModulesDirectory ($component.Name + ".cls")
+        $expectedPath = Join-Path $DocumentModulesDirectory ($component.Name + ".cls")
         if (-not (Test-Path $expectedPath)) {
             $missingModules.Add($component.Name) | Out-Null
         }
@@ -111,6 +111,7 @@ function Test-DocumentModuleSourceCoverage {
 
 $resolvedWorkbookPath = Resolve-Path $WorkbookPath
 $modulesDirectory = Join-Path (Split-Path -Parent $resolvedWorkbookPath.Path) ([System.IO.Path]::GetFileName($resolvedWorkbookPath.Path) + ".modules")
+$documentModulesDirectory = Join-Path (Split-Path -Parent $resolvedWorkbookPath.Path) ([System.IO.Path]::GetFileName($resolvedWorkbookPath.Path) + ".document-modules")
 $results = New-Object 'System.Collections.Generic.List[object]'
 $excel = $null
 $workbook = $null
@@ -213,7 +214,7 @@ try {
     }
 
     try {
-        $missingDocumentModuleSources = Test-DocumentModuleSourceCoverage -Workbook $workbook -ModulesDirectory $modulesDirectory
+        $missingDocumentModuleSources = Test-DocumentModuleSourceCoverage -Workbook $workbook -DocumentModulesDirectory $documentModulesDirectory
         if ($missingDocumentModuleSources.Count -eq 0) {
             Add-Result -Results $results -Name "DocumentModuleSourceCoverage" -Status "PASS" -Details "Source files exist for all workbook and worksheet document modules."
         }

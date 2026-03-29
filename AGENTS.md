@@ -4,7 +4,7 @@
 
 ## Project Overview
 CreateLetter is an Excel VBA workbook used to prepare letters from templates using structured address/settings data and guided user forms.
-Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchronized with the workbook artifact through Excel COM automation, with manual `VbaModuleManager` fallback only for edge cases.
+Source-managed VBA standard modules, class modules, and forms are stored in `CreateLetter.xlsm.modules/`. Workbook and worksheet document modules are stored separately in `CreateLetter.xlsm.document-modules/` so manual `VbaModuleManager` workflows do not import hidden sheet/workbook code as ordinary class modules. Both directories are synchronized with the workbook artifact through Excel COM automation, with manual `VbaModuleManager` fallback only for edge cases.
 The `Addresses` worksheet now supports an optional `AddressGroup` field for scenarios where several named recipients share one postal address.
 
 ## Tech Stack
@@ -16,14 +16,9 @@ The `Addresses` worksheet now supports an optional `AddressGroup` field for scen
 ## Project Structure
 ```text
 .
-├── CreateLetter.xlsm.modules/           # Exported VBA source modules/forms
+├── CreateLetter.xlsm.modules/           # Exported VBA source modules/forms/class modules
 │   ├── frmLetterCreator.frm             # Main wizard UI source
 │   ├── frmLetterHistory.frm             # History UI source
-│   ├── ЭтаКнига.cls                     # Workbook document-module source
-│   ├── Лист1.cls                        # Addresses sheet document-module source
-│   ├── Лист2.cls                        # Letters sheet document-module source
-│   ├── Лист3.cls                        # Settings sheet document-module source
-│   ├── Лист4.cls                        # Localization sheet document-module source
 │   ├── ModuleMain.bas                   # Core logic and validation
 │   ├── mdlInicialize.bas                # Worksheet bootstrap/reset
 │   ├── ModuleDates.bas                  # Date helpers
@@ -37,6 +32,12 @@ The `Addresses` worksheet now supports an optional `AddressGroup` field for scen
 │   ├── VbaModuleManager.bas             # Legacy/manual import-export helper kept for fallback workflows
 │   ├── clsLetterHistoryRecord.cls       # Typed DTO for letter history rows
 │   └── MdlBackup1.bas                   # Legacy backup logic
+├── CreateLetter.xlsm.document-modules/  # Workbook/sheet document-module exports
+│   ├── ЭтаКнига.cls                     # Workbook document-module source
+│   ├── Лист1.cls                        # Addresses sheet document-module source
+│   ├── Лист2.cls                        # Letters sheet document-module source
+│   ├── Лист3.cls                        # Settings sheet document-module source
+│   └── Лист4.cls                        # Localization sheet document-module source
 ├── filesarchive/                        # Archived workbook versions
 │   └── restore-point-*/                 # Local rollback snapshots before feature work
 ├── scripts/

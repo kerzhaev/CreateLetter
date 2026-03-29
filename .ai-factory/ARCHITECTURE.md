@@ -29,6 +29,12 @@ The migration baseline adds two operational constraints: source-managed VBA rema
 │   ├── ModuleBackup.bas                 # Backup and recovery helpers
 │   ├── ModuleAuditLogger.bas            # Auditing/logging concerns
 │   └── MdlBackup1.bas                   # Legacy backup module
+├── CreateLetter.xlsm.document-modules/  # Workbook/sheet code modules exported separately
+│   ├── ЭтаКнига.cls                     # ThisWorkbook code
+│   ├── Лист1.cls                        # Addresses sheet code
+│   ├── Лист2.cls                        # Letters sheet code
+│   ├── Лист3.cls                        # Settings sheet code
+│   └── Лист4.cls                        # Localization sheet code
 ├── filesarchive/                        # Archived workbook snapshots
 ├── scripts/                             # Safe developer helper scripts
 │   └── create_restore_point.ps1         # Workbook + module rollback snapshot
@@ -61,7 +67,7 @@ The migration baseline adds two operational constraints: source-managed VBA rema
 1. Keep domain rules in standard modules, not in form event handlers.
 2. Treat worksheets as persistence boundaries with strict validation on read/write.
 3. Keep side effects explicit: backup/audit actions should be easy to trace.
-4. Treat `CreateLetter.xlsm.modules/` as the authoritative text source for VBA.
+4. Treat `CreateLetter.xlsm.modules/` as the authoritative text source for standard VBA modules/forms and `CreateLetter.xlsm.document-modules/` as the authoritative text source for workbook/sheet document modules.
 5. Execute migration in branch-sized feature stages with a restore point before repo-tracked edits.
 6. Favor English ASCII for new internal identifiers and localization for user-facing Russian text.
 7. Add localization in two steps: foundation first, user-facing string migration second.

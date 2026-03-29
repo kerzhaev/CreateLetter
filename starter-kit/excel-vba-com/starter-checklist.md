@@ -6,6 +6,7 @@ Use this checklist when copying the starter kit into a new Excel/VBA repository.
 
 - workbook binary exists, for example `Workbook.xlsm`
 - exported source folder exists, for example `Workbook.xlsm.modules/`
+- exported document-modules folder exists, for example `Workbook.xlsm.document-modules/`
 - `filesarchive/` exists or is allowed to be created
 - `scripts/` exists
 - `customUI/` exists if Ribbon is needed
@@ -25,7 +26,7 @@ Use this checklist when copying the starter kit into a new Excel/VBA repository.
 - update required `ListObject` names in the smoke script
 - update Ribbon callbacks and labels in `customUI.xml`
 - update any project-specific naming in restore-point output
-- decide which workbook and sheet document modules must be exported as tracked `.cls` files
+- decide which workbook and sheet document modules must be exported as tracked `.cls` files into `Workbook.xlsm.document-modules/`
 
 ## Early smoke gate
 
@@ -40,6 +41,7 @@ Use this checklist when copying the starter kit into a new Excel/VBA repository.
 
 - class modules imported like standard modules
 - hidden workbook/sheet code not exported back to source
+- hidden workbook/sheet code mixed into the same folder used by a generic manual module importer
 - `Attribute VB_Name` injected into VBE text
 - workbook file locked during ZIP inspection
 - `.frm` without matching `.frx`

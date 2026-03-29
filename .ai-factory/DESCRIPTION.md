@@ -34,7 +34,8 @@ Project uses a modular-monolith style inside a single Excel workbook:
 
 ## Migration Baseline
 - The workbook runtime must remain independent from source-management hooks.
-- `CreateLetter.xlsm.modules/` is the source of truth for VBA text artifacts.
+- `CreateLetter.xlsm.modules/` is the source of truth for standard VBA modules, class modules, and forms.
+- `CreateLetter.xlsm.document-modules/` is the source of truth for workbook and worksheet document modules.
 - Module sync is manual and must not be attached to workbook open/save/close events.
 - UTF-8-readable text artifacts are the target baseline for Git and AI-agent workflows.
 - Internal identifiers are migrating toward English ASCII; user-facing Russian text will move to localization data in later stages.

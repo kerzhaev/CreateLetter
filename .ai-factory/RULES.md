@@ -9,7 +9,7 @@
 - Implement migration work in small feature stages; never combine multiple major migration steps in one change set.
 - Use AI Factory as the only delivery pipeline: `$aif-plan`, `$aif-implement`, `$aif-verify`, then merge.
 - Do not wire `VbaModuleManager` to workbook open, save, or close events; keep import/export manual in the developer workflow.
-- Treat `CreateLetter.xlsm.modules/` as the source of truth for VBA text artifacts.
+- Treat `CreateLetter.xlsm.modules/` as the source of truth for standard VBA modules, class modules, and forms. Treat `CreateLetter.xlsm.document-modules/` as the source of truth for workbook and worksheet document modules.
 - New internal identifiers, module names, constants, sheet keys, and placeholder keys must use English ASCII only.
 - User-facing Russian text must come from localization data, not from new hardcoded literals in business logic.
 - Do not start the next migration stage until the previous stage passes a manual smoke test in Excel.
@@ -47,4 +47,5 @@
 - When smoke tests need workbook package inspection, inspect a temporary workbook copy instead of the live COM-opened file to avoid false failures from file locks.
 - Shared postal addresses between multiple recipients must be modeled with the optional `AddressGroup` field in `tblAddresses`, not with a separate exported letter/history field or a new normalized address table unless a later roadmap explicitly introduces one.
 - For user-editable workbook dictionaries such as `tblAddresses`, forms must not trust cached search payloads as the final source of truth when a row is selected; they must resolve the worksheet row and reload current values from the workbook before editing or auto-updating the record.
-- Workbook and worksheet document modules are part of the source-managed boundary. Hidden sheet/workbook macros must be exported into `CreateLetter.xlsm.modules/*.cls`, kept under git, and covered by the COM export/sync workflow so fixes do not live only inside the binary workbook.
+- Workbook and worksheet document modules are part of the source-managed boundary. Hidden sheet/workbook macros must be exported into `CreateLetter.xlsm.document-modules/*.cls`, kept under git, and covered by the COM export/sync workflow so fixes do not live only inside the binary workbook.
+- Keep workbook/sheet document modules out of the manual `VbaModuleManager` import path. `VbaModuleManager` may operate on `CreateLetter.xlsm.modules/`, but document modules must sync through COM tooling so they are updated in place instead of imported as extra class modules.

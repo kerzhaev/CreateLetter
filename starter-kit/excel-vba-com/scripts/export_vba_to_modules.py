@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-Export workbook VBA source into a source-managed modules directory.
+Export workbook VBA source into source-managed directories.
 
 This helper complements `sync_vba_from_modules.py` by exporting standard
-modules, class modules, document modules, and user forms from the workbook into
-text files under the modules directory.
+modules, class modules, and user forms into the modules directory, plus
+workbook/sheet document modules into a separate document-modules directory.
 """
 
 from __future__ import annotations
@@ -18,10 +18,10 @@ import win32com.client
 
 
 COMPONENT_TYPE_EXTENSIONS = {
-    1: ".bas",
-    2: ".cls",
-    3: ".frm",
-    100: ".cls",
+    1: ".bas",   # Standard module
+    2: ".cls",   # Class module
+    3: ".frm",   # UserForm
+    100: ".cls", # Document module
 }
 SOURCE_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "cp1251", "cp866", "mbcs")
 
@@ -31,7 +31,13 @@ def build_parser() -> argparse.ArgumentParser:
         description="Export VBA modules/forms/document modules from an XLSM workbook."
     )
     parser.add_argument("workbook", type=Path, help="Path to the target .xlsm workbook")
-    parser.add_argument("modules_dir", type=Path, help="Directory to receive exported VBA source files")
+    parser.add_argument("modules_dir", type=Path, help="Directory to receive exported standard modules, class modules, and forms")
+    parser.add_argument(
+        "document_modules_dir",
+        nargs="?",
+        type=Path,
+        help="Directory to receive exported workbook/sheet document modules (.cls). Defaults to <workbook>.document-modules next to the workbook.",
+    )
     parser.add_argument(
         "--visible",
         action="store_true",
@@ -40,10 +46,17 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def validate_paths(workbook: Path, modules_dir: Path) -> None:
+def derive_document_modules_dir(workbook: Path, document_modules_dir: Path | None) -> Path:
+    if document_modules_dir is not None:
+        return document_modules_dir
+    return workbook.parent / f"{workbook.name}.document-modules"
+
+
+def validate_paths(workbook: Path, modules_dir: Path, document_modules_dir: Path) -> None:
     if not workbook.exists():
         raise FileNotFoundError(f"Workbook not found: {workbook}")
     modules_dir.mkdir(parents=True, exist_ok=True)
+    document_modules_dir.mkdir(parents=True, exist_ok=True)
 
 
 def normalize_exported_text_file(source_file: Path) -> None:
@@ -94,7 +107,7 @@ def build_document_module_source(component) -> str:
     return "\r\n".join(lines)
 
 
-def export_component(component, modules_dir: Path) -> str | None:
+def export_component(component, modules_dir: Path, document_modules_dir: Path) -> str | None:
     extension = COMPONENT_TYPE_EXTENSIONS.get(component.Type)
     if extension is None:
         return None
@@ -106,6 +119,7 @@ def export_component(component, modules_dir: Path) -> str | None:
         return destination.name
 
     if component.Type == 100:
+        destination = document_modules_dir / f"{component.Name}{extension}"
         destination.write_text(build_document_module_source(component), encoding="utf-8")
         return destination.name
 
@@ -114,8 +128,14 @@ def export_component(component, modules_dir: Path) -> str | None:
     return destination.name
 
 
-def export_workbook(workbook_path: Path, modules_dir: Path, visible: bool = False) -> int:
-    validate_paths(workbook_path, modules_dir)
+def export_workbook(
+    workbook_path: Path,
+    modules_dir: Path,
+    document_modules_dir: Path | None = None,
+    visible: bool = False,
+) -> int:
+    resolved_document_modules_dir = derive_document_modules_dir(workbook_path, document_modules_dir)
+    validate_paths(workbook_path, modules_dir, resolved_document_modules_dir)
 
     pythoncom.CoInitialize()
     excel = win32com.client.DispatchEx("Excel.Application")
@@ -131,7 +151,7 @@ def export_workbook(workbook_path: Path, modules_dir: Path, visible: bool = Fals
 
         for index in range(1, project.VBComponents.Count + 1):
             component = project.VBComponents(index)
-            exported_name = export_component(component, modules_dir)
+            exported_name = export_component(component, modules_dir, resolved_document_modules_dir)
             if exported_name is None:
                 continue
             exported_count += 1
@@ -150,8 +170,13 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        exported_count = export_workbook(args.workbook, args.modules_dir, visible=args.visible)
-    except Exception as exc:
+        exported_count = export_workbook(
+            args.workbook,
+            args.modules_dir,
+            document_modules_dir=args.document_modules_dir,
+            visible=args.visible,
+        )
+    except Exception as exc:  # noqa: BLE001 - explicit developer tooling script
         print(f"EXPORT ERROR: {exc}", file=sys.stderr)
         return 1
 
