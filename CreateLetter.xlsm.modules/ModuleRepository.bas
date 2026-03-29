@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleRepository"
 ' Module: ModuleRepository
 ' Author: CreateLetter contributors
 ' Purpose: Workbook CRUD/search/export helpers with typed history DTO support
-' Version: 1.0.0 - 29.03.2026
+' Version: 1.0.1 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -477,7 +477,7 @@ Private Function CreateLetterHistoryRecordFromMatrix(letterData As Variant, rowI
     record.DocumentSum = NormalizeHistorySumCell(letterData(rowIndex, LetterColumnDocumentSum))
     record.ReturnStatus = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnReturnStatus)
     record.Executor = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnExecutor)
-    record.DocumentTypeKey = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnDocumentType)
+    record.DocumentTypeKey = NormalizeDocumentTypeKey(RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnDocumentType))
     record.RowNumber = worksheetRowNumber
 
     Set CreateLetterHistoryRecordFromMatrix = record
@@ -544,7 +544,7 @@ Private Function TryParseLegacyLetterHistoryRecord(letterData As String) As clsL
     record.DocumentSum = parts(HistoryPartDocumentSum)
     record.ReturnStatus = parts(HistoryPartReturnStatus)
     record.Executor = parts(HistoryPartExecutor)
-    record.DocumentTypeKey = parts(HistoryPartDocumentType)
+    record.DocumentTypeKey = NormalizeDocumentTypeKey(parts(HistoryPartDocumentType))
     record.RowNumber = CLng(parts(HistoryPartRowNumber))
 
     Set TryParseLegacyLetterHistoryRecord = record

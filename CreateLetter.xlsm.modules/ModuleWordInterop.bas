@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleWordInterop"
 ' Module: ModuleWordInterop
 ' Author: CreateLetter contributors
 ' Purpose: Explicit Word session lifecycle and document generation helpers
-' Version: 1.0.0 - 29.03.2026
+' Version: 1.1.0 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -190,13 +190,13 @@ Public Sub WordInteropFillWordTemplateData(wordDoc As Object, addresseeText As S
     phoneText = GetExecutorPhone(executorText)
     letterText = GetDocumentTypeText(documentType)
 
-    WordInteropSafeReplaceInWord wordDoc, TemplatePlaceholderRecipientName, addresseeText
-    WordInteropSafeReplaceInWord wordDoc, TemplatePlaceholderRecipientAddress, addressText
-    WordInteropSafeReplaceInWord wordDoc, TemplatePlaceholderOutgoingNumber, numberText
-    WordInteropSafeReplaceInWord wordDoc, TemplatePlaceholderOutgoingDate, dateText
-    WordInteropSafeReplaceInWord wordDoc, TemplatePlaceholderExecutorName, executorText
-    WordInteropSafeReplaceInWord wordDoc, TemplatePlaceholderExecutorPhone, phoneText
-    WordInteropSafeReplaceInWord wordDoc, TemplatePlaceholderLetterText, letterText
+    ReplaceTemplatePlaceholderVariants wordDoc, TemplatePlaceholderRecipientName, LegacyTemplatePlaceholderRecipientName, addresseeText
+    ReplaceTemplatePlaceholderVariants wordDoc, TemplatePlaceholderRecipientAddress, LegacyTemplatePlaceholderRecipientAddress, addressText
+    ReplaceTemplatePlaceholderVariants wordDoc, TemplatePlaceholderOutgoingNumber, LegacyTemplatePlaceholderOutgoingNumber, numberText
+    ReplaceTemplatePlaceholderVariants wordDoc, TemplatePlaceholderOutgoingDate, LegacyTemplatePlaceholderOutgoingDate, dateText
+    ReplaceTemplatePlaceholderVariants wordDoc, TemplatePlaceholderExecutorName, LegacyTemplatePlaceholderExecutorName, executorText
+    ReplaceTemplatePlaceholderVariants wordDoc, TemplatePlaceholderExecutorPhone, LegacyTemplatePlaceholderExecutorPhone, phoneText
+    ReplaceTemplatePlaceholderVariants wordDoc, TemplatePlaceholderLetterText, LegacyTemplatePlaceholderLetterText, letterText
 
     WordInteropReplaceAttachmentsInTemplateWithFontAndSum wordDoc, documentsList, 10
     Exit Sub
@@ -243,9 +243,9 @@ Public Sub WordInteropReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Obje
         .ClearFormatting
         .Forward = True
         .Wrap = 1
-        .Text = TemplatePlaceholderAttachmentsList
+        .Text = ResolveAttachmentsPlaceholderText(wordDoc)
 
-        If .Execute Then
+        If Len(.Text) > 0 And .Execute Then
             Dim startPos As Long
             startPos = rng.Start
 
@@ -513,9 +513,40 @@ Private Function FindBestBreakPosition(textFragment As String) As Long
 End Function
 
 Private Function GetLetterTemplatePathInternal(useAlternateTemplate As Boolean) As String
+    Dim templateFolder As String
+    templateFolder = GetConfiguredTemplateFolderPath()
+
     If useAlternateTemplate Then
-        GetLetterTemplatePathInternal = ThisWorkbook.Path & "\" & LetterTemplateFileNameFOU
+        GetLetterTemplatePathInternal = templateFolder & "\" & LetterTemplateFileNameFOU
     Else
-        GetLetterTemplatePathInternal = ThisWorkbook.Path & "\" & LetterTemplateFileNameRegular
+        GetLetterTemplatePathInternal = templateFolder & "\" & LetterTemplateFileNameRegular
     End If
+End Function
+
+Private Sub ReplaceTemplatePlaceholderVariants(wordDoc As Object, primaryPlaceholder As String, legacyPlaceholder As String, replaceText As String)
+    WordInteropSafeReplaceInWord wordDoc, primaryPlaceholder, replaceText
+
+    If Len(Trim$(legacyPlaceholder)) > 0 Then
+        WordInteropSafeReplaceInWord wordDoc, legacyPlaceholder, replaceText
+    End If
+End Sub
+
+Private Function ResolveAttachmentsPlaceholderText(wordDoc As Object) As String
+    On Error GoTo LookupFailed
+
+    Dim documentText As String
+    documentText = CStr(wordDoc.Content.Text)
+
+    If InStr(1, documentText, TemplatePlaceholderAttachmentsList, vbTextCompare) > 0 Then
+        ResolveAttachmentsPlaceholderText = TemplatePlaceholderAttachmentsList
+        Exit Function
+    End If
+
+    If InStr(1, documentText, LegacyTemplatePlaceholderAttachmentsList, vbTextCompare) > 0 Then
+        ResolveAttachmentsPlaceholderText = LegacyTemplatePlaceholderAttachmentsList
+        Exit Function
+    End If
+
+LookupFailed:
+    ResolveAttachmentsPlaceholderText = TemplatePlaceholderAttachmentsList
 End Function

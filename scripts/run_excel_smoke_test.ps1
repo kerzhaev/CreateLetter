@@ -12,7 +12,10 @@ param(
     [switch]$RequireLocalizationSheet,
 
     [Parameter(Mandatory = $false)]
-    [switch]$AllowLegacyRussianSheetNames
+    [switch]$AllowLegacyRussianSheetNames,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireRibbonCustomization
 )
 
 $ErrorActionPreference = "Stop"
@@ -281,6 +284,44 @@ try {
     }
     catch {
         Add-Result -Results $results -Name "RefactorContract" -Status "FAIL" -Details ("Repository/Word contract inspection failed: " + $_.Exception.Message)
+        $failed = $true
+    }
+
+    try {
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $archive = [System.IO.Compression.ZipFile]::OpenRead($resolvedWorkbookPath.Path)
+        $customUiEntry = $archive.GetEntry("customUI/customUI.xml")
+        $rootRelsEntry = $archive.GetEntry("_rels/.rels")
+        $moduleRibbon = $workbook.VBProject.VBComponents.Item("ModuleRibbon").CodeModule
+        $moduleRibbonText = [string]$moduleRibbon.Lines(1, $moduleRibbon.CountOfLines)
+
+        $hasRibbonModule = ($moduleRibbonText -like "*Public Sub RibbonOpenLetterForm(control As IRibbonControl)*") -and
+                           ($moduleRibbonText -like "*Public Function GetConfiguredTemplateFolderPath()*") -and
+                           ($moduleRibbonText -like "*Public Function GetConfiguredOutputFolderPath()*")
+
+        $hasCustomUiPart = $null -ne $customUiEntry
+        $hasRibbonRelationship = $false
+
+        if ($null -ne $rootRelsEntry) {
+            $rootRelsText = (New-Object System.IO.StreamReader($rootRelsEntry.Open())).ReadToEnd()
+            $hasRibbonRelationship = $rootRelsText -like "*http://schemas.microsoft.com/office/2006/relationships/ui/extensibility*"
+        }
+
+        $archive.Dispose()
+
+        if ($hasRibbonModule -and $hasCustomUiPart -and $hasRibbonRelationship) {
+            Add-Result -Results $results -Name "RibbonCustomization" -Status "PASS" -Details "Ribbon module and customUI package markup are present."
+        }
+        elseif ($RequireRibbonCustomization) {
+            Add-Result -Results $results -Name "RibbonCustomization" -Status "FAIL" -Details "ModuleRibbon or customUI workbook markup is missing."
+            $failed = $true
+        }
+        else {
+            Add-Result -Results $results -Name "RibbonCustomization" -Status "WARN" -Details "Ribbon customization is not embedded yet."
+        }
+    }
+    catch {
+        Add-Result -Results $results -Name "RibbonCustomization" -Status "FAIL" -Details ("Ribbon inspection failed: " + $_.Exception.Message)
         $failed = $true
     }
 }

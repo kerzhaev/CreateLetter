@@ -40,3 +40,4 @@
 - Keep local-only artifacts out of the public repository: restore points, temporary exports, runtime backup folders, and one-off manual recovery helpers should be ignored or removed before publication.
 - The public GitHub repository is source-only: keep workbook binaries, template binaries, `.frx` resources, and local AI skill directories outside git while preserving local developer workflows through ignored files.
 - GitHub CI for this project must validate repository consistency only. Do not design CI that depends on Excel COM or local runtime binaries being present in the public repository.
+- Ribbon customization must be source-managed in `customUI/customUI.xml` and applied to the workbook through automation such as `scripts/apply_custom_ui.py`; do not rely on one-off manual RibbonX edits as the only source of truth.

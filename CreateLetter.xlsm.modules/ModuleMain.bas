@@ -3,8 +3,8 @@ Attribute VB_Name = "ModuleMain"
 ' ======================================================================
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: CreateLetter contributors
-' Purpose: Core shared logic for validation, data processing, Word generation, and workbook persistence
-' Version: 1.7.0 — 29.03.2026
+' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
+' Version: 1.7.1 — 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -35,6 +35,14 @@ Public Const TemplatePlaceholderExecutorName As String = "ExecutorName"
 Public Const TemplatePlaceholderExecutorPhone As String = "ExecutorPhone"
 Public Const TemplatePlaceholderLetterText As String = "LetterText"
 Public Const TemplatePlaceholderAttachmentsList As String = "AttachmentsList"
+Public Const LegacyTemplatePlaceholderRecipientName As String = "НаименованиеПолучателя"
+Public Const LegacyTemplatePlaceholderRecipientAddress As String = "АдресПолучателя"
+Public Const LegacyTemplatePlaceholderOutgoingNumber As String = "НомерИсходящего"
+Public Const LegacyTemplatePlaceholderOutgoingDate As String = "ДатаИсходящего"
+Public Const LegacyTemplatePlaceholderExecutorName As String = "ИсполнительФИО"
+Public Const LegacyTemplatePlaceholderExecutorPhone As String = "ТелефонИсполнителя"
+Public Const LegacyTemplatePlaceholderLetterText As String = "ТекстПисьма"
+Public Const LegacyTemplatePlaceholderAttachmentsList As String = "СписокПриложений"
 
 Public Enum AddressColumns
     AddressColumnAddressee = 1
@@ -163,12 +171,12 @@ End Function
 
 Public Function GetDocumentTypeDisplayLabel(documentType As String) As String
     Select Case NormalizeDocumentTypeKey(documentType)
-        Case DocumentTypeKeyOwnConfirmation
-            GetDocumentTypeDisplayLabel = t("form.letter_creator.option.document_type.own_confirmation", "Own for confirmation")
-        Case DocumentTypeKeyConfirmed
-            GetDocumentTypeDisplayLabel = t("form.letter_creator.option.document_type.confirmed", "Third-party confirmed documents")
-        Case Else
-            GetDocumentTypeDisplayLabel = Trim$(documentType)
+    Case DocumentTypeKeyOwnConfirmation
+        GetDocumentTypeDisplayLabel = t("form.letter_creator.option.document_type.own_confirmation", "Свои для подтверждения")
+    Case DocumentTypeKeyConfirmed
+        GetDocumentTypeDisplayLabel = t("form.letter_creator.option.document_type.confirmed", "Чужие подтвержденные документы")
+    Case Else
+        GetDocumentTypeDisplayLabel = Trim$(documentType)
     End Select
 End Function
 
@@ -425,21 +433,21 @@ End Function
 
 Public Function FormatDocumentName(docArray As Variant) As String
     If Not IsArray(docArray) Then
-        FormatDocumentName = t("core.runtime.error.invalid_data_format", "Error: invalid data format")
+        FormatDocumentName = t("core.runtime.error.invalid_data_format", "Ошибка: неверный формат данных")
         Exit Function
     End If
     
     Dim result As String
     result = docArray(DocumentIndexName)
     
-    result = result & " No."
+    result = result & t("core.document.label.number_prefix", " №")
     If Len(Trim(docArray(DocumentIndexNumber))) > 0 Then
         result = result & docArray(DocumentIndexNumber)
     Else
         result = result & "    "
     End If
     
-    result = result & " dated "
+    result = result & t("core.document.label.date_prefix", " от ")
     If Len(Trim(docArray(DocumentIndexDate))) > 0 Then
         result = result & docArray(DocumentIndexDate)
     Else
@@ -449,16 +457,16 @@ Public Function FormatDocumentName(docArray As Variant) As String
     result = result & " ("
     
     If Len(Trim(docArray(DocumentIndexCopies))) > 0 Then
-        result = result & docArray(DocumentIndexCopies) & " copies"
+        result = result & docArray(DocumentIndexCopies) & t("core.document.label.copies_suffix", " экз.")
     Else
-        result = result & "  copies"
+        result = result & "  " & t("core.document.label.copies_suffix", "экз.")
     End If
     
     result = result & ", "
     If Len(Trim(docArray(DocumentIndexSheets))) > 0 Then
-        result = result & docArray(DocumentIndexSheets) & " sheets"
+        result = result & docArray(DocumentIndexSheets) & t("core.document.label.sheets_suffix", " л.")
     Else
-        result = result & "   sheets"
+        result = result & "   " & t("core.document.label.sheets_suffix", "л.")
     End If
     
     result = result & ")"
@@ -605,6 +613,10 @@ End Function
 ' ======================================================================
 Public Function SearchAddresses(searchTerm As String) As Collection
     Set SearchAddresses = RepositorySearchAddresses(searchTerm)
+End Function
+
+Public Function ResolveDocumentTypeDisplayValue(documentType As String) As String
+    ResolveDocumentTypeDisplayValue = GetDocumentTypeDisplayLabel(documentType)
 End Function
 
 Public Function TryParseAddressListItem(addressItem As String, ByRef addressParts As Variant, ByRef rowNumber As Long, ByRef errorMessage As String) As Boolean
@@ -855,7 +867,7 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     Debug.Print "=== BEFORE writing remaining cells ==="
     ws.Cells(newRow, LetterColumnReturnStatus).value = ""
     ws.Cells(newRow, LetterColumnExecutor).value = executor
-    ws.Cells(newRow, LetterColumnDocumentType).value = documentType
+    ws.Cells(newRow, LetterColumnDocumentType).value = ResolveDocumentTypeDisplayValue(documentType)
     Debug.Print "=== AFTER writing remaining cells ==="
     
     Debug.Print "=== DEBUG SaveLetterInfoWithSum SUCCESS END ==="
@@ -875,7 +887,7 @@ Public Function FormatAttachmentsListCompactWithSum(documentsList As Collection)
     Debug.Print "=== DEBUG FormatAttachmentsListCompactWithSum START ==="
     
     If documentsList Is Nothing Or documentsList.count = 0 Then
-        FormatAttachmentsListCompactWithSum = t("core.attachments.not_specified", "Documents not specified")
+        FormatAttachmentsListCompactWithSum = t("core.attachments.not_specified", "Документы не указаны")
         Debug.Print "=== DEBUG FormatAttachmentsListCompactWithSum END (empty) ==="
         Exit Function
     End If
@@ -916,7 +928,7 @@ Public Function FormatDocumentNameWithSum(docArray As Variant) As String
     Debug.Print "IsArray: " & IsArray(docArray)
     
     If Not IsArray(docArray) Then
-        FormatDocumentNameWithSum = t("core.runtime.error.invalid_data_format", "Error: invalid data format")
+        FormatDocumentNameWithSum = t("core.runtime.error.invalid_data_format", "Ошибка: неверный формат данных")
         Debug.Print "ERROR: Not array"
         Debug.Print "=== DEBUG FormatDocumentNameWithSum END ==="
         Exit Function
@@ -932,14 +944,14 @@ Public Function FormatDocumentNameWithSum(docArray As Variant) As String
     Dim result As String
     result = docArray(DocumentIndexName)
     
-    result = result & " No."
+    result = result & t("core.document.label.number_prefix", " №")
     If Len(Trim(docArray(DocumentIndexNumber))) > 0 Then
         result = result & docArray(DocumentIndexNumber)
     Else
         result = result & "    "
     End If
     
-    result = result & " dated "
+    result = result & t("core.document.label.date_prefix", " от ")
     If Len(Trim(docArray(DocumentIndexDate))) > 0 Then
         result = result & docArray(DocumentIndexDate)
     Else
@@ -952,7 +964,7 @@ Public Function FormatDocumentNameWithSum(docArray As Variant) As String
         If IsNumeric(docArray(DocumentIndexSum)) Then
             Dim sumText As String
             sumText = CStr(CLng(CDbl(docArray(DocumentIndexSum))))
-            result = result & " for the amount of " & sumText & " rub."
+            result = result & t("core.document.label.amount_prefix", " на сумму ") & sumText & t("core.document.label.amount_suffix", " руб.")
             Debug.Print "Sum formatted as: " & sumText
         Else
             result = result & " (" & docArray(DocumentIndexSum) & ")"
@@ -965,16 +977,16 @@ Public Function FormatDocumentNameWithSum(docArray As Variant) As String
     result = result & " ("
     
     If Len(Trim(docArray(DocumentIndexCopies))) > 0 Then
-        result = result & docArray(DocumentIndexCopies) & " copies"
+        result = result & docArray(DocumentIndexCopies) & t("core.document.label.copies_suffix", " экз.")
     Else
-        result = result & "  copies"
+        result = result & "  " & t("core.document.label.copies_suffix", "экз.")
     End If
     
     result = result & ", "
     If Len(Trim(docArray(DocumentIndexSheets))) > 0 Then
-        result = result & docArray(DocumentIndexSheets) & " sheets"
+        result = result & docArray(DocumentIndexSheets) & t("core.document.label.sheets_suffix", " л.")
     Else
-        result = result & "   sheets"
+        result = result & "   " & t("core.document.label.sheets_suffix", "л.")
     End If
     
     result = result & ")"
@@ -989,7 +1001,7 @@ Public Function FormatAttachmentsListForWordWithSum(documentsList As Collection)
     Set FormatAttachmentsListForWordWithSum = New Collection
     
     If documentsList Is Nothing Or documentsList.count = 0 Then
-        FormatAttachmentsListForWordWithSum.Add t("core.attachments.not_specified_word", "documents not specified;")
+        FormatAttachmentsListForWordWithSum.Add t("core.attachments.not_specified_word", "документы не указаны;")
         Exit Function
     End If
     
@@ -1439,9 +1451,9 @@ End Sub
 
 Public Function GetDocumentTypeText(documentType As String) As String
     If NormalizeDocumentTypeKey(documentType) = DocumentTypeKeyOwnConfirmation Then
-        GetDocumentTypeText = t("core.letter.text.own_confirmation", "forwarding the following documents to your address for confirmation")
+        GetDocumentTypeText = t("core.letter.text.own_confirmation", "направляем следующие документы в ваш адрес для подтверждения")
     Else
-        GetDocumentTypeText = t("core.letter.text.confirmed", "forwarding confirmed accounting documents to your address")
+        GetDocumentTypeText = t("core.letter.text.confirmed", "направляем подтвержденные бухгалтерские документы в ваш адрес")
     End If
     
     On Error GoTo ReadTextError
@@ -1538,13 +1550,15 @@ End Sub
 Public Function GenerateFileNameWithExecutor(addressee As String, letterNumber As String, executor As String) As String
     Dim cleanAddressee As String, cleanNumber As String, cleanExecutor As String
     Dim currentDate As String
+    Dim outputFolder As String
     
     cleanAddressee = CleanFileName(addressee)
     cleanNumber = CleanFileName(letterNumber)
     cleanExecutor = CleanFileName(executor)
     currentDate = Format(Date, "dd.mm.yyyy")
+    outputFolder = GetConfiguredOutputFolderPath()
     
-    GenerateFileNameWithExecutor = ThisWorkbook.Path & "\" & cleanAddressee & "_" & _
+    GenerateFileNameWithExecutor = outputFolder & "\" & cleanAddressee & "_" & _
                                   cleanNumber & "_" & currentDate & "_" & cleanExecutor & ".docx"
 End Function
 

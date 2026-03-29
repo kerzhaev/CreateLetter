@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="RibbonOnLoad">
+  <ribbon>
+    <tabs>
+      <tab id="tabCreateLetter" label="Формирование писем">
+        <group id="grpCreateLetterMain" label="Команды">
+          <button id="btnRibbonOpenForm"
+                  label="Открыть форму"
+                  size="large"
+                  imageMso="FileOpen"
+                  onAction="RibbonOpenLetterForm"
+                  screentip="Открыть форму"
+                  supertip="Открывает форму формирования писем." />
+          <button id="btnRibbonTemplateFolder"
+                  label="Папка шаблонов"
+                  size="large"
+                  imageMso="FileOpen"
+                  onAction="RibbonSelectTemplateFolder"
+                  screentip="Папка шаблонов"
+                  supertip="Позволяет выбрать папку, в которой лежат шаблоны Word." />
+          <button id="btnRibbonOutputFolder"
+                  label="Папка писем"
+                  size="large"
+                  imageMso="FileSaveAs"
+                  onAction="RibbonSelectOutputFolder"
+                  screentip="Папка писем"
+                  supertip="Позволяет выбрать папку, в которую будут сохраняться сформированные письма." />
+          <button id="btnRibbonAbout"
+                  label="О программе"
+                  size="large"
+                  imageMso="FileProperties"
+                  onAction="RibbonShowAbout"
+                  screentip="О программе"
+                  supertip="Показывает сведения о CreateLetter и текущих папках шаблонов и выгрузки." />
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

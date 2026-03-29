@@ -22,6 +22,7 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 │   ├── mdlInicialize.bas                # Worksheet bootstrap/reset
 │   ├── ModuleDates.bas                  # Date helpers
 │   ├── ModuleLocalization.bas           # Localization lookup foundation
+│   ├── ModuleRibbon.bas                 # Ribbon callbacks and folder settings
 │   ├── ModuleRepository.bas             # Workbook repository/search/export helpers
 │   ├── ModuleWordInterop.bas            # Explicit Word lifecycle and document generation helpers
 │   ├── ModuleCache.bas                  # Cache helpers
@@ -35,8 +36,11 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 │   └── create_restore_point.ps1         # Creates workbook + modules restore points
 │   └── run_excel_smoke_test.ps1         # Excel COM smoke-test helper
 │   └── sync_vba_from_modules.py         # Excel COM VBA sync helper for modules/forms
+│   └── apply_custom_ui.py               # Injects source-managed Ribbon XML into the workbook package
 │   └── ensure_workbook_tables.py        # Excel COM workbook schema helper for tblAddresses/tblLetters
 │   └── ensure_localization_sheet.py     # Excel COM workbook localization sheet bootstrap helper
+├── customUI/
+│   └── customUI.xml                     # Source-managed Excel Ribbon markup
 ├── .ai-factory/                         # AI Factory context artifacts
 │   ├── DESCRIPTION.md
 │   ├── ARCHITECTURE.md
@@ -60,6 +64,7 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 | Architecture guide | .ai-factory/ARCHITECTURE.md | Architecture pattern and dependency rules |
 | Project rules | .ai-factory/RULES.md | AI Factory execution and migration rules |
 | Development workflow | docs/development-workflow.md | Branching, restore points, manual module sync |
+| Template placeholders | docs/template-placeholders.md | Preferred and legacy Word placeholder names |
 
 ## AI Context Files
 | File | Purpose |
