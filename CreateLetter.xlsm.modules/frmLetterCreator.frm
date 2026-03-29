@@ -17,8 +17,8 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.12 - Thin-shell MultiPage wizard with workbook-backed localization and grouped address search
-' Version : 1.6.12 - 29.03.2026
+' Form    : frmLetterCreator v1.6.13 - Thin-shell MultiPage wizard with workbook-backed localization and grouped address search
+' Version : 1.6.13 - 29.03.2026
 ' Author  : CreateLetter contributors
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
 ' ======================================================================
@@ -44,6 +44,7 @@ Private Sub UserForm_Initialize()
     Set currentAddressSearchResults = New Collection
     contextMenuSelectedIndex = -1
     
+    ClearAddressCache
     EnsureAddressGroupControls
     ConfigureFormAppearance
     ApplyLocalizedStaticCaptions
@@ -303,7 +304,7 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = t("form.letter_creator.title", "Формирование писем") & " v1.6.12"
+    Me.Caption = t("form.letter_creator.title", "Формирование писем") & " v1.6.13"
     
     On Error Resume Next
     
@@ -715,7 +716,7 @@ Private Sub txtAddressSearch_Change()
         
         If Len(Trim(Me.Controls("txtAddressSearch").value)) > 0 Then
             Dim res As Collection, i As Long
-            Set res = GetCachedAddresses(Me.Controls("txtAddressSearch").value)
+            Set res = SearchAddresses(Me.Controls("txtAddressSearch").value)
             Set currentAddressSearchResults = res
             For i = 1 To res.count
                 Me.Controls("lstAddresses").AddItem GetAddressSearchResultDisplayText(res(i))
@@ -768,6 +769,11 @@ Private Sub lstAddresses_Click()
     If Not TryGetAddressSearchSelection(searchResult, addressArray, rowNumber, errorMessage) Then
         MsgBox errorMessage, vbExclamation
         Exit Sub
+    End If
+
+    Dim freshAddressArray As Variant
+    If TryLoadAddressRowByNumber(rowNumber, freshAddressArray) Then
+        addressArray = freshAddressArray
     End If
     
     ApplyAddressPartsToControls addressArray

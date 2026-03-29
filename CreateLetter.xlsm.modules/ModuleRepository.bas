@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleRepository"
 ' Module: ModuleRepository
 ' Author: CreateLetter contributors
 ' Purpose: Workbook CRUD/search/export helpers with typed history DTO support
-' Version: 1.0.4 - 29.03.2026
+' Version: 1.0.5 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -93,6 +93,34 @@ Public Function RepositoryTryParseAddressSearchResult(addressSearchResult As Var
             RepositoryTryParseAddressSearchResult = (rowNumber > 0)
         End If
     End If
+End Function
+
+Public Function RepositoryTryLoadAddressRow(rowNumber As Long, ByRef addressArray As Variant) As Boolean
+    RepositoryTryLoadAddressRow = False
+
+    On Error GoTo LoadError
+
+    If rowNumber < FIRST_DATA_ROW Then Exit Function
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("Addresses")
+
+    Dim loadedAddress(AddressIndexGroup) As String
+    loadedAddress(AddressIndexAddressee) = CStr(ws.Cells(rowNumber, AddressColumnAddressee).Value)
+    loadedAddress(AddressIndexStreet) = CStr(ws.Cells(rowNumber, AddressColumnStreet).Value)
+    loadedAddress(AddressIndexCity) = CStr(ws.Cells(rowNumber, AddressColumnCity).Value)
+    loadedAddress(AddressIndexDistrict) = CStr(ws.Cells(rowNumber, AddressColumnDistrict).Value)
+    loadedAddress(AddressIndexRegion) = CStr(ws.Cells(rowNumber, AddressColumnRegion).Value)
+    loadedAddress(AddressIndexPostalCode) = CStr(ws.Cells(rowNumber, AddressColumnPostalCode).Value)
+    loadedAddress(AddressIndexPhone) = CStr(ws.Cells(rowNumber, AddressColumnPhone).Value)
+    loadedAddress(AddressIndexGroup) = CStr(ws.Cells(rowNumber, AddressColumnGroup).Value)
+
+    addressArray = loadedAddress
+    RepositoryTryLoadAddressRow = True
+    Exit Function
+
+LoadError:
+    RepositoryTryLoadAddressRow = False
 End Function
 
 Public Function RepositorySearchAttachments(searchTerm As String) As Collection

@@ -4,7 +4,7 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: CreateLetter contributors
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
-' Version: 1.7.5 - 29.03.2026
+' Version: 1.7.6 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -641,6 +641,10 @@ Public Function TryGetAddressSearchSelection(addressSearchResult As Variant, ByR
     If Not TryGetAddressSearchSelection Then
         errorMessage = t("validation.address.record_invalid", "Неверный формат записи адреса.")
     End If
+End Function
+
+Public Function TryLoadAddressRowByNumber(rowNumber As Long, ByRef addressArray As Variant) As Boolean
+    TryLoadAddressRowByNumber = RepositoryTryLoadAddressRow(rowNumber, addressArray)
 End Function
 
 Public Function ResolveDocumentTypeDisplayValue(documentType As String) As String
