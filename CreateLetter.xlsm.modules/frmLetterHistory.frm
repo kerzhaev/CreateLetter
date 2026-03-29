@@ -17,7 +17,7 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form: frmLetterHistory v1.3.3 - Thin-shell history UI with typed history records
+' Form: frmLetterHistory v1.3.4 - Thin-shell history UI with typed history records
 ' Author: CreateLetter contributors
 ' Date: 29.03.2026
 ' Purpose: History of sent letters with typed DTO bindings, thin-shell UI, and schema-safe status updates
@@ -114,23 +114,23 @@ End Sub
 Private Sub ApplyLocalizedStaticCaptions()
     On Error Resume Next
 
-    SetLocalizedHistoryCaption "frameSearch", "form.letter_history.frame.search", "Search"
-    SetLocalizedHistoryCaption "frameLettersList", "form.letter_history.frame.letters_list", "Letter list"
-    SetLocalizedHistoryCaption "frameStatusEdit", "form.letter_history.frame.status_update", "Status update"
-    SetLocalizedHistoryCaption "frameActions", "form.letter_history.frame.actions", "Actions"
-    SetLocalizedHistoryCaption "Label1", "form.letter_history.label.search_letters", "Search letters by delivery history"
-    SetLocalizedHistoryCaption "lblSearchLabel", "form.letter_history.label.search_status", "Search status"
-    SetLocalizedHistoryCaption "lblSearchInfo", "status.ready", "Ready"
-    SetLocalizedHistoryCaption "lblDateLabel", "form.letter_history.label.return_date", "Return date"
-    SetLocalizedHistoryCaption "lblSumLabel", "form.letter_history.label.amount", "Amount"
-    SetLocalizedHistoryCaption "btnUpdateStatus", "form.letter_history.caption.update_status", "Update status"
-    SetLocalizedHistoryCaption "btnClose", "form.letter_history.caption.close", "Close"
-    SetLocalizedHistoryCaption "btnRefresh", "form.letter_history.caption.refresh_data", "Refresh data"
-    SetLocalizedHistoryCaption "btnClearSearch", "form.letter_history.caption.clear_search", "Clear search"
-    SetLocalizedHistoryCaption "btnExportToExcel", "form.letter_history.caption.export_to_excel", "Export to Excel"
-    SetLocalizedHistoryCaption "btnNavigateToRecord", "form.letter_history.caption.go_to_record", "Go to record"
-    SetLocalizedHistoryCaption "btnSearchHelp", "form.letter_history.caption.search_help", "Search help"
-    SetLocalizedHistoryCaption "chkReceived", "form.letter_history.caption.received_back", "Received back"
+    SetLocalizedHistoryCaption "frameSearch", "form.letter_history.frame.search", "Поиск"
+    SetLocalizedHistoryCaption "frameLettersList", "form.letter_history.frame.letters_list", "Список писем"
+    SetLocalizedHistoryCaption "frameStatusEdit", "form.letter_history.frame.status_update", "Обновление статуса"
+    SetLocalizedHistoryCaption "frameActions", "form.letter_history.frame.actions", "Действия"
+    SetLocalizedHistoryCaption "Label1", "form.letter_history.label.search_letters", "Поиск писем по истории доставки"
+    SetLocalizedHistoryCaption "lblSearchLabel", "form.letter_history.label.search_status", "Статус поиска"
+    SetLocalizedHistoryCaption "lblSearchInfo", "status.ready", "Готово"
+    SetLocalizedHistoryCaption "lblDateLabel", "form.letter_history.label.return_date", "Дата возврата"
+    SetLocalizedHistoryCaption "lblSumLabel", "form.letter_history.label.amount", "Сумма"
+    SetLocalizedHistoryCaption "btnUpdateStatus", "form.letter_history.caption.update_status", "Обновить статус"
+    SetLocalizedHistoryCaption "btnClose", "form.letter_history.caption.close", "Закрыть"
+    SetLocalizedHistoryCaption "btnRefresh", "form.letter_history.caption.refresh_data", "Обновить данные"
+    SetLocalizedHistoryCaption "btnClearSearch", "form.letter_history.caption.clear_search", "Очистить поиск"
+    SetLocalizedHistoryCaption "btnExportToExcel", "form.letter_history.caption.export_to_excel", "Экспорт в Excel"
+    SetLocalizedHistoryCaption "btnNavigateToRecord", "form.letter_history.caption.go_to_record", "Перейти к записи"
+    SetLocalizedHistoryCaption "btnSearchHelp", "form.letter_history.caption.search_help", "Справка по поиску"
+    SetLocalizedHistoryCaption "chkReceived", "form.letter_history.caption.received_back", "Получено обратно"
 
     On Error GoTo 0
 End Sub
@@ -183,7 +183,7 @@ Private Sub LoadAllLettersData()
     Set allLettersData = LoadLetterHistoryData()
     
     If allLettersData Is Nothing Or allLettersData.count = 0 Then
-        UpdateSearchInfo t("form.letter_history.msg.no_data", "No data found in worksheet 'Letters'")
+        UpdateSearchInfo t("form.letter_history.msg.no_data", "На листе 'Letters' данные не найдены")
         Exit Sub
     End If
     
@@ -394,7 +394,7 @@ Private Sub btnClearSearch_Click()
     
     Dim originalCaption As String
     originalCaption = Me.Controls("btnClearSearch").Caption
-    Me.Controls("btnClearSearch").Caption = t("form.letter_history.caption.clearing", "Clearing...")
+    Me.Controls("btnClearSearch").Caption = t("form.letter_history.caption.clearing", "Очистка...")
     Me.Controls("btnClearSearch").Enabled = False
     
     DoEvents
@@ -411,9 +411,9 @@ Private Sub btnClearSearch_Click()
     Exit Sub
 
 ClearError:
-    Me.Controls("btnClearSearch").Caption = t("form.letter_history.caption.clear_search", "Clear search")
+    Me.Controls("btnClearSearch").Caption = t("form.letter_history.caption.clear_search", "Очистить поиск")
     Me.Controls("btnClearSearch").Enabled = True
-    MsgBox t("form.letter_history.msg.clear_error", "Error clearing history form: ") & Err.Description, vbExclamation
+    MsgBox t("form.letter_history.msg.clear_error", "Ошибка при очистке формы истории: ") & Err.Description, vbExclamation
 End Sub
 
 Private Sub ClearAllHistoryFields()
@@ -537,7 +537,7 @@ Private Sub dtpReturnDate_Exit(ByVal Cancel As MSForms.ReturnBoolean)
             Else
                 ' Highlight invalid date
                 dtpReturnDate.backColor = RGB(255, 240, 240)  ' Light red
-                MsgBox t("form.letter_history.msg.invalid_date", "Invalid date format. Use dd.mm.yyyy."), vbExclamation
+                MsgBox t("form.letter_history.msg.invalid_date", "Неверный формат даты. Используйте дд.мм.гггг."), vbExclamation
                 Cancel = True  ' Prevent leaving the field
             End If
         End If
@@ -545,13 +545,13 @@ Private Sub dtpReturnDate_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     Exit Sub
 
 ValidationError:
-    MsgBox t("form.letter_history.msg.invalid_date", "Invalid date format. Use dd.mm.yyyy."), vbExclamation
+    MsgBox t("form.letter_history.msg.invalid_date", "Неверный формат даты. Используйте дд.мм.гггг."), vbExclamation
     Cancel = True
 End Sub
 
 
 Private Sub ShowSearchHints()
-    MsgBox GetLetterHistorySearchHintsText(), vbInformation, t("form.letter_history.msg.search_hints_title", "Search Help")
+    MsgBox GetLetterHistorySearchHintsText(), vbInformation, t("form.letter_history.msg.search_hints_title", "Справка по поиску")
 End Sub
 
 Private Function GetHistoryRecordFromCollection(records As Collection, ByVal oneBasedIndex As Long) As clsLetterHistoryRecord
@@ -626,7 +626,7 @@ Private Sub ApplyElementStyles()
         With txtHistorySearch
             .Font.Name = "Segoe UI"
             .Font.Size = 10
-            .ControlTipText = t("form.letter_history.tip.search", "Search by addressee, number, date, attachments, executor" & vbCrLf & "To search by sum, enter numbers only (e.g.: 125000)")
+            .ControlTipText = t("form.letter_history.tip.search", "Поиск по адресату, номеру, дате, приложениям, исполнителю" & vbCrLf & "Для поиска по сумме вводите только цифры (например: 125000)")
         End With
     End If
     
@@ -636,13 +636,13 @@ Private Sub ApplyElementStyles()
             .Font.Size = 9
             .backColor = RGB(255, 255, 255)
             .BorderStyle = 1
-            .ControlTipText = t("form.letter_history.tip.double_click", "Double click on a letter to jump to the table record")
+            .ControlTipText = t("form.letter_history.tip.double_click", "Дважды щелкните по письму, чтобы перейти к записи в таблице")
         End With
     End If
     
     If Not chkReceived Is Nothing Then
         With chkReceived
-            .Caption = t("form.letter_history.caption.received_back", "Document received back")
+            .Caption = t("form.letter_history.caption.received_back", "Документ получен обратно")
             .Font.Name = "Segoe UI"
             .Font.Size = 10
             .Font.Bold = True
@@ -651,16 +651,16 @@ Private Sub ApplyElementStyles()
     End If
     
     ' Add to ApplyElementStyles for frmLetterHistory:
-    StyleButtonSafe "btnSearchHelp", t("form.letter_history.caption.search_help", "Search help"), RGB(158, 158, 158)
+    StyleButtonSafe "btnSearchHelp", t("form.letter_history.caption.search_help", "Справка по поиску"), RGB(158, 158, 158)
 
     
     ' NOW CORRECT: Button styling via local procedures
-    StyleButtonSafe "btnUpdateStatus", t("form.letter_history.caption.update_status", "Update status"), RGB(76, 175, 80)
-    StyleButtonSafe "btnRefresh", t("form.letter_history.caption.refresh_data", "Refresh data"), RGB(33, 150, 243)
-    StyleButtonSafe "btnClose", t("form.letter_history.caption.close", "Close"), RGB(244, 67, 54)
-    StyleButtonSafe "btnClearSearch", t("form.letter_history.caption.clear_search", "Clear search"), RGB(255, 152, 0)
-    StyleButtonSafe "btnExportToExcel", t("form.letter_history.caption.export_to_excel", "Export to Excel"), RGB(255, 152, 0)
-    StyleButtonSafe "btnNavigateToRecord", t("form.letter_history.caption.go_to_record", "Go to record"), RGB(103, 58, 183)
+    StyleButtonSafe "btnUpdateStatus", t("form.letter_history.caption.update_status", "Обновить статус"), RGB(76, 175, 80)
+    StyleButtonSafe "btnRefresh", t("form.letter_history.caption.refresh_data", "Обновить данные"), RGB(33, 150, 243)
+    StyleButtonSafe "btnClose", t("form.letter_history.caption.close", "Закрыть"), RGB(244, 67, 54)
+    StyleButtonSafe "btnClearSearch", t("form.letter_history.caption.clear_search", "Очистить поиск"), RGB(255, 152, 0)
+    StyleButtonSafe "btnExportToExcel", t("form.letter_history.caption.export_to_excel", "Экспорт в Excel"), RGB(255, 152, 0)
+    StyleButtonSafe "btnNavigateToRecord", t("form.letter_history.caption.go_to_record", "Перейти к записи"), RGB(103, 58, 183)
     
     ' Label styling via local procedures
     StyleLabelSafe "lblSearchInfo"

@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleRibbon"
 ' Module: ModuleRibbon
 ' Author: CreateLetter contributors
 ' Purpose: Excel Ribbon callbacks and user-configurable folder settings
-' Version: 1.0.0 - 29.03.2026
+' Version: 1.0.2 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -21,23 +21,23 @@ Public Sub RibbonOnLoad(ribbon As IRibbonUI)
 End Sub
 
 Public Sub RibbonOpenLetterForm(control As IRibbonControl)
-    ShowLetterCreator
+    StartFormirovanieLetters
 End Sub
 
 Public Sub RibbonSelectTemplateFolder(control As IRibbonControl)
     PromptAndSaveFolderSetting RibbonSettingTemplateFolder, _
-                               t("ribbon.dialog.template_folder", "Выберите папку с шаблонами"), _
-                               t("ribbon.msg.template_folder_saved", "Папка шаблонов сохранена:")
+                               t("ribbon.dialog.template_folder", "Select templates folder"), _
+                               t("ribbon.msg.template_folder_saved", "Template folder saved:")
 End Sub
 
 Public Sub RibbonSelectOutputFolder(control As IRibbonControl)
     PromptAndSaveFolderSetting RibbonSettingOutputFolder, _
-                               t("ribbon.dialog.output_folder", "Выберите папку для сформированных писем"), _
-                               t("ribbon.msg.output_folder_saved", "Папка для писем сохранена:")
+                               t("ribbon.dialog.output_folder", "Select output folder"), _
+                               t("ribbon.msg.output_folder_saved", "Output folder saved:")
 End Sub
 
 Public Sub RibbonShowAbout(control As IRibbonControl)
-    MsgBox BuildAboutMessage(), vbInformation, t("ribbon.about.title", "О программе")
+    MsgBox BuildAboutMessage(), vbInformation, t("ribbon.about.title", "About")
 End Sub
 
 Public Function GetConfiguredTemplateFolderPath() As String
@@ -59,7 +59,7 @@ Private Function GetConfiguredFolderPath(settingKey As String) As String
 
     If Dir$(storedPath, vbDirectory) = "" Then
         GetConfiguredFolderPath = GetDefaultWorkbookFolderPath()
-        Debug.Print t("ribbon.msg.folder_unavailable", "Путь недоступен, использован путь книги:") & " " & storedPath
+        Debug.Print t("ribbon.msg.folder_unavailable", "Configured path is unavailable, using workbook path:") & " " & storedPath
         Exit Function
     End If
 
@@ -88,14 +88,14 @@ Private Sub PromptAndSaveFolderSetting(settingKey As String, dialogTitle As Stri
     Exit Sub
 
 DialogError:
-    MsgBox t("ribbon.msg.folder_select_error", "Ошибка выбора папки: ") & Err.Description, vbExclamation
+    MsgBox t("ribbon.msg.folder_select_error", "Folder selection error: ") & Err.Description, vbExclamation
 End Sub
 
 Private Function BuildAboutMessage() As String
     BuildAboutMessage = t("ribbon.about.name", "CreateLetter") & vbCrLf & vbCrLf & _
-                        t("ribbon.about.templates_folder", "Папка шаблонов: ") & GetConfiguredTemplateFolderPath() & vbCrLf & _
-                        t("ribbon.about.output_folder", "Папка выгрузки писем: ") & GetConfiguredOutputFolderPath() & vbCrLf & vbCrLf & _
-                        t("ribbon.about.open_form_hint", "Используйте ленту Excel для открытия формы и настройки папок.")
+                        t("ribbon.about.templates_folder", "Templates folder: ") & GetConfiguredTemplateFolderPath() & vbCrLf & _
+                        t("ribbon.about.output_folder", "Output folder: ") & GetConfiguredOutputFolderPath() & vbCrLf & vbCrLf & _
+                        t("ribbon.about.open_form_hint", "Use the Excel ribbon to open the form and configure folders.")
 End Function
 
 Private Function NormalizeFolderPath(folderPath As String) As String

@@ -4,7 +4,7 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: CreateLetter contributors
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
-' Version: 1.7.1 — 29.03.2026
+' Version: 1.7.3 — 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -140,14 +140,14 @@ Public Function NormalizeDocumentTypeKey(documentType As String) As String
     normalizedText = UCase$(Trim$(documentType))
 
     If normalizedText = UCase$(DocumentTypeKeyOwnConfirmation) Or _
-       normalizedText = UCase$(t("form.letter_creator.option.document_type.own_confirmation", "Own for confirmation")) Or _
+       normalizedText = UCase$(t("form.letter_creator.option.document_type.own_confirmation", "Свои для подтверждения")) Or _
        normalizedText = "OWN FOR CONFIRMATION" Then
         NormalizeDocumentTypeKey = DocumentTypeKeyOwnConfirmation
         Exit Function
     End If
 
     If normalizedText = UCase$(DocumentTypeKeyConfirmed) Or _
-       normalizedText = UCase$(t("form.letter_creator.option.document_type.confirmed", "Third-party confirmed documents")) Or _
+       normalizedText = UCase$(t("form.letter_creator.option.document_type.confirmed", "Чужие подтвержденные документы")) Or _
        normalizedText = "THIRD-PARTY CONFIRMED DOCUMENTS" Then
         NormalizeDocumentTypeKey = DocumentTypeKeyConfirmed
         Exit Function
@@ -185,7 +185,7 @@ Public Function NormalizeLetterTypeKey(letterType As String) As String
     normalizedText = UCase$(Trim$(letterType))
 
     If normalizedText = UCase$(LetterTypeKeyFOU) Or _
-       normalizedText = UCase$(t("form.letter_creator.option.letter_type.fou", "FOU (For Official Use)")) Then
+       normalizedText = UCase$(t("form.letter_creator.option.letter_type.fou", "ДСП")) Then
         NormalizeLetterTypeKey = LetterTypeKeyFOU
     Else
         NormalizeLetterTypeKey = LetterTypeKeyRegular
@@ -194,9 +194,9 @@ End Function
 
 Public Function GetLetterTypeDisplayLabel(letterType As String) As String
     If NormalizeLetterTypeKey(letterType) = LetterTypeKeyFOU Then
-        GetLetterTypeDisplayLabel = t("form.letter_creator.option.letter_type.fou", "FOU (For Official Use)")
+        GetLetterTypeDisplayLabel = t("form.letter_creator.option.letter_type.fou", "ДСП")
     Else
-        GetLetterTypeDisplayLabel = t("form.letter_creator.option.letter_type.regular", "Regular")
+        GetLetterTypeDisplayLabel = t("form.letter_creator.option.letter_type.regular", "Обычное")
     End If
 End Function
 
@@ -207,22 +207,22 @@ End Function
 
 Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
     If Len(Trim(addressee)) = 0 Then
-        ValidateRequiredFields = t("validation.creator.page.addressee_required", "Fill in the 'Addressee' field.")
+        ValidateRequiredFields = t("validation.creator.page.addressee_required", "Заполните поле 'Адресат'.")
         Exit Function
     End If
     
     If Len(Trim(city)) = 0 Then
-        ValidateRequiredFields = t("validation.creator.page.city_required", "Fill in the 'City' field. This field is required.")
+        ValidateRequiredFields = t("validation.creator.page.city_required", "Заполните поле 'Город'. Это обязательное поле.")
         Exit Function
     End If
     
     If Len(Trim(region)) = 0 Then
-        ValidateRequiredFields = t("validation.creator.page.region_required", "Fill in the 'Region' field. This field is required.")
+        ValidateRequiredFields = t("validation.creator.page.region_required", "Заполните поле 'Регион'. Это обязательное поле.")
         Exit Function
     End If
     
     If Len(Trim(postalCode)) = 0 Then
-        ValidateRequiredFields = t("validation.creator.page.postal_code_required", "Fill in the 'Postal code' field. This field is required.")
+        ValidateRequiredFields = t("validation.creator.page.postal_code_required", "Заполните поле 'Почтовый индекс'. Это обязательное поле.")
         Exit Function
     End If
     
@@ -237,63 +237,63 @@ Public Function ValidateCreatorPage(pageIndex As Integer, addressee As String, c
         Case 0
             If Len(Trim(addressee)) = 0 Then
                 focusControlName = "txtAddressee"
-                ValidateCreatorPage = t("validation.creator.page.addressee_required", "Fill in the 'Addressee' field.")
+                ValidateCreatorPage = t("validation.creator.page.addressee_required", "Заполните поле 'Адресат'.")
                 Exit Function
             End If
             
             If Len(Trim(city)) = 0 Then
                 focusControlName = "txtCity"
-                ValidateCreatorPage = t("validation.creator.page.city_required", "Fill in the 'City' field. This field is required.")
+                ValidateCreatorPage = t("validation.creator.page.city_required", "Заполните поле 'Город'. Это обязательное поле.")
                 Exit Function
             End If
             
             If Len(Trim(region)) = 0 Then
                 focusControlName = "txtRegion"
-                ValidateCreatorPage = t("validation.creator.page.region_required", "Fill in the 'Region' field. This field is required.")
+                ValidateCreatorPage = t("validation.creator.page.region_required", "Заполните поле 'Регион'. Это обязательное поле.")
                 Exit Function
             End If
             
             If Len(Trim(postalCode)) = 0 Then
                 focusControlName = "txtPostalCode"
-                ValidateCreatorPage = t("validation.creator.page.postal_code_required", "Fill in the 'Postal code' field. This field is required.")
+                ValidateCreatorPage = t("validation.creator.page.postal_code_required", "Заполните поле 'Почтовый индекс'. Это обязательное поле.")
                 Exit Function
             End If
             
             If Len(Trim(phoneNumber)) > 0 And Not IsPhoneNumberValid(phoneNumber) Then
                 focusControlName = "txtAddresseePhone"
-                ValidateCreatorPage = t("validation.creator.page.phone_invalid", "Enter a valid addressee phone number.")
+                ValidateCreatorPage = t("validation.creator.page.phone_invalid", "Введите корректный номер телефона адресата.")
                 Exit Function
             End If
             
         Case 1
             If Len(Trim(letterNumber)) = 0 Then
                 focusControlName = "txtLetterNumber"
-                ValidateCreatorPage = t("validation.creator.page.letter_number_required", "Enter the outgoing letter number.")
+                ValidateCreatorPage = t("validation.creator.page.letter_number_required", "Введите номер исходящего письма.")
                 Exit Function
             End If
             
             If Len(Trim(letterDateText)) = 0 Then
                 focusControlName = "txtLetterDate"
-                ValidateCreatorPage = t("validation.creator.page.letter_date_required", "Enter the letter date.")
+                ValidateCreatorPage = t("validation.creator.page.letter_date_required", "Введите дату письма.")
                 Exit Function
             End If
             
             If Len(Trim(executor)) = 0 Then
                 focusControlName = "cmbExecutor"
-                ValidateCreatorPage = t("validation.creator.page.executor_required", "Select an executor. This field is required.")
+                ValidateCreatorPage = t("validation.creator.page.executor_required", "Выберите исполнителя. Это обязательное поле.")
                 Exit Function
             End If
             
             Dim parsedDate As Date
             If Not TryParseDate(letterDateText, parsedDate) Then
                 focusControlName = "txtLetterDate"
-                ValidateCreatorPage = t("validation.creator.page.letter_date_invalid", "Invalid letter date format.")
+                ValidateCreatorPage = t("validation.creator.page.letter_date_invalid", "Неверный формат даты письма.")
                 Exit Function
             End If
             
         Case 2
             If documentsCount = 0 Then
-                ValidateCreatorPage = t("validation.creator.page.document_required", "Add at least one attachment document.")
+                ValidateCreatorPage = t("validation.creator.page.document_required", "Добавьте хотя бы один документ-приложение.")
                 Exit Function
             End If
     End Select
@@ -305,49 +305,49 @@ Public Function ValidateCreatorSubmission(addressee As String, city As String, r
     
     If Len(Trim(addressee)) = 0 Then
         focusControlName = "txtAddressee"
-        ValidateCreatorSubmission = t("validation.creator.submit.addressee_required", "Addressee is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.addressee_required", "Адресат не заполнен.")
         Exit Function
     End If
     
     If Len(Trim(city)) = 0 Then
         focusControlName = "txtCity"
-        ValidateCreatorSubmission = t("validation.creator.submit.city_required", "City is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.city_required", "Город не заполнен.")
         Exit Function
     End If
     
     If Len(Trim(region)) = 0 Then
         focusControlName = "txtRegion"
-        ValidateCreatorSubmission = t("validation.creator.submit.region_required", "Region is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.region_required", "Регион не заполнен.")
         Exit Function
     End If
     
     If Len(Trim(postalCode)) = 0 Then
         focusControlName = "txtPostalCode"
-        ValidateCreatorSubmission = t("validation.creator.submit.postal_code_required", "Postal code is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.postal_code_required", "Почтовый индекс не заполнен.")
         Exit Function
     End If
     
     If Len(Trim(letterNumber)) = 0 Then
         focusControlName = "txtLetterNumber"
-        ValidateCreatorSubmission = t("validation.creator.submit.letter_number_required", "Letter number is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.letter_number_required", "Номер письма не заполнен.")
         Exit Function
     End If
     
     If Len(Trim(letterDateText)) = 0 Then
         focusControlName = "txtLetterDate"
-        ValidateCreatorSubmission = t("validation.creator.submit.letter_date_required", "Letter date is not filled in.")
+        ValidateCreatorSubmission = t("validation.creator.submit.letter_date_required", "Дата письма не заполнена.")
         Exit Function
     End If
     
     If Len(Trim(executor)) = 0 Then
         focusControlName = "cmbExecutor"
-        ValidateCreatorSubmission = t("validation.creator.submit.executor_required", "Executor is not selected.")
+        ValidateCreatorSubmission = t("validation.creator.submit.executor_required", "Исполнитель не выбран.")
         Exit Function
     End If
     
     If documentsCount = 0 Then
         focusControlName = "txtAttachmentSearch"
-        ValidateCreatorSubmission = t("validation.creator.submit.document_required", "Add at least one document.")
+        ValidateCreatorSubmission = t("validation.creator.submit.document_required", "Добавьте хотя бы один документ.")
         Exit Function
     End If
 End Function
@@ -625,18 +625,18 @@ Public Function TryParseAddressListItem(addressItem As String, ByRef addressPart
     TryParseAddressListItem = False
     
     If InStr(addressItem, " | ") = 0 Then
-        errorMessage = t("validation.address.record_invalid", "Invalid address record format.")
+    errorMessage = t("validation.address.record_invalid", "Неверный формат записи адреса.")
         Exit Function
     End If
     
     addressParts = Split(addressItem, " | ")
     If UBound(addressParts) < 7 Then
-        errorMessage = t("validation.address.record_incomplete", "Address data is incomplete.")
+        errorMessage = t("validation.address.record_incomplete", "Данные адреса неполные.")
         Exit Function
     End If
     
     If Not IsNumeric(addressParts(AddressPartRowNumber)) Then
-        errorMessage = t("validation.address.row_invalid", "Address row reference is invalid.")
+        errorMessage = t("validation.address.row_invalid", "Ссылка на строку адреса недопустима.")
         Exit Function
     End If
     
@@ -646,12 +646,12 @@ End Function
 
 Public Function ValidateAddressCreateRequest(addressee As String, isDuplicate As Boolean) As String
     If Len(Trim(addressee)) = 0 Then
-        ValidateAddressCreateRequest = t("validation.address.create.addressee_required", "Enter the addressee name.")
+        ValidateAddressCreateRequest = t("validation.address.create.addressee_required", "Введите имя адресата.")
         Exit Function
     End If
     
     If isDuplicate Then
-        ValidateAddressCreateRequest = t("validation.address.create.duplicate", "This address already exists.")
+        ValidateAddressCreateRequest = t("validation.address.create.duplicate", "Такой адрес уже существует.")
         Exit Function
     End If
     
@@ -660,12 +660,12 @@ End Function
 
 Public Function ValidateAddressEditRequest(selectedRow As Long, isDuplicate As Boolean) As String
     If selectedRow <= 1 Then
-        ValidateAddressEditRequest = t("validation.address.edit.selection_required", "Select an address to edit.")
+        ValidateAddressEditRequest = t("validation.address.edit.selection_required", "Выберите адрес для редактирования.")
         Exit Function
     End If
     
     If isDuplicate Then
-        ValidateAddressEditRequest = t("validation.address.edit.duplicate", "An address with the same data already exists.")
+        ValidateAddressEditRequest = t("validation.address.edit.duplicate", "Адрес с такими данными уже существует.")
         Exit Function
     End If
     
@@ -674,7 +674,7 @@ End Function
 
 Public Function ValidateAddressDeleteRequest(selectedRow As Long) As String
     If selectedRow = 0 Then
-        ValidateAddressDeleteRequest = t("validation.address.delete.selection_required", "Select an address to delete.")
+        ValidateAddressDeleteRequest = t("validation.address.delete.selection_required", "Выберите адрес для удаления.")
     Else
         ValidateAddressDeleteRequest = ""
     End If
@@ -740,7 +740,7 @@ End Function
 Public Function GetCurrentUserFIO() As String
     On Error Resume Next
     GetCurrentUserFIO = Environ("USERNAME")
-    If GetCurrentUserFIO = "" Then GetCurrentUserFIO = t("common.unknown_user", "Unknown user")
+    If GetCurrentUserFIO = "" Then GetCurrentUserFIO = t("common.unknown_user", "Неизвестный пользователь")
     On Error GoTo 0
 End Function
 
@@ -880,7 +880,7 @@ SaveLetterError:
     Debug.Print "Error Description: " & Err.description
     Debug.Print "Error Source: " & Err.Source
     Debug.Print "==========================="
-    MsgBox t("core.letter.error.save_info", "Error saving letter info: ") & Err.description, vbCritical
+    MsgBox t("core.letter.error.save_info", "Ошибка при сохранении информации о письме: ") & Err.description, vbCritical
 End Sub
 
 Public Function FormatAttachmentsListCompactWithSum(documentsList As Collection) As String
@@ -1049,24 +1049,24 @@ Public Function BuildSummaryAttachmentsText(documentsList As Collection) As Stri
 End Function
 
 Public Function BuildCreatorProgressCaption(currentStep As Long, totalPages As Long) As String
-    BuildCreatorProgressCaption = t("form.letter_creator.progress.page", "Step") & " " & currentStep & " " & t("common.of", "of") & " " & totalPages
+    BuildCreatorProgressCaption = t("form.letter_creator.progress.page", "Шаг") & " " & currentStep & " " & t("common.of", "из") & " " & totalPages
 End Function
 
 Public Function BuildCreatorSelectedDocumentsCaption(documentCount As Long) As String
-    BuildCreatorSelectedDocumentsCaption = t("form.letter_creator.attachments_count", "Selected documents:") & " " & documentCount
+    BuildCreatorSelectedDocumentsCaption = t("form.letter_creator.attachments_count", "Выбрано документов:") & " " & documentCount
 End Function
 
 Public Function GetDocumentActionsMenuPrompt() As String
-    GetDocumentActionsMenuPrompt = t("form.letter_creator.menu.document_actions_prompt", "Select action:") & vbCrLf & _
-                                   t("form.letter_creator.menu.document_action.edit", "1 - Edit details") & vbCrLf & _
-                                   t("form.letter_creator.menu.document_action.duplicate", "2 - Duplicate document") & vbCrLf & _
-                                   t("form.letter_creator.menu.document_action.remove", "3 - Remove from list") & vbCrLf & _
-                                   t("form.letter_creator.menu.document_action.move_up", "4 - Move up") & vbCrLf & _
-                                   t("form.letter_creator.menu.document_action.move_down", "5 - Move down")
+    GetDocumentActionsMenuPrompt = t("form.letter_creator.menu.document_actions_prompt", "Выберите действие:") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.edit", "1 - Изменить реквизиты") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.duplicate", "2 - Дублировать документ") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.remove", "3 - Удалить из списка") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.move_up", "4 - Переместить вверх") & vbCrLf & _
+                                   t("form.letter_creator.menu.document_action.move_down", "5 - Переместить вниз")
 End Function
 
 Public Function GetDocumentActionsMenuTitle() As String
-    GetDocumentActionsMenuTitle = t("form.letter_creator.menu.document_actions_title", "Document actions")
+    GetDocumentActionsMenuTitle = t("form.letter_creator.menu.document_actions_title", "Действия с документом")
 End Function
 
 Public Function GetDocumentDisplayItems(documentsList As Collection) As Collection
@@ -1412,7 +1412,7 @@ Private Function GetDirectMonthName(monthNumber As Integer) As String
         Case 10: GetDirectMonthName = BuildUnicodeString(&H43E, &H43A, &H442, &H44F, &H431, &H440, &H44F)
         Case 11: GetDirectMonthName = BuildUnicodeString(&H43D, &H43E, &H44F, &H431, &H440, &H44F)
         Case 12: GetDirectMonthName = BuildUnicodeString(&H434, &H435, &H43A, &H430, &H431, &H440, &H44F)
-        Case Else: GetDirectMonthName = t("core.date.unknown_month", "unknown_month")
+        Case Else: GetDirectMonthName = t("core.date.unknown_month", "неизвестный_месяц")
     End Select
 End Function
 
@@ -1437,11 +1437,11 @@ Public Sub ShowLetterCreatorDeferred()
     Exit Sub
     
 DelayedErrorHandler:
-    MsgBox t("core.form.open_creator_error", "Failed to open letter creation form: ") & Err.description, vbCritical
+    MsgBox t("core.form.open_creator_error", "Не удалось открыть форму формирования писем: ") & Err.description, vbCritical
 End Sub
 
 Public Sub StartFormirovanieLetters()
-    ShowLetterCreator
+    ModuleMain.ShowLetterCreator
 End Sub
 
 Public Sub ShowLetterCreator()
@@ -1488,19 +1488,19 @@ ReadTextError:
 End Function
 
 Public Function BuildHistoryLoadedCaption(letterCount As Long) As String
-    BuildHistoryLoadedCaption = t("form.letter_history.msg.letters_loaded", "Letters loaded: ") & letterCount
+    BuildHistoryLoadedCaption = t("form.letter_history.msg.letters_loaded", "Писем загружено: ") & letterCount
 End Function
 
 Public Function BuildHistoryShowingAllCaption(letterCount As Long) As String
-    BuildHistoryShowingAllCaption = t("form.letter_history.msg.showing_all", "Showing all letters: ") & letterCount
+    BuildHistoryShowingAllCaption = t("form.letter_history.msg.showing_all", "Показаны все письма: ") & letterCount
 End Function
 
 Public Function BuildHistoryAmountSearchCaption(searchText As String) As String
-    BuildHistoryAmountSearchCaption = t("form.letter_history.msg.searching_amount", "Searching for number ") & searchText & t("form.letter_history.msg.searching_amount_suffix", " in document amounts...")
+    BuildHistoryAmountSearchCaption = t("form.letter_history.msg.searching_amount", "Ищем номер ") & searchText & t("form.letter_history.msg.searching_amount_suffix", " в суммах документов...")
 End Function
 
 Public Function BuildHistoryFoundCaption(foundCount As Long, totalCount As Long) As String
-    BuildHistoryFoundCaption = t("form.letter_history.msg.letters_found", "Letters found: ") & foundCount & t("form.letter_history.msg.out_of", " of ") & totalCount
+    BuildHistoryFoundCaption = t("form.letter_history.msg.letters_found", "Найдено писем: ") & foundCount & t("form.letter_history.msg.out_of", " из ") & totalCount
 End Function
 
 Private Function GetLetterTextsTable(ws As Worksheet) As ListObject
@@ -1619,7 +1619,7 @@ Public Sub ShowLetterHistoryModeless()
     If Not existingForm Is Nothing Then
         existingForm.SetFocus
         existingForm.ZOrder 0
-        MsgBox t("form.letter_history.msg.already_open", "Letter history form is already open!"), vbInformation
+        MsgBox t("form.letter_history.msg.already_open", "Форма истории писем уже открыта!"), vbInformation
     Else
         Load frmLetterHistory
         frmLetterHistory.Show vbModeless
@@ -1629,7 +1629,7 @@ Public Sub ShowLetterHistoryModeless()
     Exit Sub
     
 ShowHistoryError:
-    MsgBox t("form.letter_history.msg.open_error", "Error opening letter history form: ") & Err.description, vbCritical
+    MsgBox t("form.letter_history.msg.open_error", "Ошибка открытия формы истории писем: ") & Err.description, vbCritical
 End Sub
 
 Public Sub ClearAddressHighlight()

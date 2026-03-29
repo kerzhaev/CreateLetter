@@ -289,7 +289,10 @@ try {
 
     try {
         Add-Type -AssemblyName System.IO.Compression.FileSystem
-        $archive = [System.IO.Compression.ZipFile]::OpenRead($resolvedWorkbookPath.Path)
+        $tempRibbonCopy = Join-Path $env:TEMP ("CreateLetter-ribbon-check-" + [guid]::NewGuid().ToString() + ".xlsm")
+        Copy-Item -LiteralPath $resolvedWorkbookPath.Path -Destination $tempRibbonCopy -Force
+
+        $archive = [System.IO.Compression.ZipFile]::OpenRead($tempRibbonCopy)
         $customUiEntry = $archive.GetEntry("customUI/customUI.xml")
         $rootRelsEntry = $archive.GetEntry("_rels/.rels")
         $moduleRibbon = $workbook.VBProject.VBComponents.Item("ModuleRibbon").CodeModule
@@ -303,11 +306,22 @@ try {
         $hasRibbonRelationship = $false
 
         if ($null -ne $rootRelsEntry) {
-            $rootRelsText = (New-Object System.IO.StreamReader($rootRelsEntry.Open())).ReadToEnd()
-            $hasRibbonRelationship = $rootRelsText -like "*http://schemas.microsoft.com/office/2006/relationships/ui/extensibility*"
+            $rootRelsStream = $null
+            $rootRelsReader = $null
+            try {
+                $rootRelsStream = $rootRelsEntry.Open()
+                $rootRelsReader = New-Object System.IO.StreamReader($rootRelsStream)
+                $rootRelsText = $rootRelsReader.ReadToEnd()
+                $hasRibbonRelationship = $rootRelsText -like "*http://schemas.microsoft.com/office/2006/relationships/ui/extensibility*"
+            }
+            finally {
+                if ($null -ne $rootRelsReader) { $rootRelsReader.Dispose() }
+                elseif ($null -ne $rootRelsStream) { $rootRelsStream.Dispose() }
+            }
         }
 
         $archive.Dispose()
+        Remove-Item -LiteralPath $tempRibbonCopy -Force -ErrorAction SilentlyContinue
 
         if ($hasRibbonModule -and $hasCustomUiPart -and $hasRibbonRelationship) {
             Add-Result -Results $results -Name "RibbonCustomization" -Status "PASS" -Details "Ribbon module and customUI package markup are present."

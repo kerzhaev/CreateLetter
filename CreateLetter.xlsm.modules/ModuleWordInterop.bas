@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleWordInterop"
 ' Module: ModuleWordInterop
 ' Author: CreateLetter contributors
 ' Purpose: Explicit Word session lifecycle and document generation helpers
-' Version: 1.1.0 - 29.03.2026
+' Version: 1.1.2 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -142,7 +142,7 @@ Public Sub WordInteropCreateLetterDocument(addressee As String, addressArray As 
 
 SaveDocument:
     Dim fileName As String
-    fileName = GenerateFileNameWithExecutor(IIf(Len(Trim$(addressee)) = 0, t("core.letter.default_file_name", "Letter"), addressee), letterNumber, executor)
+    fileName = GenerateFileNameWithExecutor(IIf(Len(Trim$(addressee)) = 0, t("core.letter.default_file_name", "Письмо"), addressee), letterNumber, executor)
 
     wordDoc.SaveAs fileName
     Debug.Print "File saved: " & fileName
@@ -152,7 +152,7 @@ SaveDocument:
         Debug.Print "Excel workbook saved"
     Else
         Debug.Print "Excel workbook save failed: " & saveWorkbookError
-        MsgBox t("core.letter.warning.workbook_not_saved", "Letter file was created, but the workbook was not saved: ") & saveWorkbookError, vbExclamation
+        MsgBox t("core.letter.warning.workbook_not_saved", "Файл письма создан, но книгу не удалось сохранить: ") & saveWorkbookError, vbExclamation
     End If
 
     wordApp.Visible = True
@@ -164,7 +164,7 @@ SaveDocument:
     Exit Sub
 
 ErrorHandler:
-    MsgBox t("core.letter.error.create_document", "Error creating letter: ") & Err.Description, vbCritical
+    MsgBox t("core.letter.error.create_document", "Ошибка при создании письма: ") & Err.Description, vbCritical
     If Not wordDoc Is Nothing Then
         wordDoc.Close False
     End If
@@ -202,7 +202,7 @@ Public Sub WordInteropFillWordTemplateData(wordDoc As Object, addresseeText As S
     Exit Sub
 
 TemplateError:
-    MsgBox t("core.letter.error.template_fill", "Template filling error: ") & Err.Description, vbCritical
+    MsgBox t("core.letter.error.template_fill", "Ошибка заполнения шаблона: ") & Err.Description, vbCritical
 End Sub
 
 Public Sub WordInteropCreateLetterDocumentFromScratch(wordDoc As Object, addresseeText As String, addressArray As Variant, numberText As String, rawDateText As String, executorText As String, documentType As String, documentsList As Collection)
@@ -217,20 +217,20 @@ Public Sub WordInteropCreateLetterDocumentFromScratch(wordDoc As Object, address
     letterText = GetDocumentTypeText(documentType)
     dateText = FormatLetterDate(rawDateText)
 
-    content = t("core.letter.fallback.to_commander", "To the Commander of military unit ") & addresseeText & vbCrLf & vbCrLf
+    content = t("core.letter.fallback.to_commander", "Командиру войсковой части ") & addresseeText & vbCrLf & vbCrLf
     content = content & addressText & vbCrLf & vbCrLf & vbCrLf
     content = content & letterText & vbCrLf & vbCrLf
-    content = content & t("core.letter.fallback.executor", "Executor: ") & executorText & vbCrLf
-    content = content & t("core.letter.fallback.phone", "Phone: ") & GetExecutorPhone(executorText) & vbCrLf
-    content = content & t("core.letter.fallback.ref_no", "Ref. No.: ") & numberText & vbCrLf
-    content = content & t("core.letter.fallback.date", "Date: ") & dateText & vbCrLf & vbCrLf
+    content = content & t("core.letter.fallback.executor", "Исполнитель: ") & executorText & vbCrLf
+    content = content & t("core.letter.fallback.phone", "Телефон: ") & GetExecutorPhone(executorText) & vbCrLf
+    content = content & t("core.letter.fallback.ref_no", "Исх. №: ") & numberText & vbCrLf
+    content = content & t("core.letter.fallback.date", "Дата: ") & dateText & vbCrLf & vbCrLf
 
     wordDoc.Content.Text = content
     WordInteropAppendAttachmentsToDocumentWithFontAndSum wordDoc, documentsList, 10
     Exit Sub
 
 ScratchError:
-    MsgBox t("core.letter.error.create_fallback", "Letter creation error: ") & Err.Description, vbCritical
+    MsgBox t("core.letter.error.create_fallback", "Ошибка при создании текста письма: ") & Err.Description, vbCritical
 End Sub
 
 Public Sub WordInteropReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
@@ -281,7 +281,7 @@ Public Sub WordInteropAppendAttachmentsToDocumentWithFontAndSum(wordDoc As Objec
     Set rng = wordDoc.Content
     rng.Collapse 0
 
-    rng.InsertAfter t("core.letter.attachment_prefix", "Attachment: ")
+    rng.InsertAfter t("core.letter.attachment_prefix", "Приложение: ")
 
     Dim attachmentFragments As Collection
     Set attachmentFragments = FormatAttachmentsListForWordWithSum(documentsList)

@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleDates"
 ' Module: ModuleDates
 ' Author: CreateLetter contributors
 ' Purpose: Date parsing and Russian date-formatting helpers
-' Version: 1.4.4 - 27.03.2026
+' Version: 1.4.5 - 29.03.2026
 ' ======================================================================
 Option Explicit
 
@@ -120,7 +120,7 @@ Private Function GetDirectRussianMonth(monthNumber As Integer) As String
         Case 10: GetDirectRussianMonth = BuildUnicodeString(&H43E, &H43A, &H442, &H44F, &H431, &H440, &H44F)
         Case 11: GetDirectRussianMonth = BuildUnicodeString(&H43D, &H43E, &H44F, &H431, &H440, &H44F)
         Case 12: GetDirectRussianMonth = BuildUnicodeString(&H434, &H435, &H43A, &H430, &H431, &H440, &H44F)
-        Case Else: GetDirectRussianMonth = t("core.date.unknown_month", "unknown_month")
+        Case Else: GetDirectRussianMonth = t("core.date.unknown_month", "неизвестный_месяц")
     End Select
 End Function
 

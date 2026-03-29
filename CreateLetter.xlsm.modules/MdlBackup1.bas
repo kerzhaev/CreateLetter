@@ -2,7 +2,7 @@ Attribute VB_Name = "MdlBackup1"
 ' ======================================================================
 ' Module: MdlBackup1
 ' Purpose: Legacy VBA snapshot and workbook snapshot helpers
-' Version: 1.0.3 - 27.03.2026
+' Version: 1.0.4 - 29.03.2026
 ' Notes:
 ' - This module is kept for compatibility with legacy admin workflows.
 ' - It is not part of the main end-user runtime path.
@@ -222,9 +222,9 @@ Public Sub QuickSnapshot()
 End Sub
 
 Public Sub OpenLetterCreatorForm()
-    ShowLetterCreator
+    ModuleMain.ShowLetterCreator
 End Sub
 
-Public Sub ShowLetterCreator()
+Public Sub ShowLetterCreatorLegacy()
     frmLetterCreator.Show vbModeless
 End Sub

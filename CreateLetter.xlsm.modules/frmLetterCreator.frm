@@ -17,7 +17,7 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.9 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
+' Form    : frmLetterCreator v1.6.10 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
 ' Version : 1.6.9 - 27.03.2026
 ' Author  : CreateLetter contributors
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
@@ -327,74 +327,74 @@ Private Sub ConfigureFormAppearance()
     
     If Not btnLetterHistory Is Nothing Then
         With btnLetterHistory
-            .Caption = t("form.letter_creator.caption.letter_history", "Letters History")
+            .Caption = t("form.letter_creator.caption.letter_history", "История писем")
             .Font.Name = "Segoe UI"
             .Font.Size = 10
             .Font.Bold = True
             .backColor = RGB(156, 39, 176)
             .ForeColor = RGB(255, 255, 255)
-            .ControlTipText = t("form.letter_creator.tip.letter_history", "Open sent letters history form")
+            .ControlTipText = t("form.letter_creator.tip.letter_history", "Открыть форму истории отправленных писем")
         End With
     End If
     
     On Error GoTo 0
     
-    txtAddressSearch.ControlTipText = t("form.letter_creator.tip.address_search", "Enter part of the name to search for the addressee")
-    txtLetterNumber.ControlTipText = t("form.letter_creator.tip.letter_number", "Enter the number after 7/ (for example: 125 becomes 7/125)")
-    txtLetterDate.ControlTipText = t("form.letter_creator.tip.letter_date", "Format: dd.mm.yyyy")
+    txtAddressSearch.ControlTipText = t("form.letter_creator.tip.address_search", "Введите часть наименования для поиска адресата")
+    txtLetterNumber.ControlTipText = t("form.letter_creator.tip.letter_number", "Введите номер после 7/ (например: 125 превратится в 7/125)")
+    txtLetterDate.ControlTipText = t("form.letter_creator.tip.letter_date", "Формат: дд.мм.гггг")
 End Sub
 
 Private Sub ApplyLocalizedStaticCaptions()
     On Error Resume Next
 
-    SetLocalizedCaption "lblStep1", "form.letter_creator.label.stage", "Stage:"
+    SetLocalizedCaption "lblStep1", "form.letter_creator.label.stage", "Этап:"
     SetControlCaption "lblStep2", ""
     SetControlCaption "lblStep3", ""
     SetControlCaption "lblStep4", ""
     SetControlCaption "lblStep5", ""
-    SetLocalizedCaption "lblCurrentAction", "form.letter_creator.label.current_action", "Current action"
-    SetLocalizedCaption "Label1", "form.letter_creator.label.search_addressee", "Search existing addressee"
-    SetLocalizedCaption "Label2", "form.letter_creator.label.city", "City"
-    SetLocalizedCaption "Label3", "form.letter_creator.label.district", "District"
-    SetLocalizedCaption "Label4", "form.letter_creator.label.region", "Region"
-    SetLocalizedCaption "Label5", "form.letter_creator.label.postal_code", "Postal code"
-    SetLocalizedCaption "Label6", "form.letter_creator.label.executor", "Executor"
-    SetLocalizedCaption "Label7", "form.letter_creator.label.letter_date", "Letter date"
-    SetLocalizedCaption "Label8", "form.letter_creator.label.letter_number", "Letter number"
-    SetLocalizedCaption "Label9", "form.letter_creator.label.search_attachment", "Search attachment"
-    SetLocalizedCaption "Label10", "form.letter_creator.label.selected_attachments", "Selected attachments"
-    SetLocalizedCaption "Label11", "form.letter_creator.label.document_ownership", "Document ownership"
-    SetLocalizedCaption "Label13", "form.letter_creator.label.date", "Date"
-    SetLocalizedCaption "Label14", "form.letter_creator.label.copies", "Copies"
-    SetLocalizedCaption "Label15", "form.letter_creator.label.sheets", "Sheets"
-    SetLocalizedCaption "Label16", "form.letter_creator.label.found_addresses", "Found addresses"
-    SetLocalizedCaption "Label17", "form.letter_creator.label.street_house", "Street, house"
-    SetLocalizedCaption "Label18", "form.letter_creator.label.addressee", "Addressee"
-    SetLocalizedCaption "Label19", "form.letter_creator.label.available_attachments", "Available attachments"
-    SetLocalizedCaption "Label20", "form.letter_creator.label.number", "Number"
-    SetLocalizedCaption "Label21", "form.letter_creator.label.summary_addressee", "Addressee:"
-    SetLocalizedCaption "Label23", "form.letter_creator.label.summary_letter_number", "Letter number:"
-    SetLocalizedCaption "Label25", "form.letter_creator.label.summary_date", "Date:"
-    SetLocalizedCaption "Label27", "form.letter_creator.label.summary_executor", "Executor:"
-    SetLocalizedCaption "Label29", "form.letter_creator.label.summary_document_count", "Document count:"
-    SetLocalizedCaption "Label30", "form.letter_creator.label.summary_attachments", "Attachments:"
-    SetLocalizedCaption "Label31", "form.letter_creator.label.document_sum", "Document sum"
-    SetLocalizedCaption "lblSelectedDocument", "form.letter_creator.label.selected_document", "Selected document:"
-    SetLocalizedCaption "Frame1", "form.letter_creator.frame.address_details", "Address details"
-    SetLocalizedCaption "Frame5", "form.letter_creator.frame.letter_summary", "Letter summary"
-    SetLocalizedCaption "btnSaveNewAddress", "form.letter_creator.caption.save_address", "Save address"
-    SetLocalizedCaption "btnClearSearch", "form.letter_creator.caption.clear_search", "Clear"
-    SetLocalizedCaption "btnPrevious", "form.letter_creator.caption.back", "< Back"
-    SetLocalizedCaption "btnNext", "form.letter_creator.caption.next", "Next >"
-    SetLocalizedCaption "btnCancel", "form.letter_creator.caption.cancel", "Cancel"
-    SetLocalizedCaption "btnEditAddress", "form.letter_creator.caption.edit_address", "Edit address"
-    SetLocalizedCaption "btnDeleteAddress", "form.letter_creator.caption.delete_address", "Delete address"
-    SetLocalizedCaption "btnLetterHistory", "form.letter_creator.caption.letter_history", "Letters History"
+    SetLocalizedCaption "lblCurrentAction", "form.letter_creator.label.current_action", "Текущее действие"
+    SetLocalizedCaption "Label1", "form.letter_creator.label.search_addressee", "Поиск существующего адресата"
+    SetLocalizedCaption "Label2", "form.letter_creator.label.city", "Город"
+    SetLocalizedCaption "Label3", "form.letter_creator.label.district", "Район"
+    SetLocalizedCaption "Label4", "form.letter_creator.label.region", "Регион"
+    SetLocalizedCaption "Label5", "form.letter_creator.label.postal_code", "Почтовый индекс"
+    SetLocalizedCaption "Label6", "form.letter_creator.label.executor", "Исполнитель"
+    SetLocalizedCaption "Label7", "form.letter_creator.label.letter_date", "Дата письма"
+    SetLocalizedCaption "Label8", "form.letter_creator.label.letter_number", "Номер письма"
+    SetLocalizedCaption "Label9", "form.letter_creator.label.search_attachment", "Поиск приложения"
+    SetLocalizedCaption "Label10", "form.letter_creator.label.selected_attachments", "Выбранные приложения"
+    SetLocalizedCaption "Label11", "form.letter_creator.label.document_ownership", "Тип документа"
+    SetLocalizedCaption "Label13", "form.letter_creator.label.date", "Дата"
+    SetLocalizedCaption "Label14", "form.letter_creator.label.copies", "Экз."
+    SetLocalizedCaption "Label15", "form.letter_creator.label.sheets", "Листы"
+    SetLocalizedCaption "Label16", "form.letter_creator.label.found_addresses", "Найденные адреса"
+    SetLocalizedCaption "Label17", "form.letter_creator.label.street_house", "Улица, дом"
+    SetLocalizedCaption "Label18", "form.letter_creator.label.addressee", "Получатель"
+    SetLocalizedCaption "Label19", "form.letter_creator.label.available_attachments", "Доступные приложения"
+    SetLocalizedCaption "Label20", "form.letter_creator.label.number", "Номер"
+    SetLocalizedCaption "Label21", "form.letter_creator.label.summary_addressee", "Адресат:"
+    SetLocalizedCaption "Label23", "form.letter_creator.label.summary_letter_number", "Номер письма:"
+    SetLocalizedCaption "Label25", "form.letter_creator.label.summary_date", "Дата:"
+    SetLocalizedCaption "Label27", "form.letter_creator.label.summary_executor", "Исполнитель:"
+    SetLocalizedCaption "Label29", "form.letter_creator.label.summary_document_count", "Количество документов:"
+    SetLocalizedCaption "Label30", "form.letter_creator.label.summary_attachments", "Приложения:"
+    SetLocalizedCaption "Label31", "form.letter_creator.label.document_sum", "Сумма документа"
+    SetLocalizedCaption "lblSelectedDocument", "form.letter_creator.label.selected_document", "Выбранный документ:"
+    SetLocalizedCaption "Frame1", "form.letter_creator.frame.address_details", "Данные адресата"
+    SetLocalizedCaption "Frame5", "form.letter_creator.frame.letter_summary", "Сводка письма"
+    SetLocalizedCaption "btnSaveNewAddress", "form.letter_creator.caption.save_address", "Сохранить адрес"
+    SetLocalizedCaption "btnClearSearch", "form.letter_creator.caption.clear_search", "Очистить"
+    SetLocalizedCaption "btnPrevious", "form.letter_creator.caption.back", "< Назад"
+    SetLocalizedCaption "btnNext", "form.letter_creator.caption.next", "Далее >"
+    SetLocalizedCaption "btnCancel", "form.letter_creator.caption.cancel", "Отмена"
+    SetLocalizedCaption "btnEditAddress", "form.letter_creator.caption.edit_address", "Изменить адрес"
+    SetLocalizedCaption "btnDeleteAddress", "form.letter_creator.caption.delete_address", "Удалить адрес"
+    SetLocalizedCaption "btnLetterHistory", "form.letter_creator.caption.letter_history", "История писем"
 
-    mpgWizard.Pages(0).Caption = t("form.letter_creator.page.step_1", "Step 1: Addressee")
-    mpgWizard.Pages(1).Caption = t("form.letter_creator.page.step_2", "Step 2: Letter")
-    mpgWizard.Pages(2).Caption = t("form.letter_creator.page.step_3", "Step 3: Attachments")
-    mpgWizard.Pages(3).Caption = t("form.letter_creator.page.step_4", "Step 4: Create")
+    mpgWizard.Pages(0).Caption = t("form.letter_creator.page.step_1", "Шаг 1: Адресат")
+    mpgWizard.Pages(1).Caption = t("form.letter_creator.page.step_2", "Шаг 2: Письмо")
+    mpgWizard.Pages(2).Caption = t("form.letter_creator.page.step_3", "Шаг 3: Приложения")
+    mpgWizard.Pages(3).Caption = t("form.letter_creator.page.step_4", "Шаг 4: Создание")
 
     On Error GoTo 0
 End Sub

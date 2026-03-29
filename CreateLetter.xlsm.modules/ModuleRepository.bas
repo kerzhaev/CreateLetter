@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleRepository"
 ' Module: ModuleRepository
 ' Author: CreateLetter contributors
 ' Purpose: Workbook CRUD/search/export helpers with typed history DTO support
-' Version: 1.0.1 - 29.03.2026
+' Version: 1.0.2 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -293,20 +293,20 @@ End Function
 
 Public Function RepositoryBuildLetterReturnStatus(isReceived As Boolean, returnDateText As String) As String
     If isReceived Then
-        RepositoryBuildLetterReturnStatus = Format$(ResolveLetterDateOrToday(returnDateText), "dd.mm.yyyy") & t("history.status.received_suffix", " received")
+        RepositoryBuildLetterReturnStatus = Format$(ResolveLetterDateOrToday(returnDateText), "dd.mm.yyyy") & t("history.status.received_suffix", " получено")
     Else
-        RepositoryBuildLetterReturnStatus = t("history.status.not_received", "not received")
+        RepositoryBuildLetterReturnStatus = t("history.status.not_received", "не получено")
     End If
 End Function
 
 Public Function RepositoryGetLetterHistorySearchHintsText() As String
     RepositoryGetLetterHistorySearchHintsText = t("form.letter_history.msg.search_hints_body", _
-                                                  "SEARCH HINTS:" & vbCrLf & vbCrLf & _
-                                                  "• To search for a sum, enter only numbers: 125000" & vbCrLf & _
-                                                  "• The system will find '125000', '125 000', '125000 rub.'" & vbCrLf & _
-                                                  "• Search works across all columns simultaneously" & vbCrLf & _
-                                                  "• You can search by part of a word or number" & vbCrLf & vbCrLf & _
-                                                  "Click 'Refresh data' if you modified Excel manually")
+                                                  "ПОДСКАЗКИ ПО ПОИСКУ:" & vbCrLf & vbCrLf & _
+                                                  "• Для поиска по сумме вводите только цифры: 125000" & vbCrLf & _
+                                                  "• Система найдет '125000', '125 000', '125000 руб.'" & vbCrLf & _
+                                                  "• Поиск работает сразу по всем колонкам" & vbCrLf & _
+                                                  "• Можно искать по части слова или номера" & vbCrLf & vbCrLf & _
+                                                  "Если вы вручную меняли Excel, нажмите 'Обновить данные'")
 End Function
 
 Public Sub RepositoryExportLetterHistoryRecords(records As Collection)
