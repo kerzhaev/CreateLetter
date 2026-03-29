@@ -17,8 +17,8 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.13 - Thin-shell MultiPage wizard with workbook-backed localization and grouped address search
-' Version : 1.6.13 - 29.03.2026
+' Form    : frmLetterCreator v1.6.14 - Thin-shell MultiPage wizard with workbook-backed localization and grouped address search
+' Version : 1.6.14 - 29.03.2026
 ' Author  : CreateLetter contributors
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
 ' ======================================================================
@@ -35,6 +35,7 @@ Public selectedAddressRow As Long
 Private documentsList As Collection
 Private contextMenuSelectedIndex As Integer
 Private currentAddressSearchResults As Collection
+Private isClosingForm As Boolean
 
 '------------------------------------------------------------
 '  FORM INITIALIZATION
@@ -43,6 +44,7 @@ Private Sub UserForm_Initialize()
     Set documentsList = New Collection
     Set currentAddressSearchResults = New Collection
     contextMenuSelectedIndex = -1
+    isClosingForm = False
     
     ClearAddressCache
     EnsureAddressGroupControls
@@ -463,7 +465,7 @@ Private Sub EnsureAddressGroupControls()
     Set addressFrame = ResolveNamedControl("Frame1")
     If addressFrame Is Nothing Then Exit Sub
 
-    addressFrame.Height = 294
+    addressFrame.Height = 306
 
     Dim groupLabel As Object
     Set groupLabel = Nothing
@@ -478,7 +480,7 @@ Private Sub EnsureAddressGroupControls()
     With groupLabel
         .Caption = t("form.letter_creator.label.address_group", "Группа адреса")
         .Left = 30
-        .Top = 252
+        .Top = 258
         .Width = 84
         .Height = 12
         .BackStyle = 0
@@ -498,7 +500,7 @@ Private Sub EnsureAddressGroupControls()
 
     With groupTextBox
         .Left = 126
-        .Top = 246
+        .Top = 252
         .Width = 276
         .Height = 24
         .BackColor = RGB(255, 255, 255)
@@ -508,9 +510,15 @@ Private Sub EnsureAddressGroupControls()
         .MultiLine = False
     End With
 
-    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 342
-    If Not btnEditAddress Is Nothing Then btnEditAddress.Top = 342
-    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Top = 342
+    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 354
+    If Not btnEditAddress Is Nothing Then btnEditAddress.Top = 354
+    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Top = 354
+    If Not mpgWizard Is Nothing Then mpgWizard.Height = 390
+    If Not btnPrevious Is Nothing Then btnPrevious.Top = 444
+    If Not btnNext Is Nothing Then btnNext.Top = 444
+    If Not btnLetterHistory Is Nothing Then btnLetterHistory.Top = 492
+    If Not btnCancel Is Nothing Then btnCancel.Top = 492
+    Me.Height = 570
     Exit Sub
 
 EnsureError:
@@ -1264,6 +1272,7 @@ End Sub
 Private Sub AutoUpdateAddressIfChanged()
     On Error Resume Next
     
+    If ShouldSkipAddressAutoUpdate() Then Exit Sub
     If selectedAddressRow <= 1 Then Exit Sub
     
     Dim currentAddress As Variant
@@ -1357,15 +1366,43 @@ End Sub
 '  CANCEL AND CLOSE BUTTONS
 '=====================================================================
 Private Sub btnCancel_Click()
+    isClosingForm = True
     If MsgBox(t("dialog.cancel_letter_creation", "Отменить создание письма?"), vbYesNo + vbQuestion) = vbYes Then
         ClearCache
         Unload Me
+    Else
+        isClosingForm = False
     End If
 End Sub
 
+Private Function ShouldSkipAddressAutoUpdate() As Boolean
+    If isClosingForm Then
+        ShouldSkipAddressAutoUpdate = True
+        Exit Function
+    End If
+
+    Dim activeControlName As String
+    activeControlName = GetActiveControlName()
+
+    Select Case activeControlName
+        Case "btnCancel", "btnPrevious", "btnNext", "btnLetterHistory"
+            ShouldSkipAddressAutoUpdate = True
+        Case Else
+            ShouldSkipAddressAutoUpdate = False
+    End Select
+End Function
+
+Private Function GetActiveControlName() As String
+    On Error Resume Next
+    GetActiveControlName = CStr(Me.ActiveControl.Name)
+    On Error GoTo 0
+End Function
+
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    isClosingForm = True
     If documentsList.count > 0 Then
         If MsgBox(t("dialog.discard_unsaved_documents", "Несохраненные документы будут потеряны. Закрыть?"), vbYesNo + vbQuestion) = vbNo Then
+            isClosingForm = False
             Cancel = True
         Else
             ClearCache
