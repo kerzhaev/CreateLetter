@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleBackup"
 ' Module: ModuleBackup
 ' Author: CreateLetter contributors
 ' Purpose: Workbook backup helpers
-' Version: 1.4.5 - 29.03.2026
+' Version: 1.4.6 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -157,9 +157,14 @@ Public Function GetBackupFolderPath() As String
 End Function
 
 Public Function GetLastBackupDate() As Date
-    On Error Resume Next
+    On Error GoTo ReadError
+
     GetLastBackupDate = GetSetting("FormirovanieLetters", "Backup", "LastBackupDate", DateSerial(1900, 1, 1))
-    On Error GoTo 0
+    Exit Function
+
+ReadError:
+    GetLastBackupDate = DateSerial(1900, 1, 1)
+    Debug.Print "GetLastBackupDate error: " & Err.Description
 End Function
 
 Public Sub SetBackupSettings(enableAutoBackup As Boolean, retentionDays As Integer)
@@ -172,7 +177,7 @@ Public Sub SetBackupSettings(enableAutoBackup As Boolean, retentionDays As Integ
 End Sub
 
 Public Function GetBackupSettings() As String
-    On Error Resume Next
+    On Error GoTo SettingsError
 
     Dim autoEnabled As Boolean
     Dim retentionDays As Integer
@@ -187,6 +192,9 @@ Public Function GetBackupSettings() As String
                         t("backup.msg.retention_period", "Retention period: ") & retentionDays & " days" & vbCrLf & _
                         t("backup.msg.last_backup", "Last backup: ") & IIf(lastBackup = DateSerial(1900, 1, 1), t("backup.label.never", "Never"), Format$(lastBackup, "dd.mm.yyyy")) & vbCrLf & _
                         t("backup.msg.backup_folder", "Backup folder: ") & GetBackupFolderPath()
+    Exit Function
 
-    On Error GoTo 0
+SettingsError:
+    Debug.Print "GetBackupSettings error: " & Err.Description
+    GetBackupSettings = t("backup.msg.settings_unavailable", "Backup settings are currently unavailable.")
 End Function

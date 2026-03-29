@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterHistory 
-   Caption         =   "Letter History v1.3.1"
+   Caption         =   "Letter History v1.3.3"
    ClientHeight    =   11715
    ClientLeft      =   120
    ClientTop       =   465
@@ -17,10 +17,16 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form: frmLetterHistory v1.3.1 - Thin-shell history UI with typed history records
+' Form: frmLetterHistory v1.3.3 - Thin-shell history UI with typed history records
 ' Author: CreateLetter contributors
 ' Date: 29.03.2026
 ' Purpose: History of sent letters with typed DTO bindings, thin-shell UI, and schema-safe status updates
+' Updates v1.3.3:
+' - Removed high-value Resume Next usage from record selection and return-status parsing paths
+' - Kept styling-only helpers lightweight while making data-binding failures explicit
+' Updates v1.3.2:
+' - Replaced high-value history reset and date-validation Resume Next paths with targeted handlers
+' - Kept styling-only helpers lightweight while making status/search flow failures explicit
 ' Updates v1.3.1:
 ' - Fixed VBA ByRef index mismatch for typed history record lookup helper
 ' - Preserved typed DTO contract and thin-shell history bindings
@@ -51,7 +57,7 @@ Private Sub UserForm_Initialize()
     ShowAllLettersOnInit
     InitializeControlValues
     
-        Debug.Print "Letter history form initialized v1.3.1 with typed history records"
+        Debug.Print "Letter history form initialized v1.3.3 with typed history records"
 End Sub
 
 Private Sub ConfigureDateFieldRussianFormat()
@@ -100,7 +106,7 @@ End Sub
 
 Private Sub ApplyFormSettings()
     With Me
-        .Caption = t("form.letter_history.title", "Letter History") & " v1.3.1"
+        .Caption = t("form.letter_history.title", "Letter History") & " v1.3.2"
         .backColor = RGB(250, 250, 250)
     End With
 End Sub
@@ -246,6 +252,8 @@ End Sub
 ' CONTROL EVENTS - REVISED
 ' ===============================================================================
 Private Sub lstLetterHistory_Click()
+    On Error GoTo SelectionError
+
     If lstLetterHistory Is Nothing Then Exit Sub
     If lstLetterHistory.ListIndex < 0 Then Exit Sub
     
@@ -256,17 +264,17 @@ Private Sub lstLetterHistory_Click()
         Dim letterRecord As clsLetterHistoryRecord
         Set letterRecord = GetHistoryRecordFromCollection(filteredData, selectedIndex)
         If Not letterRecord Is Nothing Then
-            On Error Resume Next
-
             If Not txtSumDocument Is Nothing Then
                 txtSumDocument.value = letterRecord.DocumentSum
             End If
 
             ParseReturnStatus letterRecord.ReturnStatus
-
-            On Error GoTo 0
         End If
     End If
+    Exit Sub
+
+SelectionError:
+    MsgBox t("form.letter_history.msg.selection_error", "Error loading selected history record: ") & Err.Description, vbExclamation
 End Sub
 
 Private Sub lstLetterHistory_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
@@ -341,8 +349,8 @@ End Sub
 
 
 Private Sub ParseReturnStatus(returnStatus As String)
-    On Error Resume Next
-    
+    On Error GoTo ParseError
+
     If HasReturnStatusDate(returnStatus) Then
         If Not chkReceived Is Nothing Then
             chkReceived.value = True
@@ -366,15 +374,23 @@ Private Sub ParseReturnStatus(returnStatus As String)
             dtpReturnDate.value = Format(Date, "dd.mm.yyyy")
         End If
     End If
-    
-    On Error GoTo 0
+    Exit Sub
+
+ParseError:
+    If Not chkReceived Is Nothing Then
+        chkReceived.value = False
+    End If
+    If Not dtpReturnDate Is Nothing Then
+        dtpReturnDate.value = Format(Date, "dd.mm.yyyy")
+    End If
+    Debug.Print "ParseReturnStatus error: " & Err.Description
 End Sub
 
 ' ===============================================================================
 ' ACTION BUTTONS (NO CHANGES)
 ' ===============================================================================
 Private Sub btnClearSearch_Click()
-    On Error Resume Next
+    On Error GoTo ClearError
     
     Dim originalCaption As String
     originalCaption = Me.Controls("btnClearSearch").Caption
@@ -392,12 +408,16 @@ Private Sub btnClearSearch_Click()
     Me.Controls("txtHistorySearch").SetFocus
     
     Debug.Print "Full clear of letter history form executed"
-    
-    On Error GoTo 0
+    Exit Sub
+
+ClearError:
+    Me.Controls("btnClearSearch").Caption = t("form.letter_history.caption.clear_search", "Clear search")
+    Me.Controls("btnClearSearch").Enabled = True
+    MsgBox t("form.letter_history.msg.clear_error", "Error clearing history form: ") & Err.Description, vbExclamation
 End Sub
 
 Private Sub ClearAllHistoryFields()
-    On Error Resume Next
+    On Error GoTo ClearFieldsError
     
     Me.Controls("txtSumDocument").value = ""
     Me.Controls("chkReceived").value = False
@@ -408,8 +428,10 @@ Private Sub ClearAllHistoryFields()
     SetControlBackColor "txtSumDocument", RGB(255, 255, 255)
     
     Debug.Print "All letter history fields cleared"
-    
-    On Error GoTo 0
+    Exit Sub
+
+ClearFieldsError:
+    Err.Raise Err.Number, "ClearAllHistoryFields", Err.Description
 End Sub
 
 
@@ -468,13 +490,12 @@ Private Sub BindHistoryList(records As Collection)
 End Sub
 
 Private Function ControlValueOrDefault(controlName As String, Optional defaultValue As String = "") As String
-    On Error Resume Next
+    On Error GoTo ReadFailed
     ControlValueOrDefault = Trim(CStr(Me.Controls(controlName).value))
-    If Err.number <> 0 Then
-        ControlValueOrDefault = defaultValue
-        Err.Clear
-    End If
-    On Error GoTo 0
+    Exit Function
+
+ReadFailed:
+    ControlValueOrDefault = defaultValue
 End Function
 
 Private Sub btnRefresh_Click()
@@ -501,7 +522,7 @@ End Sub
 
 Private Sub dtpReturnDate_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     ' NEW FUNCTION: Validating entered date
-    On Error Resume Next
+    On Error GoTo ValidationError
     
     If Not dtpReturnDate Is Nothing Then
         Dim inputText As String
@@ -521,8 +542,11 @@ Private Sub dtpReturnDate_Exit(ByVal Cancel As MSForms.ReturnBoolean)
             End If
         End If
     End If
-    
-    On Error GoTo 0
+    Exit Sub
+
+ValidationError:
+    MsgBox t("form.letter_history.msg.invalid_date", "Invalid date format. Use dd.mm.yyyy."), vbExclamation
+    Cancel = True
 End Sub
 
 

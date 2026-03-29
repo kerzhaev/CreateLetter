@@ -106,7 +106,7 @@ Public Enum LetterHistoryPartIndexes
 End Enum
 
 ' ======================================================================
-'                    CORE HELPERS v1.6.19
+'                    CORE HELPERS v1.7.1
 ' ======================================================================
 
 Public Sub PopulateDocumentTypeOptions(targetControl As Object)
@@ -1492,15 +1492,33 @@ Public Function BuildHistoryFoundCaption(foundCount As Long, totalCount As Long)
 End Function
 
 Private Function GetLetterTextsTable(ws As Worksheet) As ListObject
-    On Error Resume Next
-    Set GetLetterTextsTable = ws.ListObjects(LetterTextsTableName)
-    If GetLetterTextsTable Is Nothing Then
-        Set GetLetterTextsTable = ws.ListObjects(LegacyLetterTextsTableName)
+    Dim resolvedTable As ListObject
+
+    If TryGetWorksheetTableByName(ws, LetterTextsTableName, resolvedTable) Then
+        Set GetLetterTextsTable = resolvedTable
+        Exit Function
     End If
-    If GetLetterTextsTable Is Nothing Then
-        Set GetLetterTextsTable = ws.ListObjects(LegacyLetterTextsTableNameLocalized)
+
+    If TryGetWorksheetTableByName(ws, LegacyLetterTextsTableName, resolvedTable) Then
+        Set GetLetterTextsTable = resolvedTable
+        Exit Function
     End If
-    On Error GoTo 0
+
+    If TryGetWorksheetTableByName(ws, LegacyLetterTextsTableNameLocalized, resolvedTable) Then
+        Set GetLetterTextsTable = resolvedTable
+    End If
+End Function
+
+Private Function TryGetWorksheetTableByName(ws As Worksheet, tableName As String, ByRef targetTable As ListObject) As Boolean
+    On Error GoTo LookupFailed
+
+    Set targetTable = ws.ListObjects(tableName)
+    TryGetWorksheetTableByName = Not targetTable Is Nothing
+    Exit Function
+
+LookupFailed:
+    Set targetTable = Nothing
+    TryGetWorksheetTableByName = False
 End Function
 
 
