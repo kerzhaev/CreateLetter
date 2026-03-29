@@ -84,3 +84,5 @@ The next bounded feature stages for code quality and maintainability are:
   Convert the public repository to a source-only layout by removing local AI skill bundles and binary runtime assets from git, adding an MIT license, and documenting the local provisioning contract for workbook/template artifacts.
 - [x] `pisces/feature-35-github-templates-and-ci`
   Add GitHub issue templates, a PR template, and a source-only repository consistency workflow so the public repo has basic contribution and publication guardrails.
+- [x] `pisces/feature-36-repository-word-dto-refactor`
+  Add `ModuleRepository`, `ModuleWordInterop`, and `clsLetterHistoryRecord`, move typed history loading away from pipe-delimited strings, route Word lifecycle through explicit acquire/release helpers, and keep `ModuleMain` as a compatibility façade with smoke assertions for the new contracts.

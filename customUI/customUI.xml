@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="RibbonOnLoad">
+  <ribbon>
+    <tabs>
+      <tab id="tabCreateLetter" label="Формирование писем">
+        <group id="grpCreateLetterMain" label="Команды">
+          <button id="btnRibbonOpenForm"
+                  label="Сделать письмо"
+                  size="large"
+                  imageMso="FileOpen"
+                  onAction="RibbonOpenLetterForm"
+                  screentip="Сделать письмо"
+                  supertip="Открывает форму формирования нового письма." />
+          <button id="btnRibbonOpenHistory"
+                  label="Поиск писем"
+                  size="large"
+                  imageMso="FindDialog"
+                  onAction="RibbonOpenHistoryForm"
+                  screentip="Поиск писем"
+                  supertip="Открывает форму поиска и просмотра истории писем." />
+          <button id="btnRibbonTemplateFolder"
+                  label="Папка шаблонов"
+                  size="large"
+                  imageMso="FileOpen"
+                  onAction="RibbonSelectTemplateFolder"
+                  screentip="Папка шаблонов"
+                  supertip="Позволяет выбрать папку, в которой лежат шаблоны Word." />
+          <button id="btnRibbonOutputFolder"
+                  label="Папка писем"
+                  size="large"
+                  imageMso="FileSaveAs"
+                  onAction="RibbonSelectOutputFolder"
+                  screentip="Папка писем"
+                  supertip="Позволяет выбрать папку, в которую будут сохраняться сформированные письма." />
+          <button id="btnRibbonAbout"
+                  label="О программе"
+                  size="large"
+                  imageMso="FileProperties"
+                  onAction="RibbonShowAbout"
+                  screentip="О программе"
+                  supertip="Показывает сведения о CreateLetter и текущих папках шаблонов и выгрузки." />
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

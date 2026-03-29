@@ -4,7 +4,7 @@ Attribute VB_Name = "mdlInicialize"
 ' Module: mdlInitialize
 ' Author: CreateLetter contributors
 ' Purpose: Workbook sheet bootstrap and reset entry points with English-safe public aliases
-' Version: 1.4.7 - 27.03.2026
+' Version: 1.4.8 - 29.03.2026
 ' ======================================================================
 Option Explicit
 
@@ -35,10 +35,7 @@ End Sub
 Private Sub CreateAddressesSheet()
     Dim ws As Worksheet
     
-    ' Check if the sheet exists
-    On Error Resume Next
-    Set ws = ThisWorkbook.Worksheets("Addresses")
-    On Error GoTo 0
+    Set ws = TryGetWorksheetByName("Addresses")
     
     If ws Is Nothing Then
         Set ws = ThisWorkbook.Worksheets.Add
@@ -67,9 +64,7 @@ End Sub
 Private Sub CreateLettersSheet()
     Dim ws As Worksheet
     
-    On Error Resume Next
-    Set ws = ThisWorkbook.Worksheets("Letters")
-    On Error GoTo 0
+    Set ws = TryGetWorksheetByName("Letters")
     
     If ws Is Nothing Then
         Set ws = ThisWorkbook.Worksheets.Add
@@ -99,9 +94,7 @@ End Sub
 Private Sub CreateSettingsSheet()
     Dim ws As Worksheet
     
-    On Error Resume Next
-    Set ws = ThisWorkbook.Worksheets("Settings")
-    On Error GoTo 0
+    Set ws = TryGetWorksheetByName("Settings")
     
     If ws Is Nothing Then
         Set ws = ThisWorkbook.Worksheets.Add
@@ -151,13 +144,7 @@ Private Sub CreateSettingsSheet()
         Dim textRange As Range
         Set textRange = .Range("F1:F3")
         
-        On Error Resume Next
-        Dim tbl As ListObject
-        Set tbl = .ListObjects.Add(xlSrcRange, textRange, , xlYes)
-        If Not tbl Is Nothing Then
-            tbl.Name = "tblLetterTexts"
-        End If
-        On Error GoTo 0
+        EnsureLetterTextsTable ws, textRange
         
         ' Auto-fit column widths
         .Columns("A:F").AutoFit
@@ -170,24 +157,70 @@ Public Sub ResetWorksheets()
     response = MsgBox(t("bootstrap.msg.reset_confirm", "Are you sure you want to reset all data?"), vbYesNo + vbQuestion + vbDefaultButton2)
     
     If response = vbYes Then
-        On Error Resume Next
-        
-        ' Delete existing sheets
+        On Error GoTo ResetError
+
         Application.DisplayAlerts = False
-        ThisWorkbook.Worksheets("Addresses").Delete
-        ThisWorkbook.Worksheets("Letters").Delete
-        ThisWorkbook.Worksheets("Settings").Delete
+        DeleteWorksheetIfExists "Addresses"
+        DeleteWorksheetIfExists "Letters"
+        DeleteWorksheetIfExists "Settings"
         Application.DisplayAlerts = True
-        
-        On Error GoTo 0
-        
+
         ' Recreate the workbook baseline.
         BootstrapWorkbookSheets
     End If
+    Exit Sub
+
+ResetError:
+    Application.DisplayAlerts = True
+    MsgBox t("bootstrap.msg.reset_error", "Error resetting workbook sheets: ") & Err.Description, vbCritical
 End Sub
 
 Public Sub ResetWorkbookSheets()
     ResetWorksheets
 End Sub
+
+Private Function TryGetWorksheetByName(sheetName As String) As Worksheet
+    On Error GoTo LookupError
+
+    Set TryGetWorksheetByName = ThisWorkbook.Worksheets(sheetName)
+    Exit Function
+
+LookupError:
+    Set TryGetWorksheetByName = Nothing
+End Function
+
+Private Sub DeleteWorksheetIfExists(sheetName As String)
+    Dim ws As Worksheet
+    Set ws = TryGetWorksheetByName(sheetName)
+    If ws Is Nothing Then Exit Sub
+
+    ws.Delete
+End Sub
+
+Private Sub EnsureLetterTextsTable(ws As Worksheet, textRange As Range)
+    On Error GoTo TableError
+
+    Dim tbl As ListObject
+    Set tbl = TryGetListObjectByName(ws, "tblLetterTexts")
+
+    If tbl Is Nothing Then
+        Set tbl = ws.ListObjects.Add(xlSrcRange, textRange, , xlYes)
+        tbl.Name = "tblLetterTexts"
+    End If
+    Exit Sub
+
+TableError:
+    Err.Raise Err.Number, "EnsureLetterTextsTable", Err.Description
+End Sub
+
+Private Function TryGetListObjectByName(ws As Worksheet, tableName As String) As ListObject
+    On Error GoTo LookupError
+
+    Set TryGetListObjectByName = ws.ListObjects(tableName)
+    Exit Function
+
+LookupError:
+    Set TryGetListObjectByName = Nothing
+End Function
 
 

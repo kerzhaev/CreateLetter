@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleAuditLogger"
 ' Module: ModuleAuditLogger
 ' Author: CreateLetter contributors
 ' Purpose: Audit log helpers for workbook activity tracking
-' Version: 1.0.4 - 27.03.2026
+' Version: 1.0.5 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -68,9 +68,7 @@ End Sub
 Private Function GetOrCreateAuditSheet() As Worksheet
     Dim auditSheet As Worksheet
 
-    On Error Resume Next
-    Set auditSheet = ThisWorkbook.Worksheets("AuditLog")
-    On Error GoTo 0
+    Set auditSheet = TryGetWorksheetByName("AuditLog")
 
     If auditSheet Is Nothing Then
         Set auditSheet = ThisWorkbook.Worksheets.Add
@@ -102,7 +100,7 @@ Private Function GetOrCreateAuditSheet() As Worksheet
 End Function
 
 Private Function GetLocalIPAddress() As String
-    On Error Resume Next
+    On Error GoTo LookupError
 
     Dim objWMIService As Object
     Dim colItems As Object
@@ -119,11 +117,15 @@ Private Function GetLocalIPAddress() As String
     Next objItem
 
     If GetLocalIPAddress = "" Then GetLocalIPAddress = "Unknown"
-    On Error GoTo 0
+    Exit Function
+
+LookupError:
+    GetLocalIPAddress = "Unknown"
+    Debug.Print "GetLocalIPAddress error: " & Err.Description
 End Function
 
 Private Sub CleanOldAuditEntries(auditSheet As Worksheet, daysToKeep As Integer)
-    On Error Resume Next
+    On Error GoTo CleanupError
 
     Dim lastRow As Long
     Dim rowIndex As Long
@@ -140,9 +142,21 @@ Private Sub CleanOldAuditEntries(auditSheet As Worksheet, daysToKeep As Integer)
             End If
         End If
     Next rowIndex
+    Exit Sub
 
-    On Error GoTo 0
+CleanupError:
+    Debug.Print "CleanOldAuditEntries error: " & Err.Description
 End Sub
+
+Private Function TryGetWorksheetByName(sheetName As String) As Worksheet
+    On Error GoTo LookupError
+
+    Set TryGetWorksheetByName = ThisWorkbook.Worksheets(sheetName)
+    Exit Function
+
+LookupError:
+    Set TryGetWorksheetByName = Nothing
+End Function
 
 Public Sub ShowAuditLog()
     Dim auditSheet As Worksheet

@@ -1,0 +1,8 @@
+filesarchive/
+_tmp_export/
+Backups/
+__pycache__/
+*.pyc
+*.tmp
+*.bak
+~$*.xlsm

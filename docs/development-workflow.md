@@ -61,6 +61,12 @@ python .\scripts\sync_vba_from_modules.py .\CreateLetter.xlsm .\CreateLetter.xls
 4. Export modules back to `CreateLetter.xlsm.modules/` after validated changes.
 5. Verify that workbook runtime behavior does not depend on automatic source-management hooks.
 
+Class-module note:
+
+- `.cls` files must exist as real VBA class components, not as standard modules with class text pasted into them.
+- If a new class module is introduced, either let the sync helper create/update a real class component or create it manually via `Insert -> Class Module`, set its `(Name)`, paste only the class body, then export it back to `CreateLetter.xlsm.modules/`.
+- Do not paste `VERSION 1.0 CLASS`, `BEGIN/END`, `MultiUse`, or `Attribute VB_*` lines into the VBE code pane.
+
 ## Workbook Schema Automation
 
 When a feature changes workbook structure itself, prefer a repeatable script over a one-off manual edit.
@@ -109,6 +115,21 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_excel_smoke_test.ps1
 Use `-RequireLocalizationModule` after importing updated modules into the workbook for localization stages.
 Use `-RequireStructuredTables` after workbook schema stages that depend on `tblAddresses` / `tblLetters`.
 Use `-RequireLocalizationSheet` after workbook-backed localization becomes part of the expected schema.
+Use `-RequireRibbonCustomization` after source-managed Ribbon changes or package customization work.
+
+## Reusable COM Pattern
+
+This repository now includes a reusable Excel/VBA automation playbook:
+
+- [Excel VBA COM Playbook](excel-vba-com-playbook.md)
+
+Use it as the baseline for future workbook projects when you want:
+
+- source-managed VBA;
+- COM-based sync into `.xlsm`;
+- schema/bootstrap scripts;
+- repeatable smoke tests;
+- less reliance on manual VBE-only workflows.
 
 ## See Also
 

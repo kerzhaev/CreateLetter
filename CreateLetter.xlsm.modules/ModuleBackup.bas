@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleBackup"
 ' Module: ModuleBackup
 ' Author: CreateLetter contributors
 ' Purpose: Workbook backup helpers
-' Version: 1.4.4 - 27.03.2026
+' Version: 1.4.6 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -16,9 +16,7 @@ Public Sub CreateBackup()
     Dim backupPath As String
 
     backupFolder = ThisWorkbook.Path & "\Backups\"
-    If Dir$(backupFolder, vbDirectory) = "" Then
-        MkDir backupFolder
-    End If
+    EnsureBackupFolderExists backupFolder
 
     backupFileName = "FormirovanieLetters_backup_" & Format$(Now, "yyyy-mm-dd_hh-mm-ss") & ".xlsx"
     backupPath = backupFolder & backupFileName
@@ -35,8 +33,20 @@ BackupError:
     MsgBox t("backup.msg.create_error", "Error creating backup: ") & Err.Description, vbCritical
 End Sub
 
+Private Sub EnsureBackupFolderExists(backupFolder As String)
+    On Error GoTo FolderError
+
+    If Dir$(backupFolder, vbDirectory) = "" Then
+        MkDir backupFolder
+    End If
+    Exit Sub
+
+FolderError:
+    Err.Raise Err.Number, "EnsureBackupFolderExists", Err.Description
+End Sub
+
 Private Sub CleanOldBackups(backupFolder As String, daysToKeep As Integer)
-    On Error Resume Next
+    On Error GoTo CleanError
 
     Dim fileName As String
     Dim filePath As String
@@ -48,18 +58,30 @@ Private Sub CleanOldBackups(backupFolder As String, daysToKeep As Integer)
         fileDate = FileDateTime(filePath)
 
         If Date - fileDate > daysToKeep Then
-            Kill filePath
-            Debug.Print "Old backup deleted: " & fileName
+            DeleteBackupFile filePath, fileName
         End If
 
         fileName = Dir$
     Loop
+    Exit Sub
 
-    On Error GoTo 0
+CleanError:
+    Debug.Print "Error cleaning old backups: " & Err.Description
+End Sub
+
+Private Sub DeleteBackupFile(filePath As String, fileName As String)
+    On Error GoTo DeleteError
+
+    Kill filePath
+    Debug.Print "Old backup deleted: " & fileName
+    Exit Sub
+
+DeleteError:
+    Debug.Print "Failed to delete backup '" & fileName & "': " & Err.Description
 End Sub
 
 Public Sub AutoBackupOnStartup()
-    On Error Resume Next
+    On Error GoTo AutoBackupError
 
     Dim lastBackupDate As Date
     lastBackupDate = GetSetting("FormirovanieLetters", "Backup", "LastBackupDate", DateSerial(1900, 1, 1))
@@ -68,8 +90,10 @@ Public Sub AutoBackupOnStartup()
         CreateBackup
         SaveSetting "FormirovanieLetters", "Backup", "LastBackupDate", Date
     End If
+    Exit Sub
 
-    On Error GoTo 0
+AutoBackupError:
+    Debug.Print "AutoBackupOnStartup error: " & Err.Description
 End Sub
 
 Public Sub ShowBackupInfo()
@@ -133,9 +157,14 @@ Public Function GetBackupFolderPath() As String
 End Function
 
 Public Function GetLastBackupDate() As Date
-    On Error Resume Next
+    On Error GoTo ReadError
+
     GetLastBackupDate = GetSetting("FormirovanieLetters", "Backup", "LastBackupDate", DateSerial(1900, 1, 1))
-    On Error GoTo 0
+    Exit Function
+
+ReadError:
+    GetLastBackupDate = DateSerial(1900, 1, 1)
+    Debug.Print "GetLastBackupDate error: " & Err.Description
 End Function
 
 Public Sub SetBackupSettings(enableAutoBackup As Boolean, retentionDays As Integer)
@@ -148,7 +177,7 @@ Public Sub SetBackupSettings(enableAutoBackup As Boolean, retentionDays As Integ
 End Sub
 
 Public Function GetBackupSettings() As String
-    On Error Resume Next
+    On Error GoTo SettingsError
 
     Dim autoEnabled As Boolean
     Dim retentionDays As Integer
@@ -163,6 +192,9 @@ Public Function GetBackupSettings() As String
                         t("backup.msg.retention_period", "Retention period: ") & retentionDays & " days" & vbCrLf & _
                         t("backup.msg.last_backup", "Last backup: ") & IIf(lastBackup = DateSerial(1900, 1, 1), t("backup.label.never", "Never"), Format$(lastBackup, "dd.mm.yyyy")) & vbCrLf & _
                         t("backup.msg.backup_folder", "Backup folder: ") & GetBackupFolderPath()
+    Exit Function
 
-    On Error GoTo 0
+SettingsError:
+    Debug.Print "GetBackupSettings error: " & Err.Description
+    GetBackupSettings = t("backup.msg.settings_unavailable", "Backup settings are currently unavailable.")
 End Function

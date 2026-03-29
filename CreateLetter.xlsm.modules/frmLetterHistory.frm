@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterHistory 
-   Caption         =   "Letter History v1.2.5"
+   Caption         =   "История писем v1.3.5"
    ClientHeight    =   11715
    ClientLeft      =   120
    ClientTop       =   465
@@ -17,15 +17,23 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form: frmLetterHistory v1.2.7 - Thin-shell history UI with workbook-backed localization
+' Form: frmLetterHistory v1.3.5 - Thin-shell history UI with typed history records
 ' Author: CreateLetter contributors
-' Date: 27.03.2026
-' Purpose: History of sent letters with thin-shell UI, navigation, filtering, status updates, and schema-safe bindings
-' Updates v1.2.6:
-' - Moved history captions, tips, dialogs, and search info onto workbook-backed localization keys
-' - Kept navigation, export, and status update flow aligned with named letter columns
-' - Preserved Russian/European date formatting and record navigation workflow
-' - Removed local history caption builders in favor of shared ModuleMain helpers
+' Date: 29.03.2026
+' Purpose: History of sent letters with typed DTO bindings, thin-shell UI, and schema-safe status updates
+' Updates v1.3.3:
+' - Removed high-value Resume Next usage from record selection and return-status parsing paths
+' - Kept styling-only helpers lightweight while making data-binding failures explicit
+' Updates v1.3.2:
+' - Replaced high-value history reset and date-validation Resume Next paths with targeted handlers
+' - Kept styling-only helpers lightweight while making status/search flow failures explicit
+' Updates v1.3.1:
+' - Fixed VBA ByRef index mismatch for typed history record lookup helper
+' - Preserved typed DTO contract and thin-shell history bindings
+' Updates v1.3.0:
+' - Switched history data flow from pipe-delimited strings to clsLetterHistoryRecord objects
+' - Kept UI binding, search, export, and navigation on shared ModuleMain facade contracts
+' - Preserved localized captions, Russian date formatting, and workbook-safe navigation
 ' ======================================================================
 Option Explicit
 
@@ -49,7 +57,7 @@ Private Sub UserForm_Initialize()
     ShowAllLettersOnInit
     InitializeControlValues
     
-        Debug.Print "Letter history form initialized v1.2.3 with workbook-backed localization"
+        Debug.Print "Letter history form initialized v1.3.3 with typed history records"
 End Sub
 
 Private Sub ConfigureDateFieldRussianFormat()
@@ -64,7 +72,7 @@ Private Sub ConfigureDateFieldRussianFormat()
             ' REMOVED: .Format = 2 (not supported by TextBox)
             ' REMOVED: .CustomFormat = "dd.mm.yyyy" (not supported by TextBox)
             
-            .ControlTipText = t("form.letter_history.tip.return_date", "Document return date (dd.mm.yyyy)")
+            .ControlTipText = t("form.letter_history.tip.return_date", "Дата возврата документа (дд.мм.гггг)")
         End With
         Debug.Print "Return date field configured in Russian/European format"
     End If
@@ -87,7 +95,7 @@ Private Sub ConfigureCompactSumField()
             .ScrollBars = 0                 ' No scrollbars (0 = fmScrollBarsNone)
             ' REMOVED: .EnterKeyBehaviour = False (not supported)
             .Height = 24                    ' Fixed height
-            .ControlTipText = t("form.letter_history.tip.document_sum", "Document sum in rubles (numbers only or brief comment)")
+            .ControlTipText = t("form.letter_history.tip.document_sum", "Сумма документа в рублях (только цифры или короткий комментарий)")
         End With
         Debug.Print "Document sum field configured in compact mode"
     End If
@@ -98,7 +106,7 @@ End Sub
 
 Private Sub ApplyFormSettings()
     With Me
-        .Caption = t("form.letter_history.title", "Letter History") & " v1.2.3"
+        .Caption = t("form.letter_history.title", "История отправленных писем") & " v1.3.5"
         .backColor = RGB(250, 250, 250)
     End With
 End Sub
@@ -106,23 +114,23 @@ End Sub
 Private Sub ApplyLocalizedStaticCaptions()
     On Error Resume Next
 
-    SetLocalizedHistoryCaption "frameSearch", "form.letter_history.frame.search", "Search"
-    SetLocalizedHistoryCaption "frameLettersList", "form.letter_history.frame.letters_list", "Letter list"
-    SetLocalizedHistoryCaption "frameStatusEdit", "form.letter_history.frame.status_update", "Status update"
-    SetLocalizedHistoryCaption "frameActions", "form.letter_history.frame.actions", "Actions"
-    SetLocalizedHistoryCaption "Label1", "form.letter_history.label.search_letters", "Search letters by delivery history"
-    SetLocalizedHistoryCaption "lblSearchLabel", "form.letter_history.label.search_status", "Search status"
-    SetLocalizedHistoryCaption "lblSearchInfo", "status.ready", "Ready"
-    SetLocalizedHistoryCaption "lblDateLabel", "form.letter_history.label.return_date", "Return date"
-    SetLocalizedHistoryCaption "lblSumLabel", "form.letter_history.label.amount", "Amount"
-    SetLocalizedHistoryCaption "btnUpdateStatus", "form.letter_history.caption.update_status", "Update status"
-    SetLocalizedHistoryCaption "btnClose", "form.letter_history.caption.close", "Close"
-    SetLocalizedHistoryCaption "btnRefresh", "form.letter_history.caption.refresh_data", "Refresh data"
-    SetLocalizedHistoryCaption "btnClearSearch", "form.letter_history.caption.clear_search", "Clear search"
-    SetLocalizedHistoryCaption "btnExportToExcel", "form.letter_history.caption.export_to_excel", "Export to Excel"
-    SetLocalizedHistoryCaption "btnNavigateToRecord", "form.letter_history.caption.go_to_record", "Go to record"
-    SetLocalizedHistoryCaption "btnSearchHelp", "form.letter_history.caption.search_help", "Search help"
-    SetLocalizedHistoryCaption "chkReceived", "form.letter_history.caption.received_back", "Received back"
+    SetLocalizedHistoryCaption "frameSearch", "form.letter_history.frame.search", "Поиск"
+    SetLocalizedHistoryCaption "frameLettersList", "form.letter_history.frame.letters_list", "Список писем"
+    SetLocalizedHistoryCaption "frameStatusEdit", "form.letter_history.frame.status_update", "Обновление статуса"
+    SetLocalizedHistoryCaption "frameActions", "form.letter_history.frame.actions", "Действия"
+    SetLocalizedHistoryCaption "Label1", "form.letter_history.label.search_letters", "Поиск писем по истории доставки"
+    SetLocalizedHistoryCaption "lblSearchLabel", "form.letter_history.label.search_status", "Статус поиска"
+    SetLocalizedHistoryCaption "lblSearchInfo", "status.ready", "Готово"
+    SetLocalizedHistoryCaption "lblDateLabel", "form.letter_history.label.return_date", "Дата возврата"
+    SetLocalizedHistoryCaption "lblSumLabel", "form.letter_history.label.amount", "Сумма"
+    SetLocalizedHistoryCaption "btnUpdateStatus", "form.letter_history.caption.update_status", "Обновить статус"
+    SetLocalizedHistoryCaption "btnClose", "form.letter_history.caption.close", "Закрыть"
+    SetLocalizedHistoryCaption "btnRefresh", "form.letter_history.caption.refresh_data", "Обновить данные"
+    SetLocalizedHistoryCaption "btnClearSearch", "form.letter_history.caption.clear_search", "Очистить поиск"
+    SetLocalizedHistoryCaption "btnExportToExcel", "form.letter_history.caption.export_to_excel", "Экспорт в Excel"
+    SetLocalizedHistoryCaption "btnNavigateToRecord", "form.letter_history.caption.go_to_record", "Перейти к записи"
+    SetLocalizedHistoryCaption "btnSearchHelp", "form.letter_history.caption.search_help", "Справка по поиску"
+    SetLocalizedHistoryCaption "chkReceived", "form.letter_history.caption.received_back", "Получено обратно"
 
     On Error GoTo 0
 End Sub
@@ -175,7 +183,7 @@ Private Sub LoadAllLettersData()
     Set allLettersData = LoadLetterHistoryData()
     
     If allLettersData Is Nothing Or allLettersData.count = 0 Then
-        UpdateSearchInfo t("form.letter_history.msg.no_data", "No data found in worksheet 'Letters'")
+        UpdateSearchInfo t("form.letter_history.msg.no_data", "На листе 'Letters' данные не найдены")
         Exit Sub
     End If
     
@@ -211,10 +219,10 @@ Private Sub txtHistorySearch_Change()
         ' Show first few records for testing
         Dim i As Integer
         For i = 1 To WorksheetFunction.Min(3, allLettersData.count)
-            Dim parts() As String
-            parts = Split(allLettersData(i), "|")
-            If UBound(parts) >= 4 Then
-                Debug.Print "Record " & i & ", sum column: '" & parts(HistoryPartDocumentSum) & "'"
+            Dim debugRecord As clsLetterHistoryRecord
+            Set debugRecord = GetHistoryRecordFromCollection(allLettersData, i)
+            If Not debugRecord Is Nothing Then
+                Debug.Print "Record " & i & ", sum column: '" & debugRecord.DocumentSum & "'"
             End If
         Next i
         Debug.Print "=================="
@@ -244,6 +252,8 @@ End Sub
 ' CONTROL EVENTS - REVISED
 ' ===============================================================================
 Private Sub lstLetterHistory_Click()
+    On Error GoTo SelectionError
+
     If lstLetterHistory Is Nothing Then Exit Sub
     If lstLetterHistory.ListIndex < 0 Then Exit Sub
     
@@ -251,22 +261,20 @@ Private Sub lstLetterHistory_Click()
     selectedIndex = lstLetterHistory.ListIndex + 1
     
     If selectedIndex <= filteredData.count Then
-        Dim letterData As String
-        letterData = filteredData(selectedIndex)
-        
-        Dim parts() As String
-        If TryParseLetterHistoryRecord(letterData, parts) Then
-            On Error Resume Next
-            
+        Dim letterRecord As clsLetterHistoryRecord
+        Set letterRecord = GetHistoryRecordFromCollection(filteredData, selectedIndex)
+        If Not letterRecord Is Nothing Then
             If Not txtSumDocument Is Nothing Then
-                txtSumDocument.value = parts(HistoryPartDocumentSum)
+                txtSumDocument.value = letterRecord.DocumentSum
             End If
-            
-            ParseReturnStatus parts(HistoryPartReturnStatus)
-            
-            On Error GoTo 0
+
+            ParseReturnStatus letterRecord.ReturnStatus
         End If
     End If
+    Exit Sub
+
+SelectionError:
+    MsgBox t("form.letter_history.msg.selection_error", "Ошибка при загрузке выбранной записи истории: ") & Err.Description, vbExclamation
 End Sub
 
 Private Sub lstLetterHistory_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
@@ -285,7 +293,7 @@ Private Sub NavigateToSelectedRecord()
     
     If lstLetterHistory Is Nothing Then Exit Sub
     If lstLetterHistory.ListIndex < 0 Then
-        MsgBox t("form.letter_history.msg.select_record", "Select a letter to navigate to the record."), vbExclamation, t("form.letter_history.caption.go_to_record", "Go to record")
+        MsgBox t("form.letter_history.msg.select_record", "Выберите письмо для перехода к записи."), vbExclamation, t("form.letter_history.caption.go_to_record", "Перейти к записи")
         Exit Sub
     End If
     
@@ -293,20 +301,18 @@ Private Sub NavigateToSelectedRecord()
     selectedIndex = lstLetterHistory.ListIndex + 1
     
     If selectedIndex <= filteredData.count Then
-        Dim letterData As String
-        letterData = filteredData(selectedIndex)
-        
-        Dim parts() As String
-        If TryParseLetterHistoryRecord(letterData, parts) Then
+        Dim letterRecord As clsLetterHistoryRecord
+        Set letterRecord = GetHistoryRecordFromCollection(filteredData, selectedIndex)
+        If Not letterRecord Is Nothing Then
             Dim rowNumber As Long
-            rowNumber = CLng(parts(HistoryPartRowNumber))
+            rowNumber = letterRecord.RowNumber
             
             ' Getting "Letters" sheet
             Dim ws As Worksheet
             Set ws = ThisWorkbook.Worksheets("Letters")
             
             If ws Is Nothing Then
-                MsgBox t("form.letter_history.msg.letters_sheet_missing", "Worksheet 'Letters' not found."), vbCritical, t("form.letter_history.msg.navigation_error_title", "Navigation error")
+                MsgBox t("form.letter_history.msg.letters_sheet_missing", "Лист 'Letters' не найден."), vbCritical, t("form.letter_history.msg.navigation_error_title", "Ошибка навигации")
                 Exit Sub
             End If
             
@@ -322,7 +328,7 @@ Private Sub NavigateToSelectedRecord()
             End With
             
             ' NEW: Show info in Excel status bar
-            Application.StatusBar = t("form.letter_history.msg.selected_record", "Selected record: ") & parts(HistoryPartAddressee) & " | " & parts(HistoryPartOutgoingNumber) & " | " & parts(HistoryPartOutgoingDate)
+            Application.StatusBar = t("form.letter_history.msg.selected_record", "Выбрана запись: ") & letterRecord.Addressee & " | " & letterRecord.OutgoingNumber & " | " & letterRecord.OutgoingDate
             
             ' Remove highlight after 5 seconds
             Application.OnTime Now + TimeValue("00:00:05"), "ClearHighlight"
@@ -338,13 +344,13 @@ Private Sub NavigateToSelectedRecord()
     Exit Sub
     
 NavigateError:
-    MsgBox t("form.letter_history.msg.navigation_error", "Error navigating to record: ") & Err.description, vbCritical, t("form.letter_history.msg.navigation_error_title", "Navigation error")
+    MsgBox t("form.letter_history.msg.navigation_error", "Ошибка при переходе к записи: ") & Err.description, vbCritical, t("form.letter_history.msg.navigation_error_title", "Ошибка навигации")
 End Sub
 
 
 Private Sub ParseReturnStatus(returnStatus As String)
-    On Error Resume Next
-    
+    On Error GoTo ParseError
+
     If HasReturnStatusDate(returnStatus) Then
         If Not chkReceived Is Nothing Then
             chkReceived.value = True
@@ -368,19 +374,27 @@ Private Sub ParseReturnStatus(returnStatus As String)
             dtpReturnDate.value = Format(Date, "dd.mm.yyyy")
         End If
     End If
-    
-    On Error GoTo 0
+    Exit Sub
+
+ParseError:
+    If Not chkReceived Is Nothing Then
+        chkReceived.value = False
+    End If
+    If Not dtpReturnDate Is Nothing Then
+        dtpReturnDate.value = Format(Date, "dd.mm.yyyy")
+    End If
+    Debug.Print "ParseReturnStatus error: " & Err.Description
 End Sub
 
 ' ===============================================================================
 ' ACTION BUTTONS (NO CHANGES)
 ' ===============================================================================
 Private Sub btnClearSearch_Click()
-    On Error Resume Next
+    On Error GoTo ClearError
     
     Dim originalCaption As String
     originalCaption = Me.Controls("btnClearSearch").Caption
-    Me.Controls("btnClearSearch").Caption = t("form.letter_history.caption.clearing", "Clearing...")
+    Me.Controls("btnClearSearch").Caption = t("form.letter_history.caption.clearing", "Очистка...")
     Me.Controls("btnClearSearch").Enabled = False
     
     DoEvents
@@ -394,12 +408,16 @@ Private Sub btnClearSearch_Click()
     Me.Controls("txtHistorySearch").SetFocus
     
     Debug.Print "Full clear of letter history form executed"
-    
-    On Error GoTo 0
+    Exit Sub
+
+ClearError:
+    Me.Controls("btnClearSearch").Caption = t("form.letter_history.caption.clear_search", "Очистить поиск")
+    Me.Controls("btnClearSearch").Enabled = True
+    MsgBox t("form.letter_history.msg.clear_error", "Ошибка при очистке формы истории: ") & Err.Description, vbExclamation
 End Sub
 
 Private Sub ClearAllHistoryFields()
-    On Error Resume Next
+    On Error GoTo ClearFieldsError
     
     Me.Controls("txtSumDocument").value = ""
     Me.Controls("chkReceived").value = False
@@ -410,8 +428,10 @@ Private Sub ClearAllHistoryFields()
     SetControlBackColor "txtSumDocument", RGB(255, 255, 255)
     
     Debug.Print "All letter history fields cleared"
-    
-    On Error GoTo 0
+    Exit Sub
+
+ClearFieldsError:
+    Err.Raise Err.Number, "ClearAllHistoryFields", Err.Description
 End Sub
 
 
@@ -430,7 +450,7 @@ End Sub
 Private Sub btnUpdateStatus_Click()
     If lstLetterHistory Is Nothing Then Exit Sub
     If lstLetterHistory.ListIndex < 0 Then
-        MsgBox t("form.letter_history.msg.select_status_update", "Select a letter to update the status."), vbExclamation
+        MsgBox t("form.letter_history.msg.select_status_update", "Выберите письмо для обновления статуса."), vbExclamation
         Exit Sub
     End If
     
@@ -438,13 +458,11 @@ Private Sub btnUpdateStatus_Click()
     selectedIndex = lstLetterHistory.ListIndex + 1
     
     If selectedIndex <= filteredData.count Then
-        Dim letterData As String
-        letterData = filteredData(selectedIndex)
-        
-        Dim parts() As String
-        If TryParseLetterHistoryRecord(letterData, parts) Then
+        Dim letterRecord As clsLetterHistoryRecord
+        Set letterRecord = GetHistoryRecordFromCollection(filteredData, selectedIndex)
+        If Not letterRecord Is Nothing Then
             Dim rowNumber As Long
-            rowNumber = CLng(parts(HistoryPartRowNumber))
+            rowNumber = letterRecord.RowNumber
             Dim returnStatus As String
             returnStatus = BuildLetterReturnStatus((Not chkReceived Is Nothing And chkReceived.value), ControlValueOrDefault("dtpReturnDate"))
             
@@ -453,7 +471,7 @@ Private Sub btnUpdateStatus_Click()
             LoadAllLettersData
             txtHistorySearch_Change
             
-            MsgBox t("form.letter_history.msg.status_updated", "Letter status updated successfully."), vbInformation
+            MsgBox t("form.letter_history.msg.status_updated", "Статус письма успешно обновлен."), vbInformation
         End If
     End If
 End Sub
@@ -465,26 +483,25 @@ Private Sub BindHistoryList(records As Collection)
     
     Dim i As Long
     For i = 1 To records.count
-        lstLetterHistory.AddItem FormatLetterHistoryDisplay(CStr(records(i)))
+        lstLetterHistory.AddItem FormatLetterHistoryDisplay(records(i))
     Next i
     
     UpdateSearchInfo BuildHistoryFoundCaption(records.count, allLettersData.count)
 End Sub
 
 Private Function ControlValueOrDefault(controlName As String, Optional defaultValue As String = "") As String
-    On Error Resume Next
+    On Error GoTo ReadFailed
     ControlValueOrDefault = Trim(CStr(Me.Controls(controlName).value))
-    If Err.number <> 0 Then
-        ControlValueOrDefault = defaultValue
-        Err.Clear
-    End If
-    On Error GoTo 0
+    Exit Function
+
+ReadFailed:
+    ControlValueOrDefault = defaultValue
 End Function
 
 Private Sub btnRefresh_Click()
     LoadAllLettersData
     txtHistorySearch_Change
-    MsgBox t("form.letter_history.msg.data_refreshed", "Data refreshed."), vbInformation
+    MsgBox t("form.letter_history.msg.data_refreshed", "Данные обновлены."), vbInformation
 End Sub
 
 Private Sub btnExportToExcel_Click()
@@ -505,7 +522,7 @@ End Sub
 
 Private Sub dtpReturnDate_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     ' NEW FUNCTION: Validating entered date
-    On Error Resume Next
+    On Error GoTo ValidationError
     
     If Not dtpReturnDate Is Nothing Then
         Dim inputText As String
@@ -520,19 +537,40 @@ Private Sub dtpReturnDate_Exit(ByVal Cancel As MSForms.ReturnBoolean)
             Else
                 ' Highlight invalid date
                 dtpReturnDate.backColor = RGB(255, 240, 240)  ' Light red
-                MsgBox t("form.letter_history.msg.invalid_date", "Invalid date format. Use dd.mm.yyyy."), vbExclamation
+                MsgBox t("form.letter_history.msg.invalid_date", "Неверный формат даты. Используйте дд.мм.гггг."), vbExclamation
                 Cancel = True  ' Prevent leaving the field
             End If
         End If
     End If
-    
-    On Error GoTo 0
+    Exit Sub
+
+ValidationError:
+    MsgBox t("form.letter_history.msg.invalid_date", "Неверный формат даты. Используйте дд.мм.гггг."), vbExclamation
+    Cancel = True
 End Sub
 
 
 Private Sub ShowSearchHints()
-    MsgBox GetLetterHistorySearchHintsText(), vbInformation, t("form.letter_history.msg.search_hints_title", "Search Help")
+    MsgBox GetLetterHistorySearchHintsText(), vbInformation, t("form.letter_history.msg.search_hints_title", "Справка по поиску")
 End Sub
+
+Private Function GetHistoryRecordFromCollection(records As Collection, ByVal oneBasedIndex As Long) As clsLetterHistoryRecord
+    On Error GoTo LookupFailed
+
+    If records Is Nothing Then Exit Function
+    If oneBasedIndex < 1 Or oneBasedIndex > records.Count Then Exit Function
+
+    If IsObject(records(oneBasedIndex)) Then
+        If TypeName(records(oneBasedIndex)) = "clsLetterHistoryRecord" Then
+            Set GetHistoryRecordFromCollection = records(oneBasedIndex)
+        End If
+    End If
+
+    Exit Function
+
+LookupFailed:
+    Set GetHistoryRecordFromCollection = Nothing
+End Function
 
 
 '=====================================================================
@@ -588,7 +626,7 @@ Private Sub ApplyElementStyles()
         With txtHistorySearch
             .Font.Name = "Segoe UI"
             .Font.Size = 10
-            .ControlTipText = t("form.letter_history.tip.search", "Search by addressee, number, date, attachments, executor" & vbCrLf & "To search by sum, enter numbers only (e.g.: 125000)")
+            .ControlTipText = t("form.letter_history.tip.search", "Поиск по адресату, номеру, дате, приложениям, исполнителю" & vbCrLf & "Для поиска по сумме вводите только цифры (например: 125000)")
         End With
     End If
     
@@ -598,13 +636,13 @@ Private Sub ApplyElementStyles()
             .Font.Size = 9
             .backColor = RGB(255, 255, 255)
             .BorderStyle = 1
-            .ControlTipText = t("form.letter_history.tip.double_click", "Double click on a letter to jump to the table record")
+            .ControlTipText = t("form.letter_history.tip.double_click", "Дважды щелкните по письму, чтобы перейти к записи в таблице")
         End With
     End If
     
     If Not chkReceived Is Nothing Then
         With chkReceived
-            .Caption = t("form.letter_history.caption.received_back", "Document received back")
+            .Caption = t("form.letter_history.caption.received_back", "Документ получен обратно")
             .Font.Name = "Segoe UI"
             .Font.Size = 10
             .Font.Bold = True
@@ -613,16 +651,16 @@ Private Sub ApplyElementStyles()
     End If
     
     ' Add to ApplyElementStyles for frmLetterHistory:
-    StyleButtonSafe "btnSearchHelp", t("form.letter_history.caption.search_help", "Search help"), RGB(158, 158, 158)
+    StyleButtonSafe "btnSearchHelp", t("form.letter_history.caption.search_help", "Справка по поиску"), RGB(158, 158, 158)
 
     
     ' NOW CORRECT: Button styling via local procedures
-    StyleButtonSafe "btnUpdateStatus", t("form.letter_history.caption.update_status", "Update status"), RGB(76, 175, 80)
-    StyleButtonSafe "btnRefresh", t("form.letter_history.caption.refresh_data", "Refresh data"), RGB(33, 150, 243)
-    StyleButtonSafe "btnClose", t("form.letter_history.caption.close", "Close"), RGB(244, 67, 54)
-    StyleButtonSafe "btnClearSearch", t("form.letter_history.caption.clear_search", "Clear search"), RGB(255, 152, 0)
-    StyleButtonSafe "btnExportToExcel", t("form.letter_history.caption.export_to_excel", "Export to Excel"), RGB(255, 152, 0)
-    StyleButtonSafe "btnNavigateToRecord", t("form.letter_history.caption.go_to_record", "Go to record"), RGB(103, 58, 183)
+    StyleButtonSafe "btnUpdateStatus", t("form.letter_history.caption.update_status", "Обновить статус"), RGB(76, 175, 80)
+    StyleButtonSafe "btnRefresh", t("form.letter_history.caption.refresh_data", "Обновить данные"), RGB(33, 150, 243)
+    StyleButtonSafe "btnClose", t("form.letter_history.caption.close", "Закрыть"), RGB(244, 67, 54)
+    StyleButtonSafe "btnClearSearch", t("form.letter_history.caption.clear_search", "Очистить поиск"), RGB(255, 152, 0)
+    StyleButtonSafe "btnExportToExcel", t("form.letter_history.caption.export_to_excel", "Экспорт в Excel"), RGB(255, 152, 0)
+    StyleButtonSafe "btnNavigateToRecord", t("form.letter_history.caption.go_to_record", "Перейти к записи"), RGB(103, 58, 183)
     
     ' Label styling via local procedures
     StyleLabelSafe "lblSearchInfo"
