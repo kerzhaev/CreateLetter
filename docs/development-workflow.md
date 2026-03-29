@@ -115,6 +115,21 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_excel_smoke_test.ps1
 Use `-RequireLocalizationModule` after importing updated modules into the workbook for localization stages.
 Use `-RequireStructuredTables` after workbook schema stages that depend on `tblAddresses` / `tblLetters`.
 Use `-RequireLocalizationSheet` after workbook-backed localization becomes part of the expected schema.
+Use `-RequireRibbonCustomization` after source-managed Ribbon changes or package customization work.
+
+## Reusable COM Pattern
+
+This repository now includes a reusable Excel/VBA automation playbook:
+
+- [Excel VBA COM Playbook](excel-vba-com-playbook.md)
+
+Use it as the baseline for future workbook projects when you want:
+
+- source-managed VBA;
+- COM-based sync into `.xlsm`;
+- schema/bootstrap scripts;
+- repeatable smoke tests;
+- less reliance on manual VBE-only workflows.
 
 ## See Also
 

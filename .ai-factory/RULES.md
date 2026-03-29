@@ -43,3 +43,5 @@
 - Ribbon customization must be source-managed in `customUI/customUI.xml` and applied to the workbook through automation such as `scripts/apply_custom_ui.py`; do not rely on one-off manual RibbonX edits as the only source of truth.
 - End-user UI surfaces must stay Russian-first: form captions, tooltips, summaries, export headers, status labels, and fallback `MsgBox` text should default to Russian even when internal identifiers remain English ASCII.
 - Ribbon callback code may stay ASCII-safe internally, but the visible Ribbon tab/group/button labels, screentips, and user-facing dialog text must remain Russian and consistent with the workbook UI.
+- Excel COM automation patterns that prove useful here should be documented in a reusable playbook, not left only in one-off scripts or chat history, so they can be ported to the next VBA project.
+- When smoke tests need workbook package inspection, inspect a temporary workbook copy instead of the live COM-opened file to avoid false failures from file locks.
