@@ -250,6 +250,10 @@ At minimum, copy the following ideas:
 - schema/bootstrap scripts;
 - rule that manual Excel checks are a fallback, not the first step.
 
+This repository also contains a copy-ready starter kit:
+
+- [../starter-kit/excel-vba-com/README.md](C:/Users/Nachfin/Desktop/Projets/CreateLetter/starter-kit/excel-vba-com/README.md)
+
 At minimum, re-check these known blockers early:
 
 - VBProject access permissions;

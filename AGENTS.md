@@ -66,6 +66,7 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 | Development workflow | docs/development-workflow.md | Branching, restore points, manual module sync |
 | Template placeholders | docs/template-placeholders.md | Preferred and legacy Word placeholder names |
 | Excel COM playbook | docs/excel-vba-com-playbook.md | Reusable automation and smoke-test pattern for future VBA projects |
+| Excel VBA starter kit | starter-kit/excel-vba-com/README.md | Copy-ready baseline for the next workbook project |
 
 ## AI Context Files
 | File | Purpose |

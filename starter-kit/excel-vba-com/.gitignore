@@ -1,0 +1,6 @@
+filesarchive/
+_tmp_export/
+Backups/
+*.tmp
+*.bak
+~$*.xlsm
