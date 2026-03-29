@@ -40,9 +40,9 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form    : frmLetterCreator v1.6.15 - Thin-shell MultiPage wizard with workbook-backed localization and grouped address search
+' Form    : frmLetterCreator v1.6.16 - Thin-shell MultiPage wizard with workbook-backed localization, grouped address search, and search-first initial focus
 
-' Version : 1.6.15 - 29.03.2026
+' Version : 1.6.16 - 29.03.2026
 
 ' Author  : CreateLetter contributors
 
@@ -80,6 +80,8 @@ Private isClosingForm As Boolean
 
 Private skipNextAddressAutoUpdate As Boolean
 
+Private pendingInitialSearchFocus As Boolean
+
 
 
 '------------------------------------------------------------
@@ -99,6 +101,8 @@ Private Sub UserForm_Initialize()
     isClosingForm = False
 
     skipNextAddressAutoUpdate = False
+
+    pendingInitialSearchFocus = True
 
     
 
@@ -129,6 +133,18 @@ Private Sub UserForm_Initialize()
     
 
     SwitchToPage 0
+
+End Sub
+
+Private Sub UserForm_Activate()
+
+    If pendingInitialSearchFocus Then
+
+        pendingInitialSearchFocus = False
+
+        SafeSetFocus "txtAddressSearch"
+
+    End If
 
 End Sub
 
@@ -2894,7 +2910,6 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     End If
 
 End Sub
-
 
 
 
