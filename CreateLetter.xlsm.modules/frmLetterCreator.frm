@@ -17,8 +17,8 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.14 - Thin-shell MultiPage wizard with workbook-backed localization and grouped address search
-' Version : 1.6.14 - 29.03.2026
+' Form    : frmLetterCreator v1.6.15 - Thin-shell MultiPage wizard with workbook-backed localization and grouped address search
+' Version : 1.6.15 - 29.03.2026
 ' Author  : CreateLetter contributors
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
 ' ======================================================================
@@ -36,6 +36,7 @@ Private documentsList As Collection
 Private contextMenuSelectedIndex As Integer
 Private currentAddressSearchResults As Collection
 Private isClosingForm As Boolean
+Private skipNextAddressAutoUpdate As Boolean
 
 '------------------------------------------------------------
 '  FORM INITIALIZATION
@@ -45,6 +46,7 @@ Private Sub UserForm_Initialize()
     Set currentAddressSearchResults = New Collection
     contextMenuSelectedIndex = -1
     isClosingForm = False
+    skipNextAddressAutoUpdate = False
     
     ClearAddressCache
     EnsureAddressGroupControls
@@ -306,7 +308,7 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = t("form.letter_creator.title", "Формирование писем") & " v1.6.13"
+    Me.Caption = t("form.letter_creator.title", "Формирование писем") & " v1.6.15"
     
     On Error Resume Next
     
@@ -465,7 +467,7 @@ Private Sub EnsureAddressGroupControls()
     Set addressFrame = ResolveNamedControl("Frame1")
     If addressFrame Is Nothing Then Exit Sub
 
-    addressFrame.Height = 306
+    addressFrame.Height = 324
 
     Dim groupLabel As Object
     Set groupLabel = Nothing
@@ -478,9 +480,9 @@ Private Sub EnsureAddressGroupControls()
     End If
 
     With groupLabel
-        .Caption = t("form.letter_creator.label.address_group", "Группа адреса")
+        .Caption = t("form.letter_creator.label.address_group", GetAddressGroupLabelText())
         .Left = 30
-        .Top = 258
+        .Top = 270
         .Width = 84
         .Height = 12
         .BackStyle = 0
@@ -500,30 +502,50 @@ Private Sub EnsureAddressGroupControls()
 
     With groupTextBox
         .Left = 126
-        .Top = 252
+        .Top = 264
         .Width = 276
         .Height = 24
         .BackColor = RGB(255, 255, 255)
-        .ControlTipText = t("form.letter_creator.tip.address_group", "Общая группа для адресов с одним почтовым адресом. Например: 5 ФЭО")
+        .ControlTipText = t("form.letter_creator.tip.address_group", GetAddressGroupTooltipText())
         .Font.Name = "Segoe UI"
         .Font.Size = 10
         .MultiLine = False
     End With
 
-    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 354
-    If Not btnEditAddress Is Nothing Then btnEditAddress.Top = 354
-    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Top = 354
-    If Not mpgWizard Is Nothing Then mpgWizard.Height = 390
-    If Not btnPrevious Is Nothing Then btnPrevious.Top = 444
-    If Not btnNext Is Nothing Then btnNext.Top = 444
-    If Not btnLetterHistory Is Nothing Then btnLetterHistory.Top = 492
-    If Not btnCancel Is Nothing Then btnCancel.Top = 492
-    Me.Height = 570
+    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 372
+    If Not btnEditAddress Is Nothing Then btnEditAddress.Top = 372
+    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Top = 372
+    If Not mpgWizard Is Nothing Then mpgWizard.Height = 414
+    On Error Resume Next
+    If Not mpgWizard Is Nothing Then mpgWizard.Pages(0).Height = 390
+    On Error GoTo EnsureError
+    If Not btnPrevious Is Nothing Then btnPrevious.Top = 468
+    If Not btnNext Is Nothing Then btnNext.Top = 468
+    If Not btnLetterHistory Is Nothing Then btnLetterHistory.Top = 516
+    If Not btnCancel Is Nothing Then btnCancel.Top = 516
+    Me.Height = 600
     Exit Sub
 
 EnsureError:
     Debug.Print "Address group controls setup error: " & Err.Description
 End Sub
+
+Private Function GetAddressGroupLabelText() As String
+    GetAddressGroupLabelText = BuildUnicodeText(1043, 1088, 1091, 1087, 1087, 1072, 32, 1072, 1076, 1088, 1077, 1089, 1072)
+End Function
+
+Private Function GetAddressGroupTooltipText() As String
+    GetAddressGroupTooltipText = BuildUnicodeText(1054, 1073, 1097, 1072, 1103, 32, 1075, 1088, 1091, 1087, 1087, 1072, 32, 1076, 1083, 1103, 32, 1072, 1076, 1088, 1077, 1089, 1086, 1074, 32, 1089, 32, 1086, 1076, 1085, 1080, 1084, 32, 1087, 1086, 1095, 1090, 1086, 1074, 1099, 1084, 32, 1072, 1076, 1088, 1077, 1089, 1086, 1084, 46, 32, 1053, 1072, 1087, 1088, 1080, 1084, 1077, 1088, 58, 32, 53, 32, 1060, 1069, 1054)
+End Function
+
+Private Function BuildUnicodeText(ParamArray codePoints() As Variant) As String
+    Dim i As Long
+
+    BuildUnicodeText = ""
+    For i = LBound(codePoints) To UBound(codePoints)
+        BuildUnicodeText = BuildUnicodeText & ChrW(CLng(codePoints(i)))
+    Next i
+End Function
 
 Private Sub txtAddresseePhone_Change()
     On Error Resume Next
@@ -784,18 +806,23 @@ Private Sub lstAddresses_Click()
         addressArray = freshAddressArray
     End If
     
-    ApplyAddressPartsToControls addressArray
-    selectedAddressRow = rowNumber
-    
-    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Enabled = False
-    
-    If Not btnEditAddress Is Nothing Then btnEditAddress.Enabled = True
-    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Enabled = True
+    LoadAddressForEditing addressArray, rowNumber
     
     Exit Sub
 
 SelectError:
     MsgBox t("form.letter_creator.msg.address_select_error", "Ошибка при выборе адреса: ") & Err.Description, vbExclamation
+End Sub
+
+Public Sub LoadAddressForEditing(addressArray As Variant, rowNumber As Long)
+    ApplyAddressPartsToControls addressArray
+    selectedAddressRow = rowNumber
+
+    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Enabled = False
+    If Not btnEditAddress Is Nothing Then btnEditAddress.Enabled = True
+    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Enabled = True
+
+    SafeSetFocus "txtAddressee"
 End Sub
 
 Private Sub btnSaveNewAddress_Click()
@@ -1375,7 +1402,33 @@ Private Sub btnCancel_Click()
     End If
 End Sub
 
+Private Sub btnCancel_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+    skipNextAddressAutoUpdate = True
+End Sub
+
+Private Sub btnPrevious_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+    skipNextAddressAutoUpdate = True
+End Sub
+
+Private Sub btnNext_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+    skipNextAddressAutoUpdate = True
+End Sub
+
+Private Sub btnLetterHistory_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+    skipNextAddressAutoUpdate = True
+End Sub
+
+Private Sub btnClearSearch_MouseDown(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
+    skipNextAddressAutoUpdate = True
+End Sub
+
 Private Function ShouldSkipAddressAutoUpdate() As Boolean
+    If skipNextAddressAutoUpdate Then
+        skipNextAddressAutoUpdate = False
+        ShouldSkipAddressAutoUpdate = True
+        Exit Function
+    End If
+
     If isClosingForm Then
         ShouldSkipAddressAutoUpdate = True
         Exit Function
