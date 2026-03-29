@@ -25,6 +25,7 @@ Use this checklist when copying the starter kit into a new Excel/VBA repository.
 - update required `ListObject` names in the smoke script
 - update Ribbon callbacks and labels in `customUI.xml`
 - update any project-specific naming in restore-point output
+- decide which workbook and sheet document modules must be exported as tracked `.cls` files
 
 ## Early smoke gate
 
@@ -33,10 +34,12 @@ Use this checklist when copying the starter kit into a new Excel/VBA repository.
 - expected tables exist
 - at least one known VBA public entry point can be inspected
 - Ribbon package check passes if customUI is used
+- workbook and sheet document modules export and sync cleanly
 
 ## Known pitfalls
 
 - class modules imported like standard modules
+- hidden workbook/sheet code not exported back to source
 - `Attribute VB_Name` injected into VBE text
 - workbook file locked during ZIP inspection
 - `.frm` without matching `.frx`

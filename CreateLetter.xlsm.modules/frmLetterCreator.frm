@@ -16,6 +16,8 @@ Attribute VB_Exposed = False
 
 
 
+
+
 ' ======================================================================
 ' Form    : frmLetterCreator v1.6.15 - Thin-shell MultiPage wizard with workbook-backed localization and grouped address search
 ' Version : 1.6.15 - 29.03.2026
@@ -253,7 +255,7 @@ Private Sub ClearAllAddressFields()
     
     Dim addressFields As Variant
     Dim i As Long
-    Dim ctrl As Control
+    Dim ctrl As control
     
     addressFields = Array("txtAddressee", "txtStreet", "txtCity", "txtDistrict", "txtRegion", "txtPostalCode", "txtAddresseePhone", ADDRESS_GROUP_TEXTBOX_NAME)
     
@@ -451,7 +453,7 @@ Private Function ResolveNamedControl(controlName As String) As Object
 
     If Not ResolveNamedControl Is Nothing Then Exit Function
 
-    Dim hostControl As Control
+    Dim hostControl As control
     For Each hostControl In Me.Controls
         On Error Resume Next
         Set ResolveNamedControl = hostControl.Controls(controlName)
@@ -505,11 +507,11 @@ Private Sub EnsureAddressGroupControls()
         .Top = 264
         .Width = 276
         .Height = 24
-        .BackColor = RGB(255, 255, 255)
+        .backColor = RGB(255, 255, 255)
         .ControlTipText = t("form.letter_creator.tip.address_group", GetAddressGroupTooltipText())
         .Font.Name = "Segoe UI"
         .Font.Size = 10
-        .MultiLine = False
+        .Multiline = False
     End With
 
     If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 372
@@ -527,7 +529,7 @@ Private Sub EnsureAddressGroupControls()
     Exit Sub
 
 EnsureError:
-    Debug.Print "Address group controls setup error: " & Err.Description
+    Debug.Print "Address group controls setup error: " & Err.description
 End Sub
 
 Private Function GetAddressGroupLabelText() As String
@@ -811,7 +813,7 @@ Private Sub lstAddresses_Click()
     Exit Sub
 
 SelectError:
-    MsgBox t("form.letter_creator.msg.address_select_error", "Ошибка при выборе адреса: ") & Err.Description, vbExclamation
+    MsgBox t("form.letter_creator.msg.address_select_error", "Ошибка при выборе адреса: ") & Err.description, vbExclamation
 End Sub
 
 Public Sub LoadAddressForEditing(addressArray As Variant, rowNumber As Long)
@@ -1332,7 +1334,7 @@ End Sub
 Private Sub ConfigureMultilineTextBoxes()
     On Error Resume Next
     
-    Dim ctrl As Control
+    Dim ctrl As control
     Dim textboxNames As Variant
     Dim i As Long
     
@@ -1355,7 +1357,7 @@ End Sub
 Private Sub AutoResizeTextBoxHeight(controlName As String)
     On Error Resume Next
     
-    Dim ctrl As Control
+    Dim ctrl As control
     Set ctrl = ResolveNamedControl(controlName)
     
     If Not ctrl Is Nothing Then

@@ -3,9 +3,9 @@
 Synchronize exported VBA source files back into the workbook through Excel COM.
 
 This script treats `CreateLetter.xlsm.modules/` as the authoritative text source
-and updates matching standard modules, class modules, and user forms in the
-target workbook. It is intended for local developer automation only and does not
-hook into workbook runtime events.
+and updates matching standard modules, class modules, document modules, and
+user forms in the target workbook. It is intended for local developer
+automation only and does not hook into workbook runtime events.
 """
 
 from __future__ import annotations
@@ -104,12 +104,6 @@ def sync_component(project, source_file: Path) -> str:
 
     if existing_component is not None:
         component_type = existing_component.Type
-        if component_type == 100:
-            raise RuntimeError(
-                f"Refusing to replace document component '{component_name}'. "
-                "Document modules must be handled separately."
-            )
-
         if suffix == ".bas":
             code_module = existing_component.CodeModule
             if code_module.CountOfLines > 0:
@@ -117,7 +111,7 @@ def sync_component(project, source_file: Path) -> str:
             code_module.AddFromString(sanitize_module_source(read_source_text(source_file)))
             return existing_component.Name
 
-        if suffix == ".cls" and component_type == 2:
+        if suffix == ".cls" and component_type in (2, 100):
             code_module = existing_component.CodeModule
             if code_module.CountOfLines > 0:
                 code_module.DeleteLines(1, code_module.CountOfLines)

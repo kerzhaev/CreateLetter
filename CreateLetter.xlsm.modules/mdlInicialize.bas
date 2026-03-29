@@ -172,7 +172,7 @@ Public Sub ResetWorksheets()
 
 ResetError:
     Application.DisplayAlerts = True
-    MsgBox t("bootstrap.msg.reset_error", "Error resetting workbook sheets: ") & Err.Description, vbCritical
+    MsgBox t("bootstrap.msg.reset_error", "Error resetting workbook sheets: ") & Err.description, vbCritical
 End Sub
 
 Public Sub ResetWorkbookSheets()
@@ -210,7 +210,7 @@ Private Sub EnsureLetterTextsTable(ws As Worksheet, textRange As Range)
     Exit Sub
 
 TableError:
-    Err.Raise Err.Number, "EnsureLetterTextsTable", Err.Description
+    Err.Raise Err.Number, "EnsureLetterTextsTable", Err.description
 End Sub
 
 Private Function TryGetListObjectByName(ws As Worksheet, tableName As String) As ListObject
@@ -222,5 +222,4 @@ Private Function TryGetListObjectByName(ws As Worksheet, tableName As String) As
 LookupError:
     Set TryGetListObjectByName = Nothing
 End Function
-
 

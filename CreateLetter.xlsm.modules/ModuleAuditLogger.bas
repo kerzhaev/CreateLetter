@@ -29,22 +29,22 @@ Public Sub WriteAuditLog(action As String, details As String, Optional recipient
     Dim ipAddress As String
 
     Set auditSheet = GetOrCreateAuditSheet()
-    lastRow = auditSheet.Cells(auditSheet.Rows.Count, 1).End(xlUp).Row + 1
+    lastRow = auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row + 1
 
     userName = Environ$("USERNAME")
     computerName = Environ$("COMPUTERNAME")
     ipAddress = GetLocalIPAddress()
 
     With auditSheet
-        .Cells(lastRow, 1).Value = Format$(Now, "dd.mm.yyyy")
-        .Cells(lastRow, 2).Value = Format$(Now, "hh:mm:ss")
-        .Cells(lastRow, 3).Value = userName
-        .Cells(lastRow, 4).Value = computerName
-        .Cells(lastRow, 5).Value = ipAddress
-        .Cells(lastRow, 6).Value = action
-        .Cells(lastRow, 7).Value = details
-        .Cells(lastRow, 8).Value = recipient
-        .Cells(lastRow, 9).Value = Application.Version
+        .Cells(lastRow, 1).value = Format$(Now, "dd.mm.yyyy")
+        .Cells(lastRow, 2).value = Format$(Now, "hh:mm:ss")
+        .Cells(lastRow, 3).value = userName
+        .Cells(lastRow, 4).value = computerName
+        .Cells(lastRow, 5).value = ipAddress
+        .Cells(lastRow, 6).value = action
+        .Cells(lastRow, 7).value = details
+        .Cells(lastRow, 8).value = recipient
+        .Cells(lastRow, 9).value = Application.Version
 
         Select Case action
             Case AUDIT_OPEN_FILE1
@@ -62,7 +62,7 @@ Public Sub WriteAuditLog(action As String, details As String, Optional recipient
     Exit Sub
 
 AuditError:
-    Debug.Print Format$(Now, "hh:mm:ss") & " AUDIT_ERROR: " & Err.Description
+    Debug.Print Format$(Now, "hh:mm:ss") & " AUDIT_ERROR: " & Err.description
 End Sub
 
 Private Function GetOrCreateAuditSheet() As Worksheet
@@ -75,15 +75,15 @@ Private Function GetOrCreateAuditSheet() As Worksheet
         With auditSheet
             .Name = "AuditLog"
             .Visible = xlSheetVeryHidden
-            .Cells(1, 1).Value = "Date"
-            .Cells(1, 2).Value = "Time"
-            .Cells(1, 3).Value = "User"
-            .Cells(1, 4).Value = "Computer"
-            .Cells(1, 5).Value = "IP Address"
-            .Cells(1, 6).Value = "Action"
-            .Cells(1, 7).Value = "Details"
-            .Cells(1, 8).Value = "Recipient"
-            .Cells(1, 9).Value = "Excel Version"
+            .Cells(1, 1).value = "Date"
+            .Cells(1, 2).value = "Time"
+            .Cells(1, 3).value = "User"
+            .Cells(1, 4).value = "Computer"
+            .Cells(1, 5).value = "IP Address"
+            .Cells(1, 6).value = "Action"
+            .Cells(1, 7).value = "Details"
+            .Cells(1, 8).value = "Recipient"
+            .Cells(1, 9).value = "Excel Version"
 
             With .Range("A1:I1")
                 .Font.Bold = True
@@ -110,8 +110,8 @@ Private Function GetLocalIPAddress() As String
     Set colItems = objWMIService.ExecQuery("Select IPAddress from Win32_NetworkAdapterConfiguration where IPEnabled=TRUE")
 
     For Each objItem In colItems
-        If Not IsNull(objItem.IPAddress) Then
-            GetLocalIPAddress = objItem.IPAddress(0)
+        If Not IsNull(objItem.ipAddress) Then
+            GetLocalIPAddress = objItem.ipAddress(0)
             Exit For
         End If
     Next objItem
@@ -121,7 +121,7 @@ Private Function GetLocalIPAddress() As String
 
 LookupError:
     GetLocalIPAddress = "Unknown"
-    Debug.Print "GetLocalIPAddress error: " & Err.Description
+    Debug.Print "GetLocalIPAddress error: " & Err.description
 End Function
 
 Private Sub CleanOldAuditEntries(auditSheet As Worksheet, daysToKeep As Integer)
@@ -131,12 +131,12 @@ Private Sub CleanOldAuditEntries(auditSheet As Worksheet, daysToKeep As Integer)
     Dim rowIndex As Long
     Dim logDate As Date
 
-    lastRow = auditSheet.Cells(auditSheet.Rows.Count, 1).End(xlUp).Row
+    lastRow = auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row
     If lastRow <= 5000 Then Exit Sub
 
     For rowIndex = lastRow To 2 Step -1
-        If IsDate(auditSheet.Cells(rowIndex, 1).Value) Then
-            logDate = CDate(auditSheet.Cells(rowIndex, 1).Value)
+        If IsDate(auditSheet.Cells(rowIndex, 1).value) Then
+            logDate = CDate(auditSheet.Cells(rowIndex, 1).value)
             If Date - logDate > daysToKeep Then
                 auditSheet.Rows(rowIndex).Delete
             End If
@@ -145,7 +145,7 @@ Private Sub CleanOldAuditEntries(auditSheet As Worksheet, daysToKeep As Integer)
     Exit Sub
 
 CleanupError:
-    Debug.Print "CleanOldAuditEntries error: " & Err.Description
+    Debug.Print "CleanOldAuditEntries error: " & Err.description
 End Sub
 
 Private Function TryGetWorksheetByName(sheetName As String) As Worksheet
@@ -184,16 +184,16 @@ Public Sub GenerateAuditReport(Optional daysBack As Integer = 30)
     reportWs.Name = "Audit report " & daysBack & " days"
 
     With reportWs
-        .Cells(1, 1).Value = "AUDIT REPORT FOR LETTER SYSTEM"
-        .Cells(2, 1).Value = "Period: " & Format$(Date - daysBack, "dd.mm.yyyy") & " - " & Format$(Date, "dd.mm.yyyy")
-        .Cells(3, 1).Value = "Generated: " & Format$(Now, "dd.mm.yyyy hh:mm")
-        .Cells(5, 1).Value = "Date"
-        .Cells(5, 2).Value = "Time"
-        .Cells(5, 3).Value = "User"
-        .Cells(5, 4).Value = "Computer"
-        .Cells(5, 5).Value = "Action"
-        .Cells(5, 6).Value = "Details"
-        .Cells(5, 7).Value = "Recipient"
+        .Cells(1, 1).value = "AUDIT REPORT FOR LETTER SYSTEM"
+        .Cells(2, 1).value = "Period: " & Format$(Date - daysBack, "dd.mm.yyyy") & " - " & Format$(Date, "dd.mm.yyyy")
+        .Cells(3, 1).value = "Generated: " & Format$(Now, "dd.mm.yyyy hh:mm")
+        .Cells(5, 1).value = "Date"
+        .Cells(5, 2).value = "Time"
+        .Cells(5, 3).value = "User"
+        .Cells(5, 4).value = "Computer"
+        .Cells(5, 5).value = "Action"
+        .Cells(5, 6).value = "Details"
+        .Cells(5, 7).value = "Recipient"
         .Range("A1").Font.Size = 14
         .Range("A1").Font.Bold = True
         .Range("A5:G5").Font.Bold = True
@@ -201,17 +201,17 @@ Public Sub GenerateAuditReport(Optional daysBack As Integer = 30)
     End With
 
     targetRow = 6
-    For sourceRow = 2 To auditSheet.Cells(auditSheet.Rows.Count, 1).End(xlUp).Row
-        If IsDate(auditSheet.Cells(sourceRow, 1).Value) Then
-            entryDate = CDate(auditSheet.Cells(sourceRow, 1).Value)
+    For sourceRow = 2 To auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row
+        If IsDate(auditSheet.Cells(sourceRow, 1).value) Then
+            entryDate = CDate(auditSheet.Cells(sourceRow, 1).value)
             If Date - entryDate <= daysBack Then
-                reportWs.Cells(targetRow, 1).Value = auditSheet.Cells(sourceRow, 1).Value
-                reportWs.Cells(targetRow, 2).Value = auditSheet.Cells(sourceRow, 2).Value
-                reportWs.Cells(targetRow, 3).Value = auditSheet.Cells(sourceRow, 3).Value
-                reportWs.Cells(targetRow, 4).Value = auditSheet.Cells(sourceRow, 4).Value
-                reportWs.Cells(targetRow, 5).Value = auditSheet.Cells(sourceRow, 6).Value
-                reportWs.Cells(targetRow, 6).Value = auditSheet.Cells(sourceRow, 7).Value
-                reportWs.Cells(targetRow, 7).Value = auditSheet.Cells(sourceRow, 8).Value
+                reportWs.Cells(targetRow, 1).value = auditSheet.Cells(sourceRow, 1).value
+                reportWs.Cells(targetRow, 2).value = auditSheet.Cells(sourceRow, 2).value
+                reportWs.Cells(targetRow, 3).value = auditSheet.Cells(sourceRow, 3).value
+                reportWs.Cells(targetRow, 4).value = auditSheet.Cells(sourceRow, 4).value
+                reportWs.Cells(targetRow, 5).value = auditSheet.Cells(sourceRow, 6).value
+                reportWs.Cells(targetRow, 6).value = auditSheet.Cells(sourceRow, 7).value
+                reportWs.Cells(targetRow, 7).value = auditSheet.Cells(sourceRow, 8).value
                 targetRow = targetRow + 1
             End If
         End If
@@ -222,7 +222,7 @@ Public Sub GenerateAuditReport(Optional daysBack As Integer = 30)
     Exit Sub
 
 ReportError:
-    MsgBox t("audit.msg.report_error", "Error generating audit report: ") & Err.Description, vbCritical
+    MsgBox t("audit.msg.report_error", "Error generating audit report: ") & Err.description, vbCritical
 End Sub
 
 Public Sub ShowAuditStatistics()
@@ -243,9 +243,9 @@ Public Sub ShowUsageStatistics()
     Set auditSheet = GetOrCreateAuditSheet()
     Set uniqueUsers = CreateObject("Scripting.Dictionary")
 
-    For rowIndex = 2 To auditSheet.Cells(auditSheet.Rows.Count, 1).End(xlUp).Row
-        action = auditSheet.Cells(rowIndex, 6).Value
-        userName = auditSheet.Cells(rowIndex, 3).Value
+    For rowIndex = 2 To auditSheet.Cells(auditSheet.Rows.count, 1).End(xlUp).Row
+        action = auditSheet.Cells(rowIndex, 6).value
+        userName = auditSheet.Cells(rowIndex, 3).value
 
         If action = AUDIT_OPEN_FILE1 Then totalSessions = totalSessions + 1
         If action = AUDIT_CREATE_LETTER Then totalLetters = totalLetters + 1
@@ -257,10 +257,10 @@ Public Sub ShowUsageStatistics()
     report = t("audit.msg.system_statistics_header", "SYSTEM USAGE STATISTICS") & vbCrLf & vbCrLf
     report = report & t("audit.msg.total_sessions", "Total sessions: ") & totalSessions & vbCrLf
     report = report & t("audit.msg.letters_created", "Letters created: ") & totalLetters & vbCrLf
-    report = report & t("audit.msg.unique_users", "Unique users: ") & uniqueUsers.Count & vbCrLf & vbCrLf
+    report = report & t("audit.msg.unique_users", "Unique users: ") & uniqueUsers.count & vbCrLf & vbCrLf
     report = report & t("audit.msg.top_users", "TOP USERS:") & vbCrLf
 
-    For Each key In uniqueUsers.Keys
+    For Each key In uniqueUsers.keys
         report = report & key & ": " & uniqueUsers(key) & " actions" & vbCrLf
     Next key
 
@@ -289,3 +289,4 @@ Public Sub AdminPanel()
         Case Else: MsgBox t("audit.msg.cancelled", "Cancelled"), vbInformation
     End Select
 End Sub
+

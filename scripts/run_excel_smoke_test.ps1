@@ -86,7 +86,31 @@ function Get-TableColumnNames {
     return $columnNames
 }
 
+function Test-DocumentModuleSourceCoverage {
+    param(
+        [object]$Workbook,
+        [string]$ModulesDirectory
+    )
+
+    $missingModules = New-Object 'System.Collections.Generic.List[string]'
+
+    for ($i = 1; $i -le $Workbook.VBProject.VBComponents.Count; $i++) {
+        $component = $Workbook.VBProject.VBComponents.Item($i)
+        if ($component.Type -ne 100) {
+            continue
+        }
+
+        $expectedPath = Join-Path $ModulesDirectory ($component.Name + ".cls")
+        if (-not (Test-Path $expectedPath)) {
+            $missingModules.Add($component.Name) | Out-Null
+        }
+    }
+
+    return $missingModules
+}
+
 $resolvedWorkbookPath = Resolve-Path $WorkbookPath
+$modulesDirectory = Join-Path (Split-Path -Parent $resolvedWorkbookPath.Path) ([System.IO.Path]::GetFileName($resolvedWorkbookPath.Path) + ".modules")
 $results = New-Object 'System.Collections.Generic.List[object]'
 $excel = $null
 $workbook = $null
@@ -185,6 +209,21 @@ try {
     }
     catch {
         Add-Result -Results $results -Name "StructuredColumn:Addresses.AddressGroup" -Status "FAIL" -Details $_.Exception.Message
+        $failed = $true
+    }
+
+    try {
+        $missingDocumentModuleSources = Test-DocumentModuleSourceCoverage -Workbook $workbook -ModulesDirectory $modulesDirectory
+        if ($missingDocumentModuleSources.Count -eq 0) {
+            Add-Result -Results $results -Name "DocumentModuleSourceCoverage" -Status "PASS" -Details "Source files exist for all workbook and worksheet document modules."
+        }
+        else {
+            Add-Result -Results $results -Name "DocumentModuleSourceCoverage" -Status "FAIL" -Details ("Missing document-module source files: " + ($missingDocumentModuleSources -join ", "))
+            $failed = $true
+        }
+    }
+    catch {
+        Add-Result -Results $results -Name "DocumentModuleSourceCoverage" -Status "FAIL" -Details $_.Exception.Message
         $failed = $true
     }
 

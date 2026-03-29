@@ -36,7 +36,7 @@ Public Function RepositorySearchAddresses(searchTerm As String) As Collection
     Exit Function
 
 SearchError:
-    Debug.Print "RepositorySearchAddresses error: " & Err.Description
+    Debug.Print "RepositorySearchAddresses error: " & Err.description
 End Function
 
 Public Function RepositoryGetAddressSearchResultDisplayText(addressSearchResult As Variant) As String
@@ -106,14 +106,14 @@ Public Function RepositoryTryLoadAddressRow(rowNumber As Long, ByRef addressArra
     Set ws = ThisWorkbook.Worksheets("Addresses")
 
     Dim loadedAddress(AddressIndexGroup) As String
-    loadedAddress(AddressIndexAddressee) = CStr(ws.Cells(rowNumber, AddressColumnAddressee).Value)
-    loadedAddress(AddressIndexStreet) = CStr(ws.Cells(rowNumber, AddressColumnStreet).Value)
-    loadedAddress(AddressIndexCity) = CStr(ws.Cells(rowNumber, AddressColumnCity).Value)
-    loadedAddress(AddressIndexDistrict) = CStr(ws.Cells(rowNumber, AddressColumnDistrict).Value)
-    loadedAddress(AddressIndexRegion) = CStr(ws.Cells(rowNumber, AddressColumnRegion).Value)
-    loadedAddress(AddressIndexPostalCode) = CStr(ws.Cells(rowNumber, AddressColumnPostalCode).Value)
-    loadedAddress(AddressIndexPhone) = CStr(ws.Cells(rowNumber, AddressColumnPhone).Value)
-    loadedAddress(AddressIndexGroup) = CStr(ws.Cells(rowNumber, AddressColumnGroup).Value)
+    loadedAddress(AddressIndexAddressee) = CStr(ws.Cells(rowNumber, AddressColumnAddressee).value)
+    loadedAddress(AddressIndexStreet) = CStr(ws.Cells(rowNumber, AddressColumnStreet).value)
+    loadedAddress(AddressIndexCity) = CStr(ws.Cells(rowNumber, AddressColumnCity).value)
+    loadedAddress(AddressIndexDistrict) = CStr(ws.Cells(rowNumber, AddressColumnDistrict).value)
+    loadedAddress(AddressIndexRegion) = CStr(ws.Cells(rowNumber, AddressColumnRegion).value)
+    loadedAddress(AddressIndexPostalCode) = CStr(ws.Cells(rowNumber, AddressColumnPostalCode).value)
+    loadedAddress(AddressIndexPhone) = CStr(ws.Cells(rowNumber, AddressColumnPhone).value)
+    loadedAddress(AddressIndexGroup) = CStr(ws.Cells(rowNumber, AddressColumnGroup).value)
 
     addressArray = loadedAddress
     RepositoryTryLoadAddressRow = True
@@ -150,7 +150,7 @@ Public Function RepositorySearchAttachments(searchTerm As String) As Collection
     Exit Function
 
 SearchError:
-    Debug.Print "RepositorySearchAttachments error: " & Err.Description
+    Debug.Print "RepositorySearchAttachments error: " & Err.description
 End Function
 
 Public Function RepositoryGetExecutorsList() As Collection
@@ -175,7 +175,7 @@ Public Function RepositoryGetExecutorsList() As Collection
     Exit Function
 
 LookupError:
-    Debug.Print "RepositoryGetExecutorsList error: " & Err.Description
+    Debug.Print "RepositoryGetExecutorsList error: " & Err.description
 End Function
 
 Public Function RepositoryGetExecutorPhone(executorFIO As String) As String
@@ -203,7 +203,7 @@ Public Function RepositoryGetExecutorPhone(executorFIO As String) As String
     Exit Function
 
 LookupError:
-    Debug.Print "RepositoryGetExecutorPhone error: " & Err.Description
+    Debug.Print "RepositoryGetExecutorPhone error: " & Err.description
 End Function
 
 Public Sub RepositorySaveNewAddress(addressArray As Variant)
@@ -213,12 +213,12 @@ Public Sub RepositorySaveNewAddress(addressArray As Variant)
     Set ws = ThisWorkbook.Worksheets("Addresses")
 
     Dim newRow As Long
-    newRow = ws.Cells(ws.Rows.Count, AddressColumnAddressee).End(xlUp).Row + 1
+    newRow = ws.Cells(ws.Rows.count, AddressColumnAddressee).End(xlUp).Row + 1
     WriteAddressRow ws, newRow, addressArray
     Exit Sub
 
 SaveError:
-    MsgBox t("core.address.error.save", "Ошибка при сохранении адреса: ") & Err.Description, vbCritical
+    MsgBox t("core.address.error.save", "Ошибка при сохранении адреса: ") & Err.description, vbCritical
 End Sub
 
 Public Sub RepositoryUpdateExistingAddress(rowNumber As Long, addressArray As Variant)
@@ -231,7 +231,7 @@ Public Sub RepositoryUpdateExistingAddress(rowNumber As Long, addressArray As Va
     Exit Sub
 
 UpdateError:
-    MsgBox t("core.address.error.update", "Ошибка при обновлении адреса: ") & Err.Description, vbCritical
+    MsgBox t("core.address.error.update", "Ошибка при обновлении адреса: ") & Err.description, vbCritical
 End Sub
 
 Public Sub RepositoryDeleteExistingAddress(rowNumber As Long)
@@ -244,7 +244,7 @@ Public Sub RepositoryDeleteExistingAddress(rowNumber As Long)
     Exit Sub
 
 DeleteError:
-    MsgBox t("core.address.error.delete", "Ошибка при удалении адреса: ") & Err.Description, vbCritical
+    MsgBox t("core.address.error.delete", "Ошибка при удалении адреса: ") & Err.description, vbCritical
 End Sub
 
 Public Function RepositoryIsAddressDuplicate(addressArray As Variant, Optional excludeRow As Long = 0) As Boolean
@@ -322,7 +322,7 @@ Public Function RepositoryFilterLetterHistoryRecords(allLettersData As Collectio
     normalizedSearch = Trim$(searchText)
 
     Dim i As Long
-    For i = 1 To allLettersData.Count
+    For i = 1 To allLettersData.count
         Dim record As clsLetterHistoryRecord
         If TryGetLetterHistoryRecord(allLettersData(i), record) Then
             If Len(normalizedSearch) = 0 Or LetterHistoryRecordMatches(record, normalizedSearch) Then
@@ -346,14 +346,14 @@ Public Function RepositoryFormatLetterHistoryDisplay(letterData As Variant) As S
     formattedSum = FormatHistoryDocumentSum(record.DocumentSum)
 
     Dim statusText As String
-    statusText = BuildHistoryStatusLabel(record.ReturnStatus)
+    statusText = BuildHistoryStatusLabel(record.returnStatus)
 
-    Dim addressee As String
+    Dim Addressee As String
     Dim attachments As String
-    addressee = Left$(record.Addressee, 25) & IIf(Len(record.Addressee) > 25, "...", "")
-    attachments = Left$(record.AttachmentText, 30) & IIf(Len(record.AttachmentText) > 30, "...", "")
+    Addressee = Left$(record.Addressee, 25) & IIf(Len(record.Addressee) > 25, "...", "")
+    attachments = Left$(record.attachmentText, 30) & IIf(Len(record.attachmentText) > 30, "...", "")
 
-    RepositoryFormatLetterHistoryDisplay = addressee & " | " & _
+    RepositoryFormatLetterHistoryDisplay = Addressee & " | " & _
                                            record.OutgoingNumber & " | " & _
                                            formattedDate & " | " & _
                                            attachments & " | " & _
@@ -394,7 +394,7 @@ Public Function RepositoryGetLetterHistorySearchHintsText() As String
 End Function
 
 Public Sub RepositoryExportLetterHistoryRecords(records As Collection)
-    If records Is Nothing Or records.Count = 0 Then
+    If records Is Nothing Or records.count = 0 Then
         MsgBox t("form.letter_history.msg.no_export_data", "Нет данных для экспорта."), vbExclamation
         Exit Sub
     End If
@@ -414,13 +414,13 @@ Public Sub RepositoryExportLetterHistoryRecords(records As Collection)
     exportWb.Application.Visible = True
 
     MsgBox t("form.letter_history.msg.export_completed", "Экспорт завершен.") & vbCrLf & _
-           t("form.letter_history.msg.records_exported", "Экспортировано записей: ") & records.Count, _
+           t("form.letter_history.msg.records_exported", "Экспортировано записей: ") & records.count, _
            vbInformation, _
            t("form.letter_history.msg.export_title", "Экспорт данных")
     Exit Sub
 
 ExportError:
-    MsgBox t("form.letter_history.msg.export_error", "Ошибка экспорта: ") & Err.Description, vbCritical
+    MsgBox t("form.letter_history.msg.export_error", "Ошибка экспорта: ") & Err.description, vbCritical
 End Sub
 
 Public Function RepositoryHasReturnStatusDate(returnStatus As String) As Boolean
@@ -449,18 +449,18 @@ Public Sub RepositoryUpdateLetterHistoryRow(rowNumber As Long, sumValue As Strin
     Set ws = ThisWorkbook.Worksheets("Letters")
 
     If Len(Trim$(sumValue)) = 0 Then
-        ws.Cells(rowNumber, LetterColumnDocumentSum).Value = ""
+        ws.Cells(rowNumber, LetterColumnDocumentSum).value = ""
     ElseIf IsNumeric(sumValue) Then
-        ws.Cells(rowNumber, LetterColumnDocumentSum).Value = CDbl(sumValue)
+        ws.Cells(rowNumber, LetterColumnDocumentSum).value = CDbl(sumValue)
     Else
-        ws.Cells(rowNumber, LetterColumnDocumentSum).Value = sumValue
+        ws.Cells(rowNumber, LetterColumnDocumentSum).value = sumValue
     End If
 
-    ws.Cells(rowNumber, LetterColumnReturnStatus).Value = returnStatus
+    ws.Cells(rowNumber, LetterColumnReturnStatus).value = returnStatus
     Exit Sub
 
 UpdateError:
-    Err.Raise Err.Number, "RepositoryUpdateLetterHistoryRow", Err.Description
+    Err.Raise Err.Number, "RepositoryUpdateLetterHistoryRow", Err.description
 End Sub
 
 Public Function RepositoryGetStructuredDataRange(ws As Worksheet, firstColumn As Long, lastColumn As Long, Optional preferredTableName As String = "") As Range
@@ -477,7 +477,7 @@ Public Function RepositoryGetStructuredDataRange(ws As Worksheet, firstColumn As
     End If
 
     Dim lastRow As Long
-    lastRow = ws.Cells(ws.Rows.Count, firstColumn).End(xlUp).Row
+    lastRow = ws.Cells(ws.Rows.count, firstColumn).End(xlUp).Row
     If lastRow < FIRST_DATA_ROW Then Exit Function
 
     Set RepositoryGetStructuredDataRange = ws.Range(ws.Cells(FIRST_DATA_ROW, firstColumn), ws.Cells(lastRow, lastColumn))
@@ -496,7 +496,7 @@ Public Function RepositoryReadWorksheetMatrix(ws As Worksheet, firstColumn As Lo
         Exit Function
     End If
 
-    RepositoryReadWorksheetMatrix = sourceRange.Value
+    RepositoryReadWorksheetMatrix = sourceRange.value
 End Function
 
 Public Function RepositoryGetStructuredDataStartRow(ws As Worksheet, firstColumn As Long, lastColumn As Long, Optional preferredTableName As String = "") As Long
@@ -598,12 +598,12 @@ Private Function CreateLetterHistoryRecordFromMatrix(letterData As Variant, rowI
     record.Addressee = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnAddressee)
     record.OutgoingNumber = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnOutgoingNumber)
     record.OutgoingDate = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnOutgoingDate)
-    record.AttachmentText = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnAttachmentText)
+    record.attachmentText = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnAttachmentText)
     record.DocumentSum = NormalizeHistorySumCell(letterData(rowIndex, LetterColumnDocumentSum))
-    record.ReturnStatus = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnReturnStatus)
+    record.returnStatus = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnReturnStatus)
     record.Executor = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnExecutor)
     record.DocumentTypeKey = NormalizeDocumentTypeKey(RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnDocumentType))
-    record.RowNumber = worksheetRowNumber
+    record.rowNumber = worksheetRowNumber
 
     Set CreateLetterHistoryRecordFromMatrix = record
 End Function
@@ -621,14 +621,14 @@ Private Function NormalizeHistorySumCell(cellValue As Variant) As String
 End Function
 
 Private Sub WriteAddressRow(ws As Worksheet, rowNumber As Long, addressArray As Variant)
-    ws.Cells(rowNumber, AddressColumnAddressee).Value = addressArray(AddressIndexAddressee)
-    ws.Cells(rowNumber, AddressColumnStreet).Value = addressArray(AddressIndexStreet)
-    ws.Cells(rowNumber, AddressColumnCity).Value = addressArray(AddressIndexCity)
-    ws.Cells(rowNumber, AddressColumnDistrict).Value = addressArray(AddressIndexDistrict)
-    ws.Cells(rowNumber, AddressColumnRegion).Value = addressArray(AddressIndexRegion)
-    ws.Cells(rowNumber, AddressColumnPostalCode).Value = addressArray(AddressIndexPostalCode)
-    ws.Cells(rowNumber, AddressColumnPhone).Value = FormatPhoneNumber(CStr(addressArray(AddressIndexPhone)))
-    ws.Cells(rowNumber, AddressColumnGroup).Value = addressArray(AddressIndexGroup)
+    ws.Cells(rowNumber, AddressColumnAddressee).value = addressArray(AddressIndexAddressee)
+    ws.Cells(rowNumber, AddressColumnStreet).value = addressArray(AddressIndexStreet)
+    ws.Cells(rowNumber, AddressColumnCity).value = addressArray(AddressIndexCity)
+    ws.Cells(rowNumber, AddressColumnDistrict).value = addressArray(AddressIndexDistrict)
+    ws.Cells(rowNumber, AddressColumnRegion).value = addressArray(AddressIndexRegion)
+    ws.Cells(rowNumber, AddressColumnPostalCode).value = addressArray(AddressIndexPostalCode)
+    ws.Cells(rowNumber, AddressColumnPhone).value = FormatPhoneNumber(CStr(addressArray(AddressIndexPhone)))
+    ws.Cells(rowNumber, AddressColumnGroup).value = addressArray(AddressIndexGroup)
 End Sub
 
 Private Function IsAddressSearchResultArray(addressSearchResult As Variant) As Boolean
@@ -654,7 +654,7 @@ Private Function JoinCollectionParts(parts As Collection, delimiter As String) A
     Dim resultText As String
     Dim i As Long
 
-    For i = 1 To parts.Count
+    For i = 1 To parts.count
         If i > 1 Then resultText = resultText & delimiter
         resultText = resultText & CStr(parts(i))
     Next i
@@ -697,12 +697,12 @@ Private Function TryParseLegacyLetterHistoryRecord(letterData As String) As clsL
     record.Addressee = parts(HistoryPartAddressee)
     record.OutgoingNumber = parts(HistoryPartOutgoingNumber)
     record.OutgoingDate = parts(HistoryPartOutgoingDate)
-    record.AttachmentText = parts(HistoryPartAttachmentText)
+    record.attachmentText = parts(HistoryPartAttachmentText)
     record.DocumentSum = parts(HistoryPartDocumentSum)
-    record.ReturnStatus = parts(HistoryPartReturnStatus)
+    record.returnStatus = parts(HistoryPartReturnStatus)
     record.Executor = parts(HistoryPartExecutor)
     record.DocumentTypeKey = NormalizeDocumentTypeKey(parts(HistoryPartDocumentType))
-    record.RowNumber = CLng(parts(HistoryPartRowNumber))
+    record.rowNumber = CLng(parts(HistoryPartRowNumber))
 
     Set TryParseLegacyLetterHistoryRecord = record
     Exit Function
@@ -730,7 +730,7 @@ Private Function LetterHistoryRecordMatches(record As clsLetterHistoryRecord, se
         Exit Function
     End If
 
-    If InStr(1, UCase$(record.AttachmentText), searchPattern, vbTextCompare) > 0 Then
+    If InStr(1, UCase$(record.attachmentText), searchPattern, vbTextCompare) > 0 Then
         LetterHistoryRecordMatches = True
         Exit Function
     End If
@@ -745,7 +745,7 @@ Private Function LetterHistoryRecordMatches(record As clsLetterHistoryRecord, se
         Exit Function
     End If
 
-    If InStr(1, UCase$(record.ReturnStatus), searchPattern, vbTextCompare) > 0 Then
+    If InStr(1, UCase$(record.returnStatus), searchPattern, vbTextCompare) > 0 Then
         LetterHistoryRecordMatches = True
         Exit Function
     End If
@@ -797,14 +797,14 @@ End Function
 
 Private Sub WriteLetterHistoryExportHeaders(exportWs As Worksheet)
     With exportWs
-        .Cells(1, LetterColumnAddressee).Value = t("form.letter_history.export.header.addressee", "Адресат")
-        .Cells(1, LetterColumnOutgoingNumber).Value = t("form.letter_history.export.header.outgoing_number", "Исходящий номер")
-        .Cells(1, LetterColumnOutgoingDate).Value = t("form.letter_history.export.header.outgoing_date", "Дата исходящего")
-        .Cells(1, LetterColumnAttachmentText).Value = t("form.letter_history.export.header.attachment_name", "Наименование приложения")
-        .Cells(1, LetterColumnDocumentSum).Value = t("form.letter_history.export.header.document_sum", "Сумма документа")
-        .Cells(1, LetterColumnReturnStatus).Value = t("form.letter_history.export.header.return_mark", "Отметка о возврате")
-        .Cells(1, LetterColumnExecutor).Value = t("form.letter_history.export.header.executor_name", "Исполнитель")
-        .Cells(1, LetterColumnDocumentType).Value = t("form.letter_history.export.header.send_type", "Тип отправки")
+        .Cells(1, LetterColumnAddressee).value = t("form.letter_history.export.header.addressee", "Адресат")
+        .Cells(1, LetterColumnOutgoingNumber).value = t("form.letter_history.export.header.outgoing_number", "Исходящий номер")
+        .Cells(1, LetterColumnOutgoingDate).value = t("form.letter_history.export.header.outgoing_date", "Дата исходящего")
+        .Cells(1, LetterColumnAttachmentText).value = t("form.letter_history.export.header.attachment_name", "Наименование приложения")
+        .Cells(1, LetterColumnDocumentSum).value = t("form.letter_history.export.header.document_sum", "Сумма документа")
+        .Cells(1, LetterColumnReturnStatus).value = t("form.letter_history.export.header.return_mark", "Отметка о возврате")
+        .Cells(1, LetterColumnExecutor).value = t("form.letter_history.export.header.executor_name", "Исполнитель")
+        .Cells(1, LetterColumnDocumentType).value = t("form.letter_history.export.header.send_type", "Тип отправки")
 
         With .Range("A1:H1")
             .Font.Bold = True
@@ -816,7 +816,7 @@ End Sub
 
 Private Sub WriteLetterHistoryExportRecords(exportWs As Worksheet, records As Collection)
     Dim i As Long
-    For i = 1 To records.Count
+    For i = 1 To records.count
         WriteLetterHistoryExportRow exportWs, i + 1, records(i)
     Next i
 End Sub
@@ -825,14 +825,14 @@ Private Sub WriteLetterHistoryExportRow(exportWs As Worksheet, targetRow As Long
     Dim record As clsLetterHistoryRecord
     If Not TryGetLetterHistoryRecord(letterData, record) Then Exit Sub
 
-    exportWs.Cells(targetRow, LetterColumnAddressee).Value = record.Addressee
-    exportWs.Cells(targetRow, LetterColumnOutgoingNumber).Value = record.OutgoingNumber
-    exportWs.Cells(targetRow, LetterColumnOutgoingDate).Value = record.OutgoingDate
-    exportWs.Cells(targetRow, LetterColumnAttachmentText).Value = record.AttachmentText
-    exportWs.Cells(targetRow, LetterColumnDocumentSum).Value = record.DocumentSum
-    exportWs.Cells(targetRow, LetterColumnReturnStatus).Value = record.ReturnStatus
-    exportWs.Cells(targetRow, LetterColumnExecutor).Value = record.Executor
-    exportWs.Cells(targetRow, LetterColumnDocumentType).Value = GetDocumentTypeDisplayLabel(record.DocumentTypeKey)
+    exportWs.Cells(targetRow, LetterColumnAddressee).value = record.Addressee
+    exportWs.Cells(targetRow, LetterColumnOutgoingNumber).value = record.OutgoingNumber
+    exportWs.Cells(targetRow, LetterColumnOutgoingDate).value = record.OutgoingDate
+    exportWs.Cells(targetRow, LetterColumnAttachmentText).value = record.attachmentText
+    exportWs.Cells(targetRow, LetterColumnDocumentSum).value = record.DocumentSum
+    exportWs.Cells(targetRow, LetterColumnReturnStatus).value = record.returnStatus
+    exportWs.Cells(targetRow, LetterColumnExecutor).value = record.Executor
+    exportWs.Cells(targetRow, LetterColumnDocumentType).value = GetDocumentTypeDisplayLabel(record.DocumentTypeKey)
 End Sub
 
 Private Function FormatHistoryDateForDisplay(dateValue As String) As String
@@ -868,3 +868,4 @@ Private Function BuildHistoryStatusLabel(returnStatus As String) As String
         BuildHistoryStatusLabel = t("history.status.pending_label", "Ожидается ") & returnStatus
     End If
 End Function
+

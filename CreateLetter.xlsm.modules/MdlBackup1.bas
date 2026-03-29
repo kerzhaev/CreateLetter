@@ -51,7 +51,7 @@ Public Sub CreateVBASnapshot()
     Print #fileNum, "Created at: " & Format$(Now, "dd.mm.yyyy hh:mm:ss")
     Print #fileNum, "Workbook: " & ThisWorkbook.Name
     Print #fileNum, "Path: " & ThisWorkbook.FullName
-    Print #fileNum, "Components: " & ThisWorkbook.VBProject.VBComponents.Count
+    Print #fileNum, "Components: " & ThisWorkbook.VBProject.VBComponents.count
     Print #fileNum, ""
     Print #fileNum, "Component list:"
     For Each vbComp In ThisWorkbook.VBProject.VBComponents
@@ -61,7 +61,7 @@ Public Sub CreateVBASnapshot()
 
     MsgBox t("snapshot.msg.vba_created_success", "VBA snapshot created successfully!") & vbCrLf & _
            t("snapshot.msg.folder_label", "Folder: ") & exportPath & vbCrLf & _
-           t("snapshot.msg.exported_components", "Exported components: ") & ThisWorkbook.VBProject.VBComponents.Count, _
+           t("snapshot.msg.exported_components", "Exported components: ") & ThisWorkbook.VBProject.VBComponents.count, _
            vbInformation, t("snapshot.title.vba_snapshot", "VBA Snapshot")
 
     Shell "explorer.exe " & exportPath, vbNormalFocus
@@ -101,7 +101,7 @@ Public Sub RestoreFromSnapshot()
                       vbYesNo + vbExclamation, t("snapshot.title.confirm_restore", "Confirm Restore"))
     If response = vbNo Then Exit Sub
 
-    For componentIndex = ThisWorkbook.VBProject.VBComponents.Count To 1 Step -1
+    For componentIndex = ThisWorkbook.VBProject.VBComponents.count To 1 Step -1
         With ThisWorkbook.VBProject.VBComponents(componentIndex)
             If .Type = 1 Or .Type = 2 Or .Type = 3 Then
                 ThisWorkbook.VBProject.VBComponents.Remove ThisWorkbook.VBProject.VBComponents(componentIndex)
@@ -133,7 +133,7 @@ Public Function SelectSnapshotFolder() As String
 
     snapshotsPath = ThisWorkbook.Path & "\VBA_Snapshots\"
 
-    If Dir$(snapshotsPath, vbDirectory) = "" Then
+    If dir$(snapshotsPath, vbDirectory) = "" Then
         MsgBox t("snapshot.msg.folder_not_found", "Snapshots folder not found: ") & snapshotsPath, vbExclamation
         SelectSnapshotFolder = ""
         Exit Function
@@ -165,7 +165,7 @@ Public Sub AddVersionTagsToAllModules()
 
     For Each vbComp In ThisWorkbook.VBProject.VBComponents
         If vbComp.Type = 1 Then
-            Set codeModule = vbComp.CodeModule
+            Set codeModule = vbComp.codeModule
             codeModule.InsertLines 1, versionTag
             codeModule.InsertLines 2, "' Snapshot tag inserted: " & currentDate
             codeModule.InsertLines 3, ""
@@ -197,7 +197,7 @@ Public Sub CreateWorkbookSnapshot()
     originalPath = ThisWorkbook.Path
     snapshotPath = originalPath & "\Snapshots\"
 
-    If Dir$(snapshotPath, vbDirectory) = "" Then
+    If dir$(snapshotPath, vbDirectory) = "" Then
         MkDir snapshotPath
     End If
 
@@ -228,3 +228,4 @@ End Sub
 Public Sub ShowLetterCreatorLegacy()
     frmLetterCreator.Show vbModeless
 End Sub
+

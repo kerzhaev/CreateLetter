@@ -41,7 +41,7 @@ Restore points are stored under `filesarchive/restore-point-<label>-<timestamp>/
 
 ## Manual VbaModuleManager Workflow
 
-This project uses a modified `VbaModuleManager` in **manual mode**.
+This project uses source-managed VBA text artifacts plus Excel COM automation.
 
 - Do not attach import/export to `Workbook_Open`.
 - Do not attach export to `Workbook_BeforeSave`.
@@ -50,16 +50,27 @@ This project uses a modified `VbaModuleManager` in **manual mode**.
 
 Developer contract:
 
-1. Prefer synchronizing modules/forms automatically before asking for manual import:
+1. Prefer exporting and synchronizing VBA automatically before asking for manual import:
+
+```powershell
+python .\scripts\export_vba_to_modules.py .\CreateLetter.xlsm .\CreateLetter.xlsm.modules
+```
+
+2. Synchronize modules/forms/document modules back into the workbook before testing VBA changes in Excel:
 
 ```powershell
 python .\scripts\sync_vba_from_modules.py .\CreateLetter.xlsm .\CreateLetter.xlsm.modules
 ```
 
-2. If automatic sync fails because of COM/VBProject access or a workbook-specific import edge case, fall back to the manual modified `VbaModuleManager`.
-3. Import modules into the workbook before testing VBA changes in Excel.
-4. Export modules back to `CreateLetter.xlsm.modules/` after validated changes.
+3. If automatic export/sync fails because of COM/VBProject access or a workbook-specific import edge case, fall back to the manual modified `VbaModuleManager`.
+4. Export modules back to `CreateLetter.xlsm.modules/` after validated workbook-side changes.
 5. Verify that workbook runtime behavior does not depend on automatic source-management hooks.
+
+Document-module note:
+
+- Workbook and worksheet document modules are part of the source-managed contour.
+- Keep `.cls` exports for `ЭтаКнига`, `Лист1`, `Лист2`, `Лист3`, `Лист4` in `CreateLetter.xlsm.modules/`.
+- Changes made only in hidden workbook/sheet code must be exported back into the repository before the feature is considered complete.
 
 Class-module note:
 
@@ -117,6 +128,7 @@ Use `-RequireStructuredTables` after workbook schema stages that depend on `tblA
 Use `-RequireLocalizationSheet` after workbook-backed localization becomes part of the expected schema.
 Use `-RequireRibbonCustomization` after source-managed Ribbon changes or package customization work.
 Use `-RequireAddressGroupColumn` after address-schema stages that depend on the optional `AddressGroup` column in `tblAddresses`.
+The smoke harness also verifies that source files exist for all workbook and worksheet document modules.
 
 ## Reusable COM Pattern
 

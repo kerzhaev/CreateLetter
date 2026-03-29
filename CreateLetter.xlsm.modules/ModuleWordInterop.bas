@@ -33,7 +33,7 @@ Public Function CreateOwnedWordApplication() As Object
 CreateFailed:
     Set CreateOwnedWordApplication = Nothing
     g_WordAppOwned = False
-    Err.Raise Err.Number, "CreateOwnedWordApplication", Err.Description
+    Err.Raise Err.Number, "CreateOwnedWordApplication", Err.description
 End Function
 
 Public Function AcquireWordApplication() As Object
@@ -59,7 +59,7 @@ Public Function AcquireWordApplication() As Object
 AcquireFailed:
     Set g_WordApp = Nothing
     g_WordAppOwned = False
-    Err.Raise Err.Number, "AcquireWordApplication", Err.Description
+    Err.Raise Err.Number, "AcquireWordApplication", Err.description
 End Function
 
 Public Sub ReleaseWordApplication(Optional closeDocuments As Boolean = False)
@@ -117,7 +117,7 @@ WarmUpFailed:
     WarmUpWordApplication = False
 End Function
 
-Public Sub WordInteropCreateLetterDocument(addressee As String, addressArray As Variant, letterNumber As String, letterDateRaw As String, executor As String, documentType As String, useAlternateTemplate As Boolean, documentsList As Collection)
+Public Sub WordInteropCreateLetterDocument(Addressee As String, addressArray As Variant, letterNumber As String, letterDateRaw As String, Executor As String, documentType As String, useAlternateTemplate As Boolean, documentsList As Collection)
     Dim wordApp As Object
     Dim wordDoc As Object
 
@@ -129,20 +129,20 @@ Public Sub WordInteropCreateLetterDocument(addressee As String, addressArray As 
     Dim templatePath As String
     templatePath = GetLetterTemplatePathInternal(useAlternateTemplate)
 
-    If Dir$(templatePath) <> "" Then
-        Set wordDoc = wordApp.Documents.Open(templatePath)
+    If dir$(templatePath) <> "" Then
+        Set wordDoc = wordApp.documents.Open(templatePath)
         If Not wordDoc Is Nothing Then
-            WordInteropFillWordTemplateData wordDoc, addressee, addressArray, letterNumber, letterDateRaw, executor, documentType, documentsList
+            WordInteropFillWordTemplateData wordDoc, Addressee, addressArray, letterNumber, letterDateRaw, Executor, documentType, documentsList
             GoTo SaveDocument
         End If
     End If
 
-    Set wordDoc = wordApp.Documents.Add
-    WordInteropCreateLetterDocumentFromScratch wordDoc, addressee, addressArray, letterNumber, letterDateRaw, executor, documentType, documentsList
+    Set wordDoc = wordApp.documents.Add
+    WordInteropCreateLetterDocumentFromScratch wordDoc, Addressee, addressArray, letterNumber, letterDateRaw, Executor, documentType, documentsList
 
 SaveDocument:
     Dim fileName As String
-    fileName = GenerateFileNameWithExecutor(IIf(Len(Trim$(addressee)) = 0, t("core.letter.default_file_name", "Письмо"), addressee), letterNumber, executor)
+    fileName = GenerateFileNameWithExecutor(IIf(Len(Trim$(Addressee)) = 0, t("core.letter.default_file_name", "Письмо"), Addressee), letterNumber, Executor)
 
     wordDoc.SaveAs fileName
     Debug.Print "File saved: " & fileName
@@ -164,7 +164,7 @@ SaveDocument:
     Exit Sub
 
 ErrorHandler:
-    MsgBox t("core.letter.error.create_document", "Ошибка при создании письма: ") & Err.Description, vbCritical
+    MsgBox t("core.letter.error.create_document", "Ошибка при создании письма: ") & Err.description, vbCritical
     If Not wordDoc Is Nothing Then
         wordDoc.Close False
     End If
@@ -202,7 +202,7 @@ Public Sub WordInteropFillWordTemplateData(wordDoc As Object, addresseeText As S
     Exit Sub
 
 TemplateError:
-    MsgBox t("core.letter.error.template_fill", "Ошибка заполнения шаблона: ") & Err.Description, vbCritical
+    MsgBox t("core.letter.error.template_fill", "Ошибка заполнения шаблона: ") & Err.description, vbCritical
 End Sub
 
 Public Sub WordInteropCreateLetterDocumentFromScratch(wordDoc As Object, addresseeText As String, addressArray As Variant, numberText As String, rawDateText As String, executorText As String, documentType As String, documentsList As Collection)
@@ -225,19 +225,19 @@ Public Sub WordInteropCreateLetterDocumentFromScratch(wordDoc As Object, address
     content = content & t("core.letter.fallback.ref_no", "Исх. №: ") & numberText & vbCrLf
     content = content & t("core.letter.fallback.date", "Дата: ") & dateText & vbCrLf & vbCrLf
 
-    wordDoc.Content.Text = content
+    wordDoc.content.Text = content
     WordInteropAppendAttachmentsToDocumentWithFontAndSum wordDoc, documentsList, 10
     Exit Sub
 
 ScratchError:
-    MsgBox t("core.letter.error.create_fallback", "Ошибка при создании текста письма: ") & Err.Description, vbCritical
+    MsgBox t("core.letter.error.create_fallback", "Ошибка при создании текста письма: ") & Err.description, vbCritical
 End Sub
 
 Public Sub WordInteropReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
     On Error GoTo ReplaceError
 
     Dim rng As Object
-    Set rng = wordDoc.Content
+    Set rng = wordDoc.content
 
     With rng.Find
         .ClearFormatting
@@ -255,7 +255,7 @@ Public Sub WordInteropReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Obje
             Set attachmentFragments = FormatAttachmentsListForWordWithSum(documentsList)
 
             Dim i As Long
-            For i = 1 To attachmentFragments.Count
+            For i = 1 To attachmentFragments.count
                 If i > 1 Then rng.InsertAfter vbCrLf
                 rng.InsertAfter CStr(attachmentFragments(i))
                 rng.Collapse 0
@@ -271,14 +271,14 @@ Public Sub WordInteropReplaceAttachmentsInTemplateWithFontAndSum(wordDoc As Obje
     Exit Sub
 
 ReplaceError:
-    Err.Raise Err.Number, "WordInteropReplaceAttachmentsInTemplateWithFontAndSum", Err.Description
+    Err.Raise Err.Number, "WordInteropReplaceAttachmentsInTemplateWithFontAndSum", Err.description
 End Sub
 
 Public Sub WordInteropAppendAttachmentsToDocumentWithFontAndSum(wordDoc As Object, documentsList As Collection, fontSize As Integer)
     On Error GoTo AppendError
 
     Dim rng As Object
-    Set rng = wordDoc.Content
+    Set rng = wordDoc.content
     rng.Collapse 0
 
     rng.InsertAfter t("core.letter.attachment_prefix", "Приложение: ")
@@ -290,7 +290,7 @@ Public Sub WordInteropAppendAttachmentsToDocumentWithFontAndSum(wordDoc As Objec
     startPos = rng.End
 
     Dim i As Long
-    For i = 1 To attachmentFragments.Count
+    For i = 1 To attachmentFragments.count
         If i > 1 Then rng.InsertAfter vbCrLf
         rng.InsertAfter CStr(attachmentFragments(i))
         rng.Collapse 0
@@ -304,7 +304,7 @@ Public Sub WordInteropAppendAttachmentsToDocumentWithFontAndSum(wordDoc As Objec
     Exit Sub
 
 AppendError:
-    Err.Raise Err.Number, "WordInteropAppendAttachmentsToDocumentWithFontAndSum", Err.Description
+    Err.Raise Err.Number, "WordInteropAppendAttachmentsToDocumentWithFontAndSum", Err.description
 End Sub
 
 Public Sub WordInteropSafeReplaceInWord(wordDoc As Object, findText As String, replaceText As String)
@@ -315,7 +315,7 @@ Public Sub WordInteropSafeReplaceInWord(wordDoc As Object, findText As String, r
         Set fragments = SplitStringToFragments(replaceText, 180)
         WordInteropSafeReplaceInWordWithFragments wordDoc, findText, fragments
     Else
-        With wordDoc.Content.Find
+        With wordDoc.content.Find
             .ClearFormatting
             .Replacement.ClearFormatting
             .Forward = True
@@ -330,7 +330,7 @@ Public Sub WordInteropSafeReplaceInWord(wordDoc As Object, findText As String, r
 
         If findText = TemplatePlaceholderExecutorPhone Then
             Dim rng As Object
-            Set rng = wordDoc.Content
+            Set rng = wordDoc.content
             With rng.Find
                 .Text = replaceText
                 If .Execute Then
@@ -345,7 +345,7 @@ Public Sub WordInteropSafeReplaceInWord(wordDoc As Object, findText As String, r
 
 ReplaceError:
     If Not TryFallbackReplaceWordContent(wordDoc, findText, replaceText) Then
-        Err.Raise Err.Number, "WordInteropSafeReplaceInWord", Err.Description
+        Err.Raise Err.Number, "WordInteropSafeReplaceInWord", Err.description
     End If
 End Sub
 
@@ -353,7 +353,7 @@ Public Sub WordInteropSafeReplaceInWordWithFragments(wordDoc As Object, findText
     On Error GoTo ReplaceError
 
     Dim rng As Object
-    Set rng = wordDoc.Content
+    Set rng = wordDoc.content
 
     With rng.Find
         .ClearFormatting
@@ -366,7 +366,7 @@ Public Sub WordInteropSafeReplaceInWordWithFragments(wordDoc As Object, findText
 
             Dim i As Long
             Dim fullText As String
-            For i = 1 To fragments.Count
+            For i = 1 To fragments.count
                 If i > 1 Then fullText = fullText & " "
                 fullText = fullText & CStr(fragments(i))
             Next i
@@ -382,7 +382,7 @@ Public Sub WordInteropSafeReplaceInWordWithFragments(wordDoc As Object, findText
     Exit Sub
 
 ReplaceError:
-    Debug.Print "WordInteropSafeReplaceInWordWithFragments error: " & Err.Description
+    Debug.Print "WordInteropSafeReplaceInWordWithFragments error: " & Err.description
 End Sub
 
 Public Sub WordInteropFormatAttachmentsInWord(rng As Object, Optional fontSize As Integer = 10)
@@ -392,7 +392,7 @@ Public Sub WordInteropFormatAttachmentsInWord(rng As Object, Optional fontSize A
     Exit Sub
 
 FormatError:
-    Err.Raise Err.Number, "WordInteropFormatAttachmentsInWord", Err.Description
+    Err.Raise Err.Number, "WordInteropFormatAttachmentsInWord", Err.description
 End Sub
 
 Private Function IsWordApplicationAlive(wordApp As Object) As Boolean
@@ -417,7 +417,7 @@ Private Function TrySaveCurrentWorkbook(ByRef errorMessage As String) As Boolean
     Exit Function
 
 SaveFailed:
-    errorMessage = Err.Description
+    errorMessage = Err.description
     TrySaveCurrentWorkbook = False
 End Function
 
@@ -434,7 +434,7 @@ End Sub
 Private Function TryFallbackReplaceWordContent(wordDoc As Object, findText As String, replaceText As String) As Boolean
     On Error GoTo FallbackFailed
 
-    wordDoc.Content.Text = Replace(wordDoc.Content.Text, findText, Left$(replaceText, 200))
+    wordDoc.content.Text = Replace(wordDoc.content.Text, findText, Left$(replaceText, 200))
     TryFallbackReplaceWordContent = True
     Exit Function
 
@@ -535,7 +535,7 @@ Private Function ResolveAttachmentsPlaceholderText(wordDoc As Object) As String
     On Error GoTo LookupFailed
 
     Dim documentText As String
-    documentText = CStr(wordDoc.Content.Text)
+    documentText = CStr(wordDoc.content.Text)
 
     If InStr(1, documentText, TemplatePlaceholderAttachmentsList, vbTextCompare) > 0 Then
         ResolveAttachmentsPlaceholderText = TemplatePlaceholderAttachmentsList

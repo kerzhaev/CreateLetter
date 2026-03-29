@@ -142,4 +142,3 @@ End Function
 Public Sub ShowCacheStats()
     MsgBox GetCacheStats(), vbInformation, "Cache Statistics"
 End Sub
-

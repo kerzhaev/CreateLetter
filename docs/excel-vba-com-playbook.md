@@ -38,6 +38,7 @@ The goal is simple:
 ### 1. Treat exported text as the source of truth
 
 - Keep `.bas`, `.frm`, `.cls` under version control.
+- Keep workbook and worksheet document modules under version control as `.cls` too.
 - Treat the workbook binary as a runtime artifact, not the primary review surface.
 - Export validated workbook changes back into the source folder if a manual VBE change was required.
 
@@ -92,7 +93,7 @@ It should verify:
 Responsibilities:
 
 - open workbook via COM;
-- import/update standard modules, class modules, and forms;
+- import/update standard modules, class modules, document modules, and forms;
 - preserve true class modules as classes;
 - strip export-only metadata before VBE text insertion;
 - tolerate legacy encodings during migration.
@@ -101,7 +102,17 @@ Must handle:
 
 - `Attribute VB_*` removal before `CodeModule.AddFromString`;
 - `.cls` as real class components, not standard modules;
+- existing document modules (`ThisWorkbook`, sheet code modules) as in-place code updates, not removable components;
 - legacy ANSI/CP1251 exported files when the project is not fully UTF-8-clean yet.
+
+### `export_vba_to_modules.py`
+
+Responsibilities:
+
+- open workbook via COM;
+- export standard modules, class modules, document modules, and forms;
+- normalize exported text artifacts back to UTF-8;
+- keep hidden workbook/sheet fixes from living only inside the binary workbook.
 
 ### `run_excel_smoke_test.ps1`
 
@@ -214,6 +225,16 @@ Rule:
 
 - keep legacy compatibility wrappers thin and explicitly qualified;
 - rename legacy duplicates instead of only changing the newest caller.
+
+### Hidden document modules
+
+Workbook and worksheet code modules are easy to forget because they are not visible in the exported standard-module set by default.
+
+Rule:
+
+- always export `ThisWorkbook` and non-empty sheet modules into the source folder;
+- include them in the same review/sync workflow as ordinary modules;
+- treat missing document-module source files as a workflow failure, not as an acceptable omission.
 
 ### Encoding drift
 

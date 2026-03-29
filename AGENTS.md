@@ -4,7 +4,7 @@
 
 ## Project Overview
 CreateLetter is an Excel VBA workbook used to prepare letters from templates using structured address/settings data and guided user forms.
-Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchronized with the workbook artifact through a manual modified `VbaModuleManager` workflow.
+Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchronized with the workbook artifact through Excel COM automation, with manual `VbaModuleManager` fallback only for edge cases.
 The `Addresses` worksheet now supports an optional `AddressGroup` field for scenarios where several named recipients share one postal address.
 
 ## Tech Stack
@@ -19,6 +19,11 @@ The `Addresses` worksheet now supports an optional `AddressGroup` field for scen
 ├── CreateLetter.xlsm.modules/           # Exported VBA source modules/forms
 │   ├── frmLetterCreator.frm             # Main wizard UI source
 │   ├── frmLetterHistory.frm             # History UI source
+│   ├── ЭтаКнига.cls                     # Workbook document-module source
+│   ├── Лист1.cls                        # Addresses sheet document-module source
+│   ├── Лист2.cls                        # Letters sheet document-module source
+│   ├── Лист3.cls                        # Settings sheet document-module source
+│   ├── Лист4.cls                        # Localization sheet document-module source
 │   ├── ModuleMain.bas                   # Core logic and validation
 │   ├── mdlInicialize.bas                # Worksheet bootstrap/reset
 │   ├── ModuleDates.bas                  # Date helpers
@@ -29,6 +34,7 @@ The `Addresses` worksheet now supports an optional `AddressGroup` field for scen
 │   ├── ModuleCache.bas                  # Cache helpers
 │   ├── ModuleBackup.bas                 # Backup helpers
 │   ├── ModuleAuditLogger.bas            # Audit/logging helpers
+│   ├── VbaModuleManager.bas             # Legacy/manual import-export helper kept for fallback workflows
 │   ├── clsLetterHistoryRecord.cls       # Typed DTO for letter history rows
 │   └── MdlBackup1.bas                   # Legacy backup logic
 ├── filesarchive/                        # Archived workbook versions
@@ -37,6 +43,7 @@ The `Addresses` worksheet now supports an optional `AddressGroup` field for scen
 │   └── create_restore_point.ps1         # Creates workbook + modules restore points
 │   └── run_excel_smoke_test.ps1         # Excel COM smoke-test helper
 │   └── sync_vba_from_modules.py         # Excel COM VBA sync helper for modules/forms
+│   └── export_vba_to_modules.py         # Excel COM VBA export helper for modules/forms/document modules
 │   └── apply_custom_ui.py               # Injects source-managed Ribbon XML into the workbook package
 │   └── ensure_workbook_tables.py        # Excel COM workbook schema helper for tblAddresses/tblLetters
 │   └── ensure_localization_sheet.py     # Excel COM workbook localization sheet bootstrap helper
