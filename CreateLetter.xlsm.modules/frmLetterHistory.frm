@@ -16,6 +16,8 @@ Attribute VB_Exposed = False
 
 
 
+
+
 ' ======================================================================
 ' Form: frmLetterHistory v1.3.5 - Thin-shell history UI with typed history records
 ' Author: CreateLetter contributors
@@ -142,7 +144,7 @@ End Sub
 Private Sub SetHistoryControlCaption(controlName As String, captionText As String)
     On Error Resume Next
 
-    Dim ctrl As Control
+    Dim ctrl As control
     Set ctrl = Me.Controls(controlName)
     If Not ctrl Is Nothing Then
         ctrl.Caption = captionText
@@ -268,13 +270,13 @@ Private Sub lstLetterHistory_Click()
                 txtSumDocument.value = letterRecord.DocumentSum
             End If
 
-            ParseReturnStatus letterRecord.ReturnStatus
+            ParseReturnStatus letterRecord.returnStatus
         End If
     End If
     Exit Sub
 
 SelectionError:
-    MsgBox t("form.letter_history.msg.selection_error", "Ошибка при загрузке выбранной записи истории: ") & Err.Description, vbExclamation
+    MsgBox t("form.letter_history.msg.selection_error", "Ошибка при загрузке выбранной записи истории: ") & Err.description, vbExclamation
 End Sub
 
 Private Sub lstLetterHistory_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
@@ -305,7 +307,7 @@ Private Sub NavigateToSelectedRecord()
         Set letterRecord = GetHistoryRecordFromCollection(filteredData, selectedIndex)
         If Not letterRecord Is Nothing Then
             Dim rowNumber As Long
-            rowNumber = letterRecord.RowNumber
+            rowNumber = letterRecord.rowNumber
             
             ' Getting "Letters" sheet
             Dim ws As Worksheet
@@ -383,7 +385,7 @@ ParseError:
     If Not dtpReturnDate Is Nothing Then
         dtpReturnDate.value = Format(Date, "dd.mm.yyyy")
     End If
-    Debug.Print "ParseReturnStatus error: " & Err.Description
+    Debug.Print "ParseReturnStatus error: " & Err.description
 End Sub
 
 ' ===============================================================================
@@ -413,7 +415,7 @@ Private Sub btnClearSearch_Click()
 ClearError:
     Me.Controls("btnClearSearch").Caption = t("form.letter_history.caption.clear_search", "Очистить поиск")
     Me.Controls("btnClearSearch").Enabled = True
-    MsgBox t("form.letter_history.msg.clear_error", "Ошибка при очистке формы истории: ") & Err.Description, vbExclamation
+    MsgBox t("form.letter_history.msg.clear_error", "Ошибка при очистке формы истории: ") & Err.description, vbExclamation
 End Sub
 
 Private Sub ClearAllHistoryFields()
@@ -431,14 +433,14 @@ Private Sub ClearAllHistoryFields()
     Exit Sub
 
 ClearFieldsError:
-    Err.Raise Err.Number, "ClearAllHistoryFields", Err.Description
+    Err.Raise Err.Number, "ClearAllHistoryFields", Err.description
 End Sub
 
 
 Private Sub SetControlBackColor(controlName As String, backColor As Long)
     On Error Resume Next
     
-    Dim ctrl As Control
+    Dim ctrl As control
     Set ctrl = Me.Controls(controlName)
     If Not ctrl Is Nothing Then
         ctrl.backColor = backColor
@@ -462,7 +464,7 @@ Private Sub btnUpdateStatus_Click()
         Set letterRecord = GetHistoryRecordFromCollection(filteredData, selectedIndex)
         If Not letterRecord Is Nothing Then
             Dim rowNumber As Long
-            rowNumber = letterRecord.RowNumber
+            rowNumber = letterRecord.rowNumber
             Dim returnStatus As String
             returnStatus = BuildLetterReturnStatus((Not chkReceived Is Nothing And chkReceived.value), ControlValueOrDefault("dtpReturnDate"))
             
@@ -558,7 +560,7 @@ Private Function GetHistoryRecordFromCollection(records As Collection, ByVal one
     On Error GoTo LookupFailed
 
     If records Is Nothing Then Exit Function
-    If oneBasedIndex < 1 Or oneBasedIndex > records.Count Then Exit Function
+    If oneBasedIndex < 1 Or oneBasedIndex > records.count Then Exit Function
 
     If IsObject(records(oneBasedIndex)) Then
         If TypeName(records(oneBasedIndex)) = "clsLetterHistoryRecord" Then

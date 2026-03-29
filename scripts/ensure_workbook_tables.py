@@ -22,6 +22,8 @@ TABLE_SPECS = (
     ("Settings", "tblLetterTexts"),
 )
 
+ADDRESS_GROUP_COLUMN_NAME = "AddressGroup"
+
 XL_SRC_RANGE = 1
 XL_YES = 1
 
@@ -61,6 +63,25 @@ def ensure_table(ws, table_name: str) -> str:
     return "created"
 
 
+def ensure_address_group_column(ws) -> str:
+    target_table = None
+    for index in range(1, ws.ListObjects.Count + 1):
+        if ws.ListObjects(index).Name == "tblAddresses":
+            target_table = ws.ListObjects(index)
+            break
+
+    if target_table is None:
+        return "skipped-no-table"
+
+    for index in range(1, target_table.ListColumns.Count + 1):
+        if target_table.ListColumns(index).Name == ADDRESS_GROUP_COLUMN_NAME:
+            return "existing"
+
+    target_table.ListColumns.Add()
+    target_table.ListColumns(target_table.ListColumns.Count).Name = ADDRESS_GROUP_COLUMN_NAME
+    return "created"
+
+
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
@@ -82,6 +103,9 @@ def main() -> int:
             ws = workbook.Worksheets(sheet_name)
             status = ensure_table(ws, table_name)
             print(f"{sheet_name}:{table_name}:{status}")
+
+        address_group_status = ensure_address_group_column(workbook.Worksheets("Addresses"))
+        print(f"Addresses:{ADDRESS_GROUP_COLUMN_NAME}:{address_group_status}")
 
         workbook.Save()
         return 0

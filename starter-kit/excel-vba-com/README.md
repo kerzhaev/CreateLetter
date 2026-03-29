@@ -14,6 +14,7 @@ starter-kit/excel-vba-com/
 ├── scripts/
 │   ├── apply_custom_ui.py
 │   ├── create_restore_point.ps1
+│   ├── export_vba_to_modules.py
 │   ├── run_excel_smoke_test.ps1
 │   └── sync_vba_from_modules.py
 └── starter-checklist.md
@@ -52,25 +53,31 @@ Workbook.xlsm.modules/
 ## Recommended workflow
 
 1. Edit `.bas/.frm/.cls` files in the source folder.
-2. Run:
+2. If the workbook was edited directly in Excel/VBE, export first:
+
+```powershell
+python .\scripts\export_vba_to_modules.py .\Workbook.xlsm .\Workbook.xlsm.modules
+```
+
+3. Run:
 
 ```powershell
 python .\scripts\sync_vba_from_modules.py .\Workbook.xlsm .\Workbook.xlsm.modules
 ```
 
-3. If you use Ribbon XML, run:
+4. If you use Ribbon XML, run:
 
 ```powershell
 python .\scripts\apply_custom_ui.py .\Workbook.xlsm
 ```
 
-4. Run smoke:
+5. Run smoke:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\run_excel_smoke_test.ps1 -WorkbookPath .\Workbook.xlsm
 ```
 
-5. If a change is risky, create a restore point first:
+6. If a change is risky, create a restore point first:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\create_restore_point.ps1 -Label feature-name
@@ -79,6 +86,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\create_restore_point.ps1 -Lab
 ## Important limitations
 
 - `.cls` files must be real class modules inside `VBProject`.
+- workbook and worksheet document modules should also be exported and tracked as `.cls` files.
 - `Attribute VB_*` lines are export metadata only; do not paste them into the VBE code pane.
 - `.frm` files can depend on `.frx` resources; keep the matching `.frx` next to the form when needed.
 - Ribbon package checks should inspect a temporary workbook copy, not a COM-opened locked file.

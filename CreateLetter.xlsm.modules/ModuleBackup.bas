@@ -29,20 +29,20 @@ Public Sub CreateBackup()
     Exit Sub
 
 BackupError:
-    Debug.Print "Error creating backup: " & Err.Description
-    MsgBox t("backup.msg.create_error", "Error creating backup: ") & Err.Description, vbCritical
+    Debug.Print "Error creating backup: " & Err.description
+    MsgBox t("backup.msg.create_error", "Error creating backup: ") & Err.description, vbCritical
 End Sub
 
 Private Sub EnsureBackupFolderExists(backupFolder As String)
     On Error GoTo FolderError
 
-    If Dir$(backupFolder, vbDirectory) = "" Then
+    If dir$(backupFolder, vbDirectory) = "" Then
         MkDir backupFolder
     End If
     Exit Sub
 
 FolderError:
-    Err.Raise Err.Number, "EnsureBackupFolderExists", Err.Description
+    Err.Raise Err.Number, "EnsureBackupFolderExists", Err.description
 End Sub
 
 Private Sub CleanOldBackups(backupFolder As String, daysToKeep As Integer)
@@ -52,7 +52,7 @@ Private Sub CleanOldBackups(backupFolder As String, daysToKeep As Integer)
     Dim filePath As String
     Dim fileDate As Date
 
-    fileName = Dir$(backupFolder & "FormirovanieLetters_backup_*.xlsx")
+    fileName = dir$(backupFolder & "FormirovanieLetters_backup_*.xlsx")
     Do While fileName <> ""
         filePath = backupFolder & fileName
         fileDate = FileDateTime(filePath)
@@ -61,12 +61,12 @@ Private Sub CleanOldBackups(backupFolder As String, daysToKeep As Integer)
             DeleteBackupFile filePath, fileName
         End If
 
-        fileName = Dir$
+        fileName = dir$
     Loop
     Exit Sub
 
 CleanError:
-    Debug.Print "Error cleaning old backups: " & Err.Description
+    Debug.Print "Error cleaning old backups: " & Err.description
 End Sub
 
 Private Sub DeleteBackupFile(filePath As String, fileName As String)
@@ -77,7 +77,7 @@ Private Sub DeleteBackupFile(filePath As String, fileName As String)
     Exit Sub
 
 DeleteError:
-    Debug.Print "Failed to delete backup '" & fileName & "': " & Err.Description
+    Debug.Print "Failed to delete backup '" & fileName & "': " & Err.description
 End Sub
 
 Public Sub AutoBackupOnStartup()
@@ -93,7 +93,7 @@ Public Sub AutoBackupOnStartup()
     Exit Sub
 
 AutoBackupError:
-    Debug.Print "AutoBackupOnStartup error: " & Err.Description
+    Debug.Print "AutoBackupOnStartup error: " & Err.description
 End Sub
 
 Public Sub ShowBackupInfo()
@@ -106,12 +106,12 @@ Public Sub ShowBackupInfo()
     Dim fileSize As Long
 
     backupFolder = ThisWorkbook.Path & "\Backups\"
-    If Dir$(backupFolder, vbDirectory) = "" Then
+    If dir$(backupFolder, vbDirectory) = "" Then
         MsgBox t("backup.msg.folder_not_found", "Backup folder not found."), vbInformation
         Exit Sub
     End If
 
-    fileName = Dir$(backupFolder & "FormirovanieLetters_backup_*.xlsx")
+    fileName = dir$(backupFolder & "FormirovanieLetters_backup_*.xlsx")
     backupList = t("backup.msg.list_title", "BACKUP LIST:") & vbCrLf & vbCrLf
 
     Do While fileName <> ""
@@ -124,7 +124,7 @@ Public Sub ShowBackupInfo()
         backupList = backupList & t("backup.msg.size_label", "  Size: ") & Format$(fileSize \ 1024, "#,##0") & " KB" & vbCrLf & vbCrLf
 
         backupCount = backupCount + 1
-        fileName = Dir$
+        fileName = dir$
     Loop
 
     If backupCount = 0 Then
@@ -139,7 +139,7 @@ Public Sub RestoreFromBackup()
     Dim backupFolder As String
 
     backupFolder = ThisWorkbook.Path & "\Backups\"
-    If Dir$(backupFolder, vbDirectory) = "" Then
+    If dir$(backupFolder, vbDirectory) = "" Then
         MsgBox t("backup.msg.folder_not_found", "Backup folder not found."), vbExclamation
         Exit Sub
     End If
@@ -164,7 +164,7 @@ Public Function GetLastBackupDate() As Date
 
 ReadError:
     GetLastBackupDate = DateSerial(1900, 1, 1)
-    Debug.Print "GetLastBackupDate error: " & Err.Description
+    Debug.Print "GetLastBackupDate error: " & Err.description
 End Function
 
 Public Sub SetBackupSettings(enableAutoBackup As Boolean, retentionDays As Integer)
@@ -195,6 +195,7 @@ Public Function GetBackupSettings() As String
     Exit Function
 
 SettingsError:
-    Debug.Print "GetBackupSettings error: " & Err.Description
+    Debug.Print "GetBackupSettings error: " & Err.description
     GetBackupSettings = t("backup.msg.settings_unavailable", "Backup settings are currently unavailable.")
 End Function
+

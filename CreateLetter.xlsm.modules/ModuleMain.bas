@@ -4,7 +4,7 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: CreateLetter contributors
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
-' Version: 1.7.4 — 29.03.2026
+' Version: 1.7.6 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -52,6 +52,7 @@ Public Enum AddressColumns
     AddressColumnRegion = 5
     AddressColumnPostalCode = 6
     AddressColumnPhone = 7
+    AddressColumnGroup = 8
 End Enum
 
 Public Enum LetterColumns
@@ -79,6 +80,7 @@ Public Enum AddressArrayIndexes
     AddressIndexRegion = 4
     AddressIndexPostalCode = 5
     AddressIndexPhone = 6
+    AddressIndexGroup = 7
 End Enum
 
 Public Enum AddressListPartIndexes
@@ -90,6 +92,19 @@ Public Enum AddressListPartIndexes
     AddressPartPostalCode = 5
     AddressPartPhone = 6
     AddressPartRowNumber = 7
+End Enum
+
+Public Enum AddressSearchResultIndexes
+    AddressSearchResultDisplayText = 0
+    AddressSearchResultWorksheetRow = 1
+    AddressSearchResultAddressee = 2
+    AddressSearchResultStreet = 3
+    AddressSearchResultCity = 4
+    AddressSearchResultDistrict = 5
+    AddressSearchResultRegion = 6
+    AddressSearchResultPostalCode = 7
+    AddressSearchResultPhone = 8
+    AddressSearchResultGroup = 9
 End Enum
 
 Public Enum DocumentArrayIndexes
@@ -205,8 +220,8 @@ Public Function IsAlternateLetterTypeSelection(letterType As String) As Boolean
 End Function
 
 
-Public Function ValidateRequiredFields(addressee As String, city As String, region As String, postalCode As String, executor As String) As String
-    If Len(Trim(addressee)) = 0 Then
+Public Function ValidateRequiredFields(Addressee As String, city As String, region As String, postalCode As String, Executor As String) As String
+    If Len(Trim(Addressee)) = 0 Then
         ValidateRequiredFields = t("validation.creator.page.addressee_required", "Заполните поле 'Адресат'.")
         Exit Function
     End If
@@ -229,13 +244,13 @@ Public Function ValidateRequiredFields(addressee As String, city As String, regi
     ValidateRequiredFields = ""
 End Function
 
-Public Function ValidateCreatorPage(pageIndex As Integer, addressee As String, city As String, region As String, postalCode As String, phoneNumber As String, letterNumber As String, letterDateText As String, executor As String, documentsCount As Long, ByRef focusControlName As String) As String
+Public Function ValidateCreatorPage(pageIndex As Integer, Addressee As String, city As String, region As String, postalCode As String, phoneNumber As String, letterNumber As String, letterDateText As String, Executor As String, documentsCount As Long, ByRef focusControlName As String) As String
     focusControlName = ""
     ValidateCreatorPage = ""
     
     Select Case pageIndex
         Case 0
-            If Len(Trim(addressee)) = 0 Then
+            If Len(Trim(Addressee)) = 0 Then
                 focusControlName = "txtAddressee"
                 ValidateCreatorPage = t("validation.creator.page.addressee_required", "Заполните поле 'Адресат'.")
                 Exit Function
@@ -278,7 +293,7 @@ Public Function ValidateCreatorPage(pageIndex As Integer, addressee As String, c
                 Exit Function
             End If
             
-            If Len(Trim(executor)) = 0 Then
+            If Len(Trim(Executor)) = 0 Then
                 focusControlName = "cmbExecutor"
                 ValidateCreatorPage = t("validation.creator.page.executor_required", "Выберите исполнителя. Это обязательное поле.")
                 Exit Function
@@ -299,11 +314,11 @@ Public Function ValidateCreatorPage(pageIndex As Integer, addressee As String, c
     End Select
 End Function
 
-Public Function ValidateCreatorSubmission(addressee As String, city As String, region As String, postalCode As String, letterNumber As String, letterDateText As String, executor As String, documentsCount As Long, ByRef focusControlName As String) As String
+Public Function ValidateCreatorSubmission(Addressee As String, city As String, region As String, postalCode As String, letterNumber As String, letterDateText As String, Executor As String, documentsCount As Long, ByRef focusControlName As String) As String
     focusControlName = ""
     ValidateCreatorSubmission = ""
     
-    If Len(Trim(addressee)) = 0 Then
+    If Len(Trim(Addressee)) = 0 Then
         focusControlName = "txtAddressee"
         ValidateCreatorSubmission = t("validation.creator.submit.addressee_required", "Адресат не заполнен.")
         Exit Function
@@ -339,7 +354,7 @@ Public Function ValidateCreatorSubmission(addressee As String, city As String, r
         Exit Function
     End If
     
-    If Len(Trim(executor)) = 0 Then
+    If Len(Trim(Executor)) = 0 Then
         focusControlName = "cmbExecutor"
         ValidateCreatorSubmission = t("validation.creator.submit.executor_required", "Исполнитель не выбран.")
         Exit Function
@@ -615,6 +630,23 @@ Public Function SearchAddresses(searchTerm As String) As Collection
     Set SearchAddresses = RepositorySearchAddresses(searchTerm)
 End Function
 
+Public Function GetAddressSearchResultDisplayText(addressSearchResult As Variant) As String
+    GetAddressSearchResultDisplayText = RepositoryGetAddressSearchResultDisplayText(addressSearchResult)
+End Function
+
+Public Function TryGetAddressSearchSelection(addressSearchResult As Variant, ByRef addressArray As Variant, ByRef rowNumber As Long, ByRef errorMessage As String) As Boolean
+    errorMessage = ""
+    TryGetAddressSearchSelection = RepositoryTryParseAddressSearchResult(addressSearchResult, addressArray, rowNumber)
+
+    If Not TryGetAddressSearchSelection Then
+        errorMessage = t("validation.address.record_invalid", "Неверный формат записи адреса.")
+    End If
+End Function
+
+Public Function TryLoadAddressRowByNumber(rowNumber As Long, ByRef addressArray As Variant) As Boolean
+    TryLoadAddressRowByNumber = RepositoryTryLoadAddressRow(rowNumber, addressArray)
+End Function
+
 Public Function ResolveDocumentTypeDisplayValue(documentType As String) As String
     ResolveDocumentTypeDisplayValue = GetDocumentTypeDisplayLabel(documentType)
 End Function
@@ -644,8 +676,8 @@ Public Function TryParseAddressListItem(addressItem As String, ByRef addressPart
     TryParseAddressListItem = True
 End Function
 
-Public Function ValidateAddressCreateRequest(addressee As String, isDuplicate As Boolean) As String
-    If Len(Trim(addressee)) = 0 Then
+Public Function ValidateAddressCreateRequest(Addressee As String, isDuplicate As Boolean) As String
+    If Len(Trim(Addressee)) = 0 Then
         ValidateAddressCreateRequest = t("validation.address.create.addressee_required", "Введите имя адресата.")
         Exit Function
     End If
@@ -756,6 +788,7 @@ Private Sub WriteAddressRow(ws As Worksheet, rowNumber As Long, addressArray As 
     ws.Cells(rowNumber, AddressColumnRegion).value = addressArray(AddressIndexRegion)
     ws.Cells(rowNumber, AddressColumnPostalCode).value = addressArray(AddressIndexPostalCode)
     ws.Cells(rowNumber, AddressColumnPhone).value = FormatPhoneNumber(CStr(addressArray(AddressIndexPhone)))
+    ws.Cells(rowNumber, AddressColumnGroup).value = addressArray(AddressIndexGroup)
 End Sub
 
 Private Function AddressColumnFromIndex(addressIndex As AddressArrayIndexes) As AddressColumns
@@ -766,7 +799,8 @@ Private Function AddressColumnFromIndex(addressIndex As AddressArrayIndexes) As 
         Case AddressIndexDistrict: AddressColumnFromIndex = AddressColumnDistrict
         Case AddressIndexRegion: AddressColumnFromIndex = AddressColumnRegion
         Case AddressIndexPostalCode: AddressColumnFromIndex = AddressColumnPostalCode
-        Case Else: AddressColumnFromIndex = AddressColumnPhone
+        Case AddressIndexPhone: AddressColumnFromIndex = AddressColumnPhone
+        Case Else: AddressColumnFromIndex = AddressColumnGroup
     End Select
 End Function
 
@@ -793,13 +827,13 @@ End Function
 '                    DEBUGGING FUNCTIONS
 ' ======================================================================
 
-Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, letterDate As Date, documents As Collection, executor As String, documentType As String)
+Public Sub SaveLetterInfoWithSum(Addressee As String, letterNumber As String, letterDate As Date, documents As Collection, Executor As String, documentType As String)
     ' === DEBUG START ===
     Debug.Print "=== DEBUG SaveLetterInfoWithSum START ==="
-    Debug.Print "Addressee: " & addressee
+    Debug.Print "Addressee: " & Addressee
     Debug.Print "LetterNumber: " & letterNumber
     Debug.Print "LetterDate: " & letterDate
-    Debug.Print "Executor: " & executor
+    Debug.Print "Executor: " & Executor
     Debug.Print "DocumentType: " & documentType
     Debug.Print "Documents count: " & documents.count
     
@@ -828,7 +862,7 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     
     ' DEBUG: Writing basic data
     Debug.Print "=== BEFORE writing basic data ==="
-    ws.Cells(newRow, LetterColumnAddressee).value = addressee
+    ws.Cells(newRow, LetterColumnAddressee).value = Addressee
     ws.Cells(newRow, LetterColumnOutgoingNumber).value = letterNumber
     ws.Cells(newRow, LetterColumnOutgoingDate).value = letterDate
     Debug.Print "=== AFTER writing basic data ==="
@@ -866,7 +900,7 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     ' DEBUG: Writing remaining data
     Debug.Print "=== BEFORE writing remaining cells ==="
     ws.Cells(newRow, LetterColumnReturnStatus).value = ""
-    ws.Cells(newRow, LetterColumnExecutor).value = executor
+    ws.Cells(newRow, LetterColumnExecutor).value = Executor
     ws.Cells(newRow, LetterColumnDocumentType).value = ResolveDocumentTypeDisplayValue(documentType)
     Debug.Print "=== AFTER writing remaining cells ==="
     
@@ -876,7 +910,7 @@ Public Sub SaveLetterInfoWithSum(addressee As String, letterNumber As String, le
     
 SaveLetterError:
     Debug.Print "=== ERROR in SaveLetterInfoWithSum ==="
-    Debug.Print "Error Number: " & Err.number
+    Debug.Print "Error Number: " & Err.Number
     Debug.Print "Error Description: " & Err.description
     Debug.Print "Error Source: " & Err.Source
     Debug.Print "==========================="
@@ -1161,8 +1195,8 @@ LookupFailed:
     TryGetLoadedUserForm = False
 End Function
 
-Public Sub CreateLetterDocument(addressee As String, addressArray As Variant, letterNumber As String, letterDateRaw As String, executor As String, documentType As String, useAlternateTemplate As Boolean, documentsList As Collection)
-    WordInteropCreateLetterDocument addressee, addressArray, letterNumber, letterDateRaw, executor, documentType, useAlternateTemplate, documentsList
+Public Sub CreateLetterDocument(Addressee As String, addressArray As Variant, letterNumber As String, letterDateRaw As String, Executor As String, documentType As String, useAlternateTemplate As Boolean, documentsList As Collection)
+    WordInteropCreateLetterDocument Addressee, addressArray, letterNumber, letterDateRaw, Executor, documentType, useAlternateTemplate, documentsList
 End Sub
 
 Public Sub FillWordTemplateData(wordDoc As Object, addresseeText As String, addressArray As Variant, numberText As String, rawDateText As String, executorText As String, documentType As String, documentsList As Collection)
@@ -1344,7 +1378,7 @@ Public Function HasAddressDataChanged(rowNumber As Long, newAddressArray As Vari
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
     Dim i As Long
-    For i = AddressIndexAddressee To AddressIndexPhone
+    For i = AddressIndexAddressee To AddressIndexGroup
         Dim sheetValue As String
         Dim formValue As String
         Dim columnNumber As AddressColumns
@@ -1547,14 +1581,14 @@ Public Sub FormatAttachmentsInWord(rng As Object, Optional fontSize As Integer =
     WordInteropFormatAttachmentsInWord rng, fontSize
 End Sub
 
-Public Function GenerateFileNameWithExecutor(addressee As String, letterNumber As String, executor As String) As String
+Public Function GenerateFileNameWithExecutor(Addressee As String, letterNumber As String, Executor As String) As String
     Dim cleanAddressee As String, cleanNumber As String, cleanExecutor As String
     Dim currentDate As String
     Dim outputFolder As String
     
-    cleanAddressee = CleanFileName(addressee)
+    cleanAddressee = CleanFileName(Addressee)
     cleanNumber = CleanFileName(letterNumber)
-    cleanExecutor = CleanFileName(executor)
+    cleanExecutor = CleanFileName(Executor)
     currentDate = Format(Date, "dd.mm.yyyy")
     outputFolder = GetConfiguredOutputFolderPath()
     
@@ -1665,6 +1699,7 @@ Public Sub SetStatusBarMessage(message As String, Optional clearAfterSeconds As 
     
     On Error GoTo 0
 End Sub
+
 
 
 

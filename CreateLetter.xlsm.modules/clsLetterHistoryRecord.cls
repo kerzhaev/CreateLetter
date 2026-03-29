@@ -50,11 +50,11 @@ Public Property Let OutgoingDate(ByVal value As String)
     pOutgoingDate = value
 End Property
 
-Public Property Get AttachmentText() As String
-    AttachmentText = pAttachmentText
+Public Property Get attachmentText() As String
+    attachmentText = pAttachmentText
 End Property
 
-Public Property Let AttachmentText(ByVal value As String)
+Public Property Let attachmentText(ByVal value As String)
     pAttachmentText = value
 End Property
 
@@ -66,11 +66,11 @@ Public Property Let DocumentSum(ByVal value As String)
     pDocumentSum = value
 End Property
 
-Public Property Get ReturnStatus() As String
-    ReturnStatus = pReturnStatus
+Public Property Get returnStatus() As String
+    returnStatus = pReturnStatus
 End Property
 
-Public Property Let ReturnStatus(ByVal value As String)
+Public Property Let returnStatus(ByVal value As String)
     pReturnStatus = value
 End Property
 
@@ -90,11 +90,11 @@ Public Property Let DocumentTypeKey(ByVal value As String)
     pDocumentTypeKey = value
 End Property
 
-Public Property Get RowNumber() As Long
-    RowNumber = pRowNumber
+Public Property Get rowNumber() As Long
+    rowNumber = pRowNumber
 End Property
 
-Public Property Let RowNumber(ByVal value As Long)
+Public Property Let rowNumber(ByVal value As Long)
     pRowNumber = value
 End Property
 

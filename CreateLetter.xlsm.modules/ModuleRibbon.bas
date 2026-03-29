@@ -61,7 +61,7 @@ Private Function GetConfiguredFolderPath(settingKey As String) As String
         Exit Function
     End If
 
-    If Dir$(storedPath, vbDirectory) = "" Then
+    If dir$(storedPath, vbDirectory) = "" Then
         GetConfiguredFolderPath = GetDefaultWorkbookFolderPath()
         Debug.Print t("ribbon.msg.folder_unavailable", "Настроенный путь недоступен, используется папка книги:") & " " & storedPath
         Exit Function
@@ -92,7 +92,7 @@ Private Sub PromptAndSaveFolderSetting(settingKey As String, dialogTitle As Stri
     Exit Sub
 
 DialogError:
-    MsgBox t("ribbon.msg.folder_select_error", "Ошибка выбора папки: ") & Err.Description, vbExclamation
+    MsgBox t("ribbon.msg.folder_select_error", "Ошибка выбора папки: ") & Err.description, vbExclamation
 End Sub
 
 Private Function BuildAboutMessage() As String
@@ -117,3 +117,4 @@ Private Function GetDefaultWorkbookFolderPath() As String
         GetDefaultWorkbookFolderPath = CurDir$
     End If
 End Function
+
