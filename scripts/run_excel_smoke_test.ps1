@@ -243,6 +243,46 @@ try {
             Add-Result -Results $results -Name "LocalizationModule" -Status "WARN" -Details "Localization module not found in workbook yet. Import modules before validating localization stages."
         }
     }
+
+    try {
+        $moduleMain = $workbook.VBProject.VBComponents.Item("ModuleMain").CodeModule
+        $historyForm = $workbook.VBProject.VBComponents.Item("frmLetterHistory").CodeModule
+        $repositoryModule = $workbook.VBProject.VBComponents.Item("ModuleRepository").CodeModule
+        $wordInteropModule = $workbook.VBProject.VBComponents.Item("ModuleWordInterop").CodeModule
+        $historyDtoClass = $workbook.VBProject.VBComponents.Item("clsLetterHistoryRecord").CodeModule
+
+        $moduleMainText = [string]$moduleMain.Lines(1, $moduleMain.CountOfLines)
+        $historyFormText = [string]$historyForm.Lines(1, $historyForm.CountOfLines)
+        $repositoryText = [string]$repositoryModule.Lines(1, $repositoryModule.CountOfLines)
+        $wordInteropText = [string]$wordInteropModule.Lines(1, $wordInteropModule.CountOfLines)
+        $historyDtoText = [string]$historyDtoClass.Lines(1, $historyDtoClass.CountOfLines)
+
+        if (($repositoryText -like "*New clsLetterHistoryRecord*") -and
+            ($moduleMainText -like "*RepositoryLoadLetterHistoryData()*") -and
+            ($historyFormText -notlike "*Split(letterData, ""|"")*") -and
+            ($historyDtoText -like "*Public Property Get Addressee()*")) {
+            Add-Result -Results $results -Name "HistoryDtoContract" -Status "PASS" -Details "Typed history DTO, repository loader, and non-pipe UI binding are present."
+        }
+        else {
+            Add-Result -Results $results -Name "HistoryDtoContract" -Status "FAIL" -Details "Missing typed history contract or legacy pipe parsing still leaks into the history UI path."
+            $failed = $true
+        }
+
+        if (($wordInteropText -like "*Public Function AcquireWordApplication()*") -and
+            ($wordInteropText -like "*Public Sub ReleaseWordApplication(Optional closeDocuments As Boolean = False)*") -and
+            ($moduleMainText -like "*Set GetSharedWordApplication = AcquireWordApplication()*") -and
+            ($moduleMainText -like "*WordInteropCreateLetterDocument*")) {
+            Add-Result -Results $results -Name "WordInteropContract" -Status "PASS" -Details "Explicit Word lifecycle API and ModuleMain facade wrappers are present."
+        }
+        else {
+            Add-Result -Results $results -Name "WordInteropContract" -Status "FAIL" -Details "Expected explicit Word lifecycle API or ModuleMain facade wrappers are missing."
+            $failed = $true
+        }
+    }
+    catch {
+        Add-Result -Results $results -Name "RefactorContract" -Status "FAIL" -Details ("Repository/Word contract inspection failed: " + $_.Exception.Message)
+        $failed = $true
+    }
 }
 catch {
     Add-Result -Results $results -Name "SmokeHarness" -Status "FAIL" -Details $_.Exception.Message

@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleBackup"
 ' Module: ModuleBackup
 ' Author: CreateLetter contributors
 ' Purpose: Workbook backup helpers
-' Version: 1.4.4 - 27.03.2026
+' Version: 1.4.5 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -16,9 +16,7 @@ Public Sub CreateBackup()
     Dim backupPath As String
 
     backupFolder = ThisWorkbook.Path & "\Backups\"
-    If Dir$(backupFolder, vbDirectory) = "" Then
-        MkDir backupFolder
-    End If
+    EnsureBackupFolderExists backupFolder
 
     backupFileName = "FormirovanieLetters_backup_" & Format$(Now, "yyyy-mm-dd_hh-mm-ss") & ".xlsx"
     backupPath = backupFolder & backupFileName
@@ -35,8 +33,20 @@ BackupError:
     MsgBox t("backup.msg.create_error", "Error creating backup: ") & Err.Description, vbCritical
 End Sub
 
+Private Sub EnsureBackupFolderExists(backupFolder As String)
+    On Error GoTo FolderError
+
+    If Dir$(backupFolder, vbDirectory) = "" Then
+        MkDir backupFolder
+    End If
+    Exit Sub
+
+FolderError:
+    Err.Raise Err.Number, "EnsureBackupFolderExists", Err.Description
+End Sub
+
 Private Sub CleanOldBackups(backupFolder As String, daysToKeep As Integer)
-    On Error Resume Next
+    On Error GoTo CleanError
 
     Dim fileName As String
     Dim filePath As String
@@ -48,18 +58,30 @@ Private Sub CleanOldBackups(backupFolder As String, daysToKeep As Integer)
         fileDate = FileDateTime(filePath)
 
         If Date - fileDate > daysToKeep Then
-            Kill filePath
-            Debug.Print "Old backup deleted: " & fileName
+            DeleteBackupFile filePath, fileName
         End If
 
         fileName = Dir$
     Loop
+    Exit Sub
 
-    On Error GoTo 0
+CleanError:
+    Debug.Print "Error cleaning old backups: " & Err.Description
+End Sub
+
+Private Sub DeleteBackupFile(filePath As String, fileName As String)
+    On Error GoTo DeleteError
+
+    Kill filePath
+    Debug.Print "Old backup deleted: " & fileName
+    Exit Sub
+
+DeleteError:
+    Debug.Print "Failed to delete backup '" & fileName & "': " & Err.Description
 End Sub
 
 Public Sub AutoBackupOnStartup()
-    On Error Resume Next
+    On Error GoTo AutoBackupError
 
     Dim lastBackupDate As Date
     lastBackupDate = GetSetting("FormirovanieLetters", "Backup", "LastBackupDate", DateSerial(1900, 1, 1))
@@ -68,8 +90,10 @@ Public Sub AutoBackupOnStartup()
         CreateBackup
         SaveSetting "FormirovanieLetters", "Backup", "LastBackupDate", Date
     End If
+    Exit Sub
 
-    On Error GoTo 0
+AutoBackupError:
+    Debug.Print "AutoBackupOnStartup error: " & Err.Description
 End Sub
 
 Public Sub ShowBackupInfo()

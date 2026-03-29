@@ -22,9 +22,12 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 │   ├── mdlInicialize.bas                # Worksheet bootstrap/reset
 │   ├── ModuleDates.bas                  # Date helpers
 │   ├── ModuleLocalization.bas           # Localization lookup foundation
+│   ├── ModuleRepository.bas             # Workbook repository/search/export helpers
+│   ├── ModuleWordInterop.bas            # Explicit Word lifecycle and document generation helpers
 │   ├── ModuleCache.bas                  # Cache helpers
 │   ├── ModuleBackup.bas                 # Backup helpers
 │   ├── ModuleAuditLogger.bas            # Audit/logging helpers
+│   ├── clsLetterHistoryRecord.cls       # Typed DTO for letter history rows
 │   └── MdlBackup1.bas                   # Legacy backup logic
 ├── filesarchive/                        # Archived workbook versions
 │   └── restore-point-*/                 # Local rollback snapshots before feature work

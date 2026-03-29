@@ -61,6 +61,12 @@ python .\scripts\sync_vba_from_modules.py .\CreateLetter.xlsm .\CreateLetter.xls
 4. Export modules back to `CreateLetter.xlsm.modules/` after validated changes.
 5. Verify that workbook runtime behavior does not depend on automatic source-management hooks.
 
+Class-module note:
+
+- `.cls` files must exist as real VBA class components, not as standard modules with class text pasted into them.
+- If a new class module is introduced, either let the sync helper create/update a real class component or create it manually via `Insert -> Class Module`, set its `(Name)`, paste only the class body, then export it back to `CreateLetter.xlsm.modules/`.
+- Do not paste `VERSION 1.0 CLASS`, `BEGIN/END`, `MultiUse`, or `Attribute VB_*` lines into the VBE code pane.
+
 ## Workbook Schema Automation
 
 When a feature changes workbook structure itself, prefer a repeatable script over a one-off manual edit.

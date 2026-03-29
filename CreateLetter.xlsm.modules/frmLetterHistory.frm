@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterHistory 
-   Caption         =   "Letter History v1.2.5"
+   Caption         =   "Letter History v1.3.1"
    ClientHeight    =   11715
    ClientLeft      =   120
    ClientTop       =   465
@@ -17,15 +17,17 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form: frmLetterHistory v1.2.7 - Thin-shell history UI with workbook-backed localization
+' Form: frmLetterHistory v1.3.1 - Thin-shell history UI with typed history records
 ' Author: CreateLetter contributors
-' Date: 27.03.2026
-' Purpose: History of sent letters with thin-shell UI, navigation, filtering, status updates, and schema-safe bindings
-' Updates v1.2.6:
-' - Moved history captions, tips, dialogs, and search info onto workbook-backed localization keys
-' - Kept navigation, export, and status update flow aligned with named letter columns
-' - Preserved Russian/European date formatting and record navigation workflow
-' - Removed local history caption builders in favor of shared ModuleMain helpers
+' Date: 29.03.2026
+' Purpose: History of sent letters with typed DTO bindings, thin-shell UI, and schema-safe status updates
+' Updates v1.3.1:
+' - Fixed VBA ByRef index mismatch for typed history record lookup helper
+' - Preserved typed DTO contract and thin-shell history bindings
+' Updates v1.3.0:
+' - Switched history data flow from pipe-delimited strings to clsLetterHistoryRecord objects
+' - Kept UI binding, search, export, and navigation on shared ModuleMain facade contracts
+' - Preserved localized captions, Russian date formatting, and workbook-safe navigation
 ' ======================================================================
 Option Explicit
 
@@ -49,7 +51,7 @@ Private Sub UserForm_Initialize()
     ShowAllLettersOnInit
     InitializeControlValues
     
-        Debug.Print "Letter history form initialized v1.2.3 with workbook-backed localization"
+        Debug.Print "Letter history form initialized v1.3.1 with typed history records"
 End Sub
 
 Private Sub ConfigureDateFieldRussianFormat()
@@ -98,7 +100,7 @@ End Sub
 
 Private Sub ApplyFormSettings()
     With Me
-        .Caption = t("form.letter_history.title", "Letter History") & " v1.2.3"
+        .Caption = t("form.letter_history.title", "Letter History") & " v1.3.1"
         .backColor = RGB(250, 250, 250)
     End With
 End Sub
@@ -211,10 +213,10 @@ Private Sub txtHistorySearch_Change()
         ' Show first few records for testing
         Dim i As Integer
         For i = 1 To WorksheetFunction.Min(3, allLettersData.count)
-            Dim parts() As String
-            parts = Split(allLettersData(i), "|")
-            If UBound(parts) >= 4 Then
-                Debug.Print "Record " & i & ", sum column: '" & parts(HistoryPartDocumentSum) & "'"
+            Dim debugRecord As clsLetterHistoryRecord
+            Set debugRecord = GetHistoryRecordFromCollection(allLettersData, i)
+            If Not debugRecord Is Nothing Then
+                Debug.Print "Record " & i & ", sum column: '" & debugRecord.DocumentSum & "'"
             End If
         Next i
         Debug.Print "=================="
@@ -251,19 +253,17 @@ Private Sub lstLetterHistory_Click()
     selectedIndex = lstLetterHistory.ListIndex + 1
     
     If selectedIndex <= filteredData.count Then
-        Dim letterData As String
-        letterData = filteredData(selectedIndex)
-        
-        Dim parts() As String
-        If TryParseLetterHistoryRecord(letterData, parts) Then
+        Dim letterRecord As clsLetterHistoryRecord
+        Set letterRecord = GetHistoryRecordFromCollection(filteredData, selectedIndex)
+        If Not letterRecord Is Nothing Then
             On Error Resume Next
-            
+
             If Not txtSumDocument Is Nothing Then
-                txtSumDocument.value = parts(HistoryPartDocumentSum)
+                txtSumDocument.value = letterRecord.DocumentSum
             End If
-            
-            ParseReturnStatus parts(HistoryPartReturnStatus)
-            
+
+            ParseReturnStatus letterRecord.ReturnStatus
+
             On Error GoTo 0
         End If
     End If
@@ -293,13 +293,11 @@ Private Sub NavigateToSelectedRecord()
     selectedIndex = lstLetterHistory.ListIndex + 1
     
     If selectedIndex <= filteredData.count Then
-        Dim letterData As String
-        letterData = filteredData(selectedIndex)
-        
-        Dim parts() As String
-        If TryParseLetterHistoryRecord(letterData, parts) Then
+        Dim letterRecord As clsLetterHistoryRecord
+        Set letterRecord = GetHistoryRecordFromCollection(filteredData, selectedIndex)
+        If Not letterRecord Is Nothing Then
             Dim rowNumber As Long
-            rowNumber = CLng(parts(HistoryPartRowNumber))
+            rowNumber = letterRecord.RowNumber
             
             ' Getting "Letters" sheet
             Dim ws As Worksheet
@@ -322,7 +320,7 @@ Private Sub NavigateToSelectedRecord()
             End With
             
             ' NEW: Show info in Excel status bar
-            Application.StatusBar = t("form.letter_history.msg.selected_record", "Selected record: ") & parts(HistoryPartAddressee) & " | " & parts(HistoryPartOutgoingNumber) & " | " & parts(HistoryPartOutgoingDate)
+            Application.StatusBar = t("form.letter_history.msg.selected_record", "Selected record: ") & letterRecord.Addressee & " | " & letterRecord.OutgoingNumber & " | " & letterRecord.OutgoingDate
             
             ' Remove highlight after 5 seconds
             Application.OnTime Now + TimeValue("00:00:05"), "ClearHighlight"
@@ -438,13 +436,11 @@ Private Sub btnUpdateStatus_Click()
     selectedIndex = lstLetterHistory.ListIndex + 1
     
     If selectedIndex <= filteredData.count Then
-        Dim letterData As String
-        letterData = filteredData(selectedIndex)
-        
-        Dim parts() As String
-        If TryParseLetterHistoryRecord(letterData, parts) Then
+        Dim letterRecord As clsLetterHistoryRecord
+        Set letterRecord = GetHistoryRecordFromCollection(filteredData, selectedIndex)
+        If Not letterRecord Is Nothing Then
             Dim rowNumber As Long
-            rowNumber = CLng(parts(HistoryPartRowNumber))
+            rowNumber = letterRecord.RowNumber
             Dim returnStatus As String
             returnStatus = BuildLetterReturnStatus((Not chkReceived Is Nothing And chkReceived.value), ControlValueOrDefault("dtpReturnDate"))
             
@@ -465,7 +461,7 @@ Private Sub BindHistoryList(records As Collection)
     
     Dim i As Long
     For i = 1 To records.count
-        lstLetterHistory.AddItem FormatLetterHistoryDisplay(CStr(records(i)))
+        lstLetterHistory.AddItem FormatLetterHistoryDisplay(records(i))
     Next i
     
     UpdateSearchInfo BuildHistoryFoundCaption(records.count, allLettersData.count)
@@ -533,6 +529,24 @@ End Sub
 Private Sub ShowSearchHints()
     MsgBox GetLetterHistorySearchHintsText(), vbInformation, t("form.letter_history.msg.search_hints_title", "Search Help")
 End Sub
+
+Private Function GetHistoryRecordFromCollection(records As Collection, ByVal oneBasedIndex As Long) As clsLetterHistoryRecord
+    On Error GoTo LookupFailed
+
+    If records Is Nothing Then Exit Function
+    If oneBasedIndex < 1 Or oneBasedIndex > records.Count Then Exit Function
+
+    If IsObject(records(oneBasedIndex)) Then
+        If TypeName(records(oneBasedIndex)) = "clsLetterHistoryRecord" Then
+            Set GetHistoryRecordFromCollection = records(oneBasedIndex)
+        End If
+    End If
+
+    Exit Function
+
+LookupFailed:
+    Set GetHistoryRecordFromCollection = Nothing
+End Function
 
 
 '=====================================================================
