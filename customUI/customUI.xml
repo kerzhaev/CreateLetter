@@ -5,12 +5,19 @@
       <tab id="tabCreateLetter" label="Формирование писем">
         <group id="grpCreateLetterMain" label="Команды">
           <button id="btnRibbonOpenForm"
-                  label="Открыть форму"
+                  label="Сделать письмо"
                   size="large"
                   imageMso="FileOpen"
                   onAction="RibbonOpenLetterForm"
-                  screentip="Открыть форму"
-                  supertip="Открывает форму формирования писем." />
+                  screentip="Сделать письмо"
+                  supertip="Открывает форму формирования нового письма." />
+          <button id="btnRibbonOpenHistory"
+                  label="Поиск писем"
+                  size="large"
+                  imageMso="FindDialog"
+                  onAction="RibbonOpenHistoryForm"
+                  screentip="Поиск писем"
+                  supertip="Открывает форму поиска и просмотра истории писем." />
           <button id="btnRibbonTemplateFolder"
                   label="Папка шаблонов"
                   size="large"

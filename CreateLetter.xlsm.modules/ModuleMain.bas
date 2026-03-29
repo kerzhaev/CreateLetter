@@ -4,7 +4,7 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: CreateLetter contributors
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
-' Version: 1.7.3 — 29.03.2026
+' Version: 1.7.4 — 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -1488,7 +1488,7 @@ ReadTextError:
 End Function
 
 Public Function BuildHistoryLoadedCaption(letterCount As Long) As String
-    BuildHistoryLoadedCaption = t("form.letter_history.msg.letters_loaded", "Писем загружено: ") & letterCount
+    BuildHistoryLoadedCaption = t("form.letter_history.msg.letters_loaded", "Загружено писем: ") & letterCount
 End Function
 
 Public Function BuildHistoryShowingAllCaption(letterCount As Long) As String
@@ -1496,7 +1496,7 @@ Public Function BuildHistoryShowingAllCaption(letterCount As Long) As String
 End Function
 
 Public Function BuildHistoryAmountSearchCaption(searchText As String) As String
-    BuildHistoryAmountSearchCaption = t("form.letter_history.msg.searching_amount", "Ищем номер ") & searchText & t("form.letter_history.msg.searching_amount_suffix", " в суммах документов...")
+    BuildHistoryAmountSearchCaption = t("form.letter_history.msg.searching_amount", "Ищем значение ") & searchText & t("form.letter_history.msg.searching_amount_suffix", " в суммах документов...")
 End Function
 
 Public Function BuildHistoryFoundCaption(foundCount As Long, totalCount As Long) As String

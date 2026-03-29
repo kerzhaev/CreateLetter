@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterHistory 
-   Caption         =   "Letter History v1.3.3"
+   Caption         =   "История писем v1.3.5"
    ClientHeight    =   11715
    ClientLeft      =   120
    ClientTop       =   465
@@ -17,7 +17,7 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form: frmLetterHistory v1.3.4 - Thin-shell history UI with typed history records
+' Form: frmLetterHistory v1.3.5 - Thin-shell history UI with typed history records
 ' Author: CreateLetter contributors
 ' Date: 29.03.2026
 ' Purpose: History of sent letters with typed DTO bindings, thin-shell UI, and schema-safe status updates
@@ -72,7 +72,7 @@ Private Sub ConfigureDateFieldRussianFormat()
             ' REMOVED: .Format = 2 (not supported by TextBox)
             ' REMOVED: .CustomFormat = "dd.mm.yyyy" (not supported by TextBox)
             
-            .ControlTipText = t("form.letter_history.tip.return_date", "Document return date (dd.mm.yyyy)")
+            .ControlTipText = t("form.letter_history.tip.return_date", "Дата возврата документа (дд.мм.гггг)")
         End With
         Debug.Print "Return date field configured in Russian/European format"
     End If
@@ -95,7 +95,7 @@ Private Sub ConfigureCompactSumField()
             .ScrollBars = 0                 ' No scrollbars (0 = fmScrollBarsNone)
             ' REMOVED: .EnterKeyBehaviour = False (not supported)
             .Height = 24                    ' Fixed height
-            .ControlTipText = t("form.letter_history.tip.document_sum", "Document sum in rubles (numbers only or brief comment)")
+            .ControlTipText = t("form.letter_history.tip.document_sum", "Сумма документа в рублях (только цифры или короткий комментарий)")
         End With
         Debug.Print "Document sum field configured in compact mode"
     End If
@@ -106,7 +106,7 @@ End Sub
 
 Private Sub ApplyFormSettings()
     With Me
-        .Caption = t("form.letter_history.title", "Letter History") & " v1.3.2"
+        .Caption = t("form.letter_history.title", "История отправленных писем") & " v1.3.5"
         .backColor = RGB(250, 250, 250)
     End With
 End Sub
@@ -274,7 +274,7 @@ Private Sub lstLetterHistory_Click()
     Exit Sub
 
 SelectionError:
-    MsgBox t("form.letter_history.msg.selection_error", "Error loading selected history record: ") & Err.Description, vbExclamation
+    MsgBox t("form.letter_history.msg.selection_error", "Ошибка при загрузке выбранной записи истории: ") & Err.Description, vbExclamation
 End Sub
 
 Private Sub lstLetterHistory_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
@@ -293,7 +293,7 @@ Private Sub NavigateToSelectedRecord()
     
     If lstLetterHistory Is Nothing Then Exit Sub
     If lstLetterHistory.ListIndex < 0 Then
-        MsgBox t("form.letter_history.msg.select_record", "Select a letter to navigate to the record."), vbExclamation, t("form.letter_history.caption.go_to_record", "Go to record")
+        MsgBox t("form.letter_history.msg.select_record", "Выберите письмо для перехода к записи."), vbExclamation, t("form.letter_history.caption.go_to_record", "Перейти к записи")
         Exit Sub
     End If
     
@@ -312,7 +312,7 @@ Private Sub NavigateToSelectedRecord()
             Set ws = ThisWorkbook.Worksheets("Letters")
             
             If ws Is Nothing Then
-                MsgBox t("form.letter_history.msg.letters_sheet_missing", "Worksheet 'Letters' not found."), vbCritical, t("form.letter_history.msg.navigation_error_title", "Navigation error")
+                MsgBox t("form.letter_history.msg.letters_sheet_missing", "Лист 'Letters' не найден."), vbCritical, t("form.letter_history.msg.navigation_error_title", "Ошибка навигации")
                 Exit Sub
             End If
             
@@ -328,7 +328,7 @@ Private Sub NavigateToSelectedRecord()
             End With
             
             ' NEW: Show info in Excel status bar
-            Application.StatusBar = t("form.letter_history.msg.selected_record", "Selected record: ") & letterRecord.Addressee & " | " & letterRecord.OutgoingNumber & " | " & letterRecord.OutgoingDate
+            Application.StatusBar = t("form.letter_history.msg.selected_record", "Выбрана запись: ") & letterRecord.Addressee & " | " & letterRecord.OutgoingNumber & " | " & letterRecord.OutgoingDate
             
             ' Remove highlight after 5 seconds
             Application.OnTime Now + TimeValue("00:00:05"), "ClearHighlight"
@@ -344,7 +344,7 @@ Private Sub NavigateToSelectedRecord()
     Exit Sub
     
 NavigateError:
-    MsgBox t("form.letter_history.msg.navigation_error", "Error navigating to record: ") & Err.description, vbCritical, t("form.letter_history.msg.navigation_error_title", "Navigation error")
+    MsgBox t("form.letter_history.msg.navigation_error", "Ошибка при переходе к записи: ") & Err.description, vbCritical, t("form.letter_history.msg.navigation_error_title", "Ошибка навигации")
 End Sub
 
 
@@ -450,7 +450,7 @@ End Sub
 Private Sub btnUpdateStatus_Click()
     If lstLetterHistory Is Nothing Then Exit Sub
     If lstLetterHistory.ListIndex < 0 Then
-        MsgBox t("form.letter_history.msg.select_status_update", "Select a letter to update the status."), vbExclamation
+        MsgBox t("form.letter_history.msg.select_status_update", "Выберите письмо для обновления статуса."), vbExclamation
         Exit Sub
     End If
     
@@ -471,7 +471,7 @@ Private Sub btnUpdateStatus_Click()
             LoadAllLettersData
             txtHistorySearch_Change
             
-            MsgBox t("form.letter_history.msg.status_updated", "Letter status updated successfully."), vbInformation
+            MsgBox t("form.letter_history.msg.status_updated", "Статус письма успешно обновлен."), vbInformation
         End If
     End If
 End Sub
@@ -501,7 +501,7 @@ End Function
 Private Sub btnRefresh_Click()
     LoadAllLettersData
     txtHistorySearch_Change
-    MsgBox t("form.letter_history.msg.data_refreshed", "Data refreshed."), vbInformation
+    MsgBox t("form.letter_history.msg.data_refreshed", "Данные обновлены."), vbInformation
 End Sub
 
 Private Sub btnExportToExcel_Click()

@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-   Caption         =   "Letter Builder v1.6.8"
+   Caption         =   "Формирование писем v1.6.11"
    ClientHeight    =   10155
    ClientLeft      =   120
    ClientTop       =   465
@@ -17,7 +17,7 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.10 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
+' Form    : frmLetterCreator v1.6.11 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
 ' Version : 1.6.9 - 27.03.2026
 ' Author  : CreateLetter contributors
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
@@ -61,7 +61,7 @@ Private Sub ConfigureDocumentSumField()
         With txtDocumentSum
             .Font.Name = "Segoe UI"
             .Font.Size = 10
-            .ControlTipText = t("form.letter_creator.tip.document_sum", "Document sum in rubles (optional). For example: 125000")
+            .ControlTipText = t("form.letter_creator.tip.document_sum", "Сумма документа в рублях (необязательно). Например: 125000")
             .value = ""
             .backColor = RGB(255, 255, 255)
         End With
@@ -215,7 +215,7 @@ Private Sub btnLetterHistory_Click()
     Exit Sub
     
 HistoryError:
-    MsgBox t("form.letter_creator.msg.history_open_error", "Error opening history form: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.history_open_error", "Ошибка при открытии формы истории: ") & Err.description, vbCritical
 End Sub
 
 '------------------------------------------------------------
@@ -297,30 +297,30 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = t("form.letter_creator.title", "Letter Builder") & " v1.6.8"
+    Me.Caption = t("form.letter_creator.title", "Формирование писем") & " v1.6.11"
     
     On Error Resume Next
     
     If Not lstSelectedAttachments Is Nothing Then
         lstSelectedAttachments.Font.Size = 9
-        lstSelectedAttachments.ControlTipText = t("form.letter_creator.tip.selected_attachments", "Hover over the item to see the full name")
+        lstSelectedAttachments.ControlTipText = t("form.letter_creator.tip.selected_attachments", "Для просмотра полного названия наведите курсор на элемент")
         lstSelectedAttachments.IntegralHeight = False
     End If
     
     If Not btnEditAddress Is Nothing Then
-        btnEditAddress.Caption = t("form.letter_creator.caption.edit_address", "Edit address")
-        btnEditAddress.ControlTipText = t("form.letter_creator.tip.edit_address", "Edit selected address")
+        btnEditAddress.Caption = t("form.letter_creator.caption.edit_address", "Изменить адрес")
+        btnEditAddress.ControlTipText = t("form.letter_creator.tip.edit_address", "Редактировать выбранный адрес")
         btnEditAddress.Enabled = False
     End If
     
     If Not btnDeleteAddress Is Nothing Then
-        btnDeleteAddress.Caption = t("form.letter_creator.caption.delete_address", "Delete address")
-        btnDeleteAddress.ControlTipText = t("form.letter_creator.tip.delete_address", "Delete selected address")
+        btnDeleteAddress.Caption = t("form.letter_creator.caption.delete_address", "Удалить адрес")
+        btnDeleteAddress.ControlTipText = t("form.letter_creator.tip.delete_address", "Удалить выбранный адрес")
         btnDeleteAddress.Enabled = False
     End If
     
     If Not txtAddresseePhone Is Nothing Then
-        txtAddresseePhone.ControlTipText = t("form.letter_creator.tip.phone", "Addressee phone (format: 8-xxx-xxx-xx-xx)")
+        txtAddresseePhone.ControlTipText = t("form.letter_creator.tip.phone", "Телефон адресата (формат: 8-xxx-xxx-xx-xx)")
         txtAddresseePhone.Enabled = True
         txtAddresseePhone.backColor = RGB(255, 255, 255)
     End If
@@ -482,7 +482,7 @@ Private Sub btnNext_Click()
             UpdateSummaryInfo
             CreateWordLetter
             SaveLetterToDatabase
-            MsgBox t("form.letter_creator.msg.letter_created", "Letter created successfully!"), vbInformation
+            MsgBox t("form.letter_creator.msg.letter_created", "Письмо успешно создано!"), vbInformation
             Unload Me
         End If
     Else
@@ -500,13 +500,13 @@ Private Sub SwitchToPage(pg As Integer)
     btnPrevious.Enabled = (pg > 0)
     
     If pg = TOTAL_PAGES - 1 Then
-        btnNext.Caption = t("form.letter_creator.caption.create_letter", "CREATE LETTER")
+        btnNext.Caption = t("form.letter_creator.caption.create_letter", "СОЗДАТЬ ПИСЬМО")
         btnNext.backColor = RGB(76, 175, 80)
         btnNext.ForeColor = RGB(255, 255, 255)
         btnNext.Font.Bold = True
         btnNext.Font.Size = 11
     Else
-        btnNext.Caption = t("form.letter_creator.caption.next", "Next >")
+        btnNext.Caption = t("form.letter_creator.caption.next", "Далее >")
         btnNext.backColor = RGB(240, 240, 240)
         btnNext.ForeColor = RGB(0, 0, 0)
         btnNext.Font.Bold = False
@@ -689,7 +689,7 @@ Private Sub btnSaveNewAddress_Click()
     End If
     
     SaveNewAddress addressArray
-    MsgBox t("form.letter_creator.msg.address_saved", "Address saved."), vbInformation
+    MsgBox t("form.letter_creator.msg.address_saved", "Адрес сохранен."), vbInformation
     
     ClearAddressCache
     
@@ -719,7 +719,7 @@ Private Sub btnEditAddress_Click()
     ClearAddressCache
     txtAddressSearch_Change
     
-    MsgBox t("form.letter_creator.msg.address_updated", "Address updated successfully."), vbInformation
+    MsgBox t("form.letter_creator.msg.address_updated", "Адрес успешно обновлен."), vbInformation
     On Error GoTo 0
 End Sub
 
@@ -734,9 +734,9 @@ Private Sub btnDeleteAddress_Click()
         Exit Sub
     End If
     
-    If MsgBox(t("form.letter_creator.msg.address_delete_confirm", "Are you sure you want to delete this address?"), vbYesNo + vbQuestion + vbDefaultButton2) = vbYes Then
+    If MsgBox(t("form.letter_creator.msg.address_delete_confirm", "Вы уверены, что хотите удалить этот адрес?"), vbYesNo + vbQuestion + vbDefaultButton2) = vbYes Then
         DeleteExistingAddress selectedAddressRow
-        MsgBox t("form.letter_creator.msg.address_deleted", "Address deleted successfully."), vbInformation
+        MsgBox t("form.letter_creator.msg.address_deleted", "Адрес успешно удален."), vbInformation
         
         ClearAddressFields
         ClearAddressCache
@@ -749,7 +749,7 @@ Private Sub btnDeleteAddress_Click()
     Exit Sub
     
 DeleteError:
-    MsgBox t("form.letter_creator.msg.address_delete_error", "Error deleting address: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.address_delete_error", "Ошибка при удалении адреса: ") & Err.description, vbCritical
 End Sub
 
 Private Sub ClearAddressFields()
@@ -802,7 +802,7 @@ Private Sub btnAddAttachment_Click()
     On Error Resume Next
     
     If lstAvailableAttachments Is Nothing Or lstAvailableAttachments.ListIndex < 0 Then
-        MsgBox t("form.letter_creator.msg.select_document_left", "Select a document in the left list."), vbExclamation
+        MsgBox t("form.letter_creator.msg.select_document_left", "Выберите документ в левом списке."), vbExclamation
         Exit Sub
     End If
     
@@ -826,7 +826,7 @@ Private Sub btnRemoveAttachment_Click()
     On Error Resume Next
     
     If lstSelectedAttachments Is Nothing Or lstSelectedAttachments.ListIndex < 0 Then
-        MsgBox t("form.letter_creator.msg.select_document_right", "Select a document in the right list."), vbExclamation
+        MsgBox t("form.letter_creator.msg.select_document_right", "Выберите документ в правом списке."), vbExclamation
         Exit Sub
     End If
     
@@ -912,7 +912,7 @@ Public Sub DuplicateDocument()
     Exit Sub
     
 DuplicateError:
-    MsgBox t("form.letter_creator.msg.duplicate_document_error", "Error duplicating document: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.duplicate_document_error", "Ошибка при дублировании документа: ") & Err.description, vbCritical
 End Sub
 
 Public Sub RemoveSelectedDocument()
@@ -1110,7 +1110,7 @@ Private Sub CreateWordLetter()
     Exit Sub
 
 ErrorHandler:
-    MsgBox t("form.letter_creator.msg.create_letter_error", "Error creating letter: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.create_letter_error", "Ошибка при создании письма: ") & Err.description, vbCritical
 End Sub
 
 '=====================================================================
@@ -1224,7 +1224,7 @@ End Sub
 '  CANCEL AND CLOSE BUTTONS
 '=====================================================================
 Private Sub btnCancel_Click()
-    If MsgBox(t("dialog.cancel_letter_creation", "Cancel letter creation?"), vbYesNo + vbQuestion) = vbYes Then
+    If MsgBox(t("dialog.cancel_letter_creation", "Отменить создание письма?"), vbYesNo + vbQuestion) = vbYes Then
         ClearCache
         Unload Me
     End If
@@ -1232,7 +1232,7 @@ End Sub
 
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If documentsList.count > 0 Then
-        If MsgBox(t("dialog.discard_unsaved_documents", "Unsaved documents will be lost. Close?"), vbYesNo + vbQuestion) = vbNo Then
+        If MsgBox(t("dialog.discard_unsaved_documents", "Несохраненные документы будут потеряны. Закрыть?"), vbYesNo + vbQuestion) = vbNo Then
             Cancel = True
         Else
             ClearCache

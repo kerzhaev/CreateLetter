@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleRepository"
 ' Module: ModuleRepository
 ' Author: CreateLetter contributors
 ' Purpose: Workbook CRUD/search/export helpers with typed history DTO support
-' Version: 1.0.2 - 29.03.2026
+' Version: 1.0.3 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -95,7 +95,7 @@ LookupError:
 End Function
 
 Public Function RepositoryGetExecutorPhone(executorFIO As String) As String
-    RepositoryGetExecutorPhone = t("common.not_specified", "Not specified")
+    RepositoryGetExecutorPhone = t("common.not_specified", "Не указано")
 
     On Error GoTo LookupError
 
@@ -134,7 +134,7 @@ Public Sub RepositorySaveNewAddress(addressArray As Variant)
     Exit Sub
 
 SaveError:
-    MsgBox t("core.address.error.save", "Error saving address: ") & Err.Description, vbCritical
+    MsgBox t("core.address.error.save", "Ошибка при сохранении адреса: ") & Err.Description, vbCritical
 End Sub
 
 Public Sub RepositoryUpdateExistingAddress(rowNumber As Long, addressArray As Variant)
@@ -147,7 +147,7 @@ Public Sub RepositoryUpdateExistingAddress(rowNumber As Long, addressArray As Va
     Exit Sub
 
 UpdateError:
-    MsgBox t("core.address.error.update", "Error updating address: ") & Err.Description, vbCritical
+    MsgBox t("core.address.error.update", "Ошибка при обновлении адреса: ") & Err.Description, vbCritical
 End Sub
 
 Public Sub RepositoryDeleteExistingAddress(rowNumber As Long)
@@ -160,7 +160,7 @@ Public Sub RepositoryDeleteExistingAddress(rowNumber As Long)
     Exit Sub
 
 DeleteError:
-    MsgBox t("core.address.error.delete", "Error deleting address: ") & Err.Description, vbCritical
+    MsgBox t("core.address.error.delete", "Ошибка при удалении адреса: ") & Err.Description, vbCritical
 End Sub
 
 Public Function RepositoryIsAddressDuplicate(addressArray As Variant, Optional excludeRow As Long = 0) As Boolean
@@ -311,7 +311,7 @@ End Function
 
 Public Sub RepositoryExportLetterHistoryRecords(records As Collection)
     If records Is Nothing Or records.Count = 0 Then
-        MsgBox t("form.letter_history.msg.no_export_data", "No data to export."), vbExclamation
+        MsgBox t("form.letter_history.msg.no_export_data", "Нет данных для экспорта."), vbExclamation
         Exit Sub
     End If
 
@@ -326,17 +326,17 @@ Public Sub RepositoryExportLetterHistoryRecords(records As Collection)
     WriteLetterHistoryExportRecords exportWs, records
 
     exportWs.Columns("A:H").AutoFit
-    exportWs.Name = t("form.letter_history.export.sheet_name", "Letters history ") & Format$(Date, "dd.mm.yyyy")
+    exportWs.Name = t("form.letter_history.export.sheet_name", "История писем ") & Format$(Date, "dd.mm.yyyy")
     exportWb.Application.Visible = True
 
-    MsgBox t("form.letter_history.msg.export_completed", "Export completed.") & vbCrLf & _
-           t("form.letter_history.msg.records_exported", "Records exported: ") & records.Count, _
+    MsgBox t("form.letter_history.msg.export_completed", "Экспорт завершен.") & vbCrLf & _
+           t("form.letter_history.msg.records_exported", "Экспортировано записей: ") & records.Count, _
            vbInformation, _
-           t("form.letter_history.msg.export_title", "Data export")
+           t("form.letter_history.msg.export_title", "Экспорт данных")
     Exit Sub
 
 ExportError:
-    MsgBox t("form.letter_history.msg.export_error", "Export error: ") & Err.Description, vbCritical
+    MsgBox t("form.letter_history.msg.export_error", "Ошибка экспорта: ") & Err.Description, vbCritical
 End Sub
 
 Public Function RepositoryHasReturnStatusDate(returnStatus As String) As Boolean
@@ -640,14 +640,14 @@ End Function
 
 Private Sub WriteLetterHistoryExportHeaders(exportWs As Worksheet)
     With exportWs
-        .Cells(1, LetterColumnAddressee).Value = t("form.letter_history.export.header.addressee", "Addressee")
-        .Cells(1, LetterColumnOutgoingNumber).Value = t("form.letter_history.export.header.outgoing_number", "Outgoing Number")
-        .Cells(1, LetterColumnOutgoingDate).Value = t("form.letter_history.export.header.outgoing_date", "Outgoing Date")
-        .Cells(1, LetterColumnAttachmentText).Value = t("form.letter_history.export.header.attachment_name", "Attachment Name")
-        .Cells(1, LetterColumnDocumentSum).Value = t("form.letter_history.export.header.document_sum", "Document Sum")
-        .Cells(1, LetterColumnReturnStatus).Value = t("form.letter_history.export.header.return_mark", "Return Mark")
-        .Cells(1, LetterColumnExecutor).Value = t("form.letter_history.export.header.executor_name", "Executor Name")
-        .Cells(1, LetterColumnDocumentType).Value = t("form.letter_history.export.header.send_type", "Send Type")
+        .Cells(1, LetterColumnAddressee).Value = t("form.letter_history.export.header.addressee", "Адресат")
+        .Cells(1, LetterColumnOutgoingNumber).Value = t("form.letter_history.export.header.outgoing_number", "Исходящий номер")
+        .Cells(1, LetterColumnOutgoingDate).Value = t("form.letter_history.export.header.outgoing_date", "Дата исходящего")
+        .Cells(1, LetterColumnAttachmentText).Value = t("form.letter_history.export.header.attachment_name", "Наименование приложения")
+        .Cells(1, LetterColumnDocumentSum).Value = t("form.letter_history.export.header.document_sum", "Сумма документа")
+        .Cells(1, LetterColumnReturnStatus).Value = t("form.letter_history.export.header.return_mark", "Отметка о возврате")
+        .Cells(1, LetterColumnExecutor).Value = t("form.letter_history.export.header.executor_name", "Исполнитель")
+        .Cells(1, LetterColumnDocumentType).Value = t("form.letter_history.export.header.send_type", "Тип отправки")
 
         With .Range("A1:H1")
             .Font.Bold = True
@@ -695,7 +695,7 @@ End Function
 Private Function FormatHistoryDocumentSum(sumText As String) As String
     If Len(Trim$(sumText)) > 0 And IsNumeric(sumText) Then
         If CDbl(sumText) > 0 Then
-            FormatHistoryDocumentSum = Format$(CDbl(sumText), "#,##0.00") & " rub."
+            FormatHistoryDocumentSum = Format$(CDbl(sumText), "#,##0.00") & " руб."
         Else
             FormatHistoryDocumentSum = "-"
         End If
@@ -706,8 +706,8 @@ End Function
 
 Private Function BuildHistoryStatusLabel(returnStatus As String) As String
     If RepositoryHasReturnStatusDate(returnStatus) Then
-        BuildHistoryStatusLabel = t("history.status.received_label", "Received ") & returnStatus
+        BuildHistoryStatusLabel = t("history.status.received_label", "Получено ") & returnStatus
     Else
-        BuildHistoryStatusLabel = t("history.status.pending_label", "Pending ") & returnStatus
+        BuildHistoryStatusLabel = t("history.status.pending_label", "Ожидается ") & returnStatus
     End If
 End Function
