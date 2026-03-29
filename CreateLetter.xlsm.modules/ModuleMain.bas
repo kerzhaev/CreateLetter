@@ -4,7 +4,7 @@ Attribute VB_Name = "ModuleMain"
 ' Module: ModuleMain (main module) - WITH DEBUGGING
 ' Author: CreateLetter contributors
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
-' Version: 1.7.4 — 29.03.2026
+' Version: 1.7.5 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -52,6 +52,7 @@ Public Enum AddressColumns
     AddressColumnRegion = 5
     AddressColumnPostalCode = 6
     AddressColumnPhone = 7
+    AddressColumnGroup = 8
 End Enum
 
 Public Enum LetterColumns
@@ -79,6 +80,7 @@ Public Enum AddressArrayIndexes
     AddressIndexRegion = 4
     AddressIndexPostalCode = 5
     AddressIndexPhone = 6
+    AddressIndexGroup = 7
 End Enum
 
 Public Enum AddressListPartIndexes
@@ -90,6 +92,19 @@ Public Enum AddressListPartIndexes
     AddressPartPostalCode = 5
     AddressPartPhone = 6
     AddressPartRowNumber = 7
+End Enum
+
+Public Enum AddressSearchResultIndexes
+    AddressSearchResultDisplayText = 0
+    AddressSearchResultWorksheetRow = 1
+    AddressSearchResultAddressee = 2
+    AddressSearchResultStreet = 3
+    AddressSearchResultCity = 4
+    AddressSearchResultDistrict = 5
+    AddressSearchResultRegion = 6
+    AddressSearchResultPostalCode = 7
+    AddressSearchResultPhone = 8
+    AddressSearchResultGroup = 9
 End Enum
 
 Public Enum DocumentArrayIndexes
@@ -615,6 +630,19 @@ Public Function SearchAddresses(searchTerm As String) As Collection
     Set SearchAddresses = RepositorySearchAddresses(searchTerm)
 End Function
 
+Public Function GetAddressSearchResultDisplayText(addressSearchResult As Variant) As String
+    GetAddressSearchResultDisplayText = RepositoryGetAddressSearchResultDisplayText(addressSearchResult)
+End Function
+
+Public Function TryGetAddressSearchSelection(addressSearchResult As Variant, ByRef addressArray As Variant, ByRef rowNumber As Long, ByRef errorMessage As String) As Boolean
+    errorMessage = ""
+    TryGetAddressSearchSelection = RepositoryTryParseAddressSearchResult(addressSearchResult, addressArray, rowNumber)
+
+    If Not TryGetAddressSearchSelection Then
+        errorMessage = t("validation.address.record_invalid", "Неверный формат записи адреса.")
+    End If
+End Function
+
 Public Function ResolveDocumentTypeDisplayValue(documentType As String) As String
     ResolveDocumentTypeDisplayValue = GetDocumentTypeDisplayLabel(documentType)
 End Function
@@ -756,6 +784,7 @@ Private Sub WriteAddressRow(ws As Worksheet, rowNumber As Long, addressArray As 
     ws.Cells(rowNumber, AddressColumnRegion).value = addressArray(AddressIndexRegion)
     ws.Cells(rowNumber, AddressColumnPostalCode).value = addressArray(AddressIndexPostalCode)
     ws.Cells(rowNumber, AddressColumnPhone).value = FormatPhoneNumber(CStr(addressArray(AddressIndexPhone)))
+    ws.Cells(rowNumber, AddressColumnGroup).value = addressArray(AddressIndexGroup)
 End Sub
 
 Private Function AddressColumnFromIndex(addressIndex As AddressArrayIndexes) As AddressColumns
@@ -766,7 +795,8 @@ Private Function AddressColumnFromIndex(addressIndex As AddressArrayIndexes) As 
         Case AddressIndexDistrict: AddressColumnFromIndex = AddressColumnDistrict
         Case AddressIndexRegion: AddressColumnFromIndex = AddressColumnRegion
         Case AddressIndexPostalCode: AddressColumnFromIndex = AddressColumnPostalCode
-        Case Else: AddressColumnFromIndex = AddressColumnPhone
+        Case AddressIndexPhone: AddressColumnFromIndex = AddressColumnPhone
+        Case Else: AddressColumnFromIndex = AddressColumnGroup
     End Select
 End Function
 
@@ -1344,7 +1374,7 @@ Public Function HasAddressDataChanged(rowNumber As Long, newAddressArray As Vari
     Set ws = ThisWorkbook.Worksheets("Addresses")
     
     Dim i As Long
-    For i = AddressIndexAddressee To AddressIndexPhone
+    For i = AddressIndexAddressee To AddressIndexGroup
         Dim sheetValue As String
         Dim formValue As String
         Dim columnNumber As AddressColumns

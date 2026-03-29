@@ -45,3 +45,4 @@
 - Ribbon callback code may stay ASCII-safe internally, but the visible Ribbon tab/group/button labels, screentips, and user-facing dialog text must remain Russian and consistent with the workbook UI.
 - Excel COM automation patterns that prove useful here should be documented in a reusable playbook, not left only in one-off scripts or chat history, so they can be ported to the next VBA project.
 - When smoke tests need workbook package inspection, inspect a temporary workbook copy instead of the live COM-opened file to avoid false failures from file locks.
+- Shared postal addresses between multiple recipients must be modeled with the optional `AddressGroup` field in `tblAddresses`, not with a separate exported letter/history field or a new normalized address table unless a later roadmap explicitly introduces one.

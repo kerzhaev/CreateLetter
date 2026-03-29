@@ -17,8 +17,8 @@ Attribute VB_Exposed = False
 
 
 ' ======================================================================
-' Form    : frmLetterCreator v1.6.11 - Thin-shell MultiPage wizard with workbook-backed localization and internal type keys
-' Version : 1.6.9 - 27.03.2026
+' Form    : frmLetterCreator v1.6.12 - Thin-shell MultiPage wizard with workbook-backed localization and grouped address search
+' Version : 1.6.12 - 29.03.2026
 ' Author  : CreateLetter contributors
 ' Purpose : UI orchestration for letter creation, address entry, attachments, summary flow, and schema-safe bindings
 ' ======================================================================
@@ -29,17 +29,22 @@ Option Explicit
 '  GLOBAL VARIABLES
 '------------------------------------------------------------
 Private Const TOTAL_PAGES As Integer = 4
+Private Const ADDRESS_GROUP_LABEL_NAME As String = "lblAddressGroup"
+Private Const ADDRESS_GROUP_TEXTBOX_NAME As String = "txtAddressGroup"
 Public selectedAddressRow As Long
 Private documentsList As Collection
 Private contextMenuSelectedIndex As Integer
+Private currentAddressSearchResults As Collection
 
 '------------------------------------------------------------
 '  FORM INITIALIZATION
 '------------------------------------------------------------
 Private Sub UserForm_Initialize()
     Set documentsList = New Collection
+    Set currentAddressSearchResults = New Collection
     contextMenuSelectedIndex = -1
     
+    EnsureAddressGroupControls
     ConfigureFormAppearance
     ApplyLocalizedStaticCaptions
     InitializeControlValues
@@ -226,6 +231,7 @@ Private Sub btnClearSearch_Click()
     
     Me.Controls("txtAddressSearch").value = ""
     Me.Controls("lstAddresses").Clear
+    Set currentAddressSearchResults = New Collection
     
     ClearAllAddressFields
     ResetAddressFormState
@@ -244,10 +250,10 @@ Private Sub ClearAllAddressFields()
     Dim i As Long
     Dim ctrl As Control
     
-    addressFields = Array("txtAddressee", "txtStreet", "txtCity", "txtDistrict", "txtRegion", "txtPostalCode", "txtAddresseePhone")
+    addressFields = Array("txtAddressee", "txtStreet", "txtCity", "txtDistrict", "txtRegion", "txtPostalCode", "txtAddresseePhone", ADDRESS_GROUP_TEXTBOX_NAME)
     
     For i = LBound(addressFields) To UBound(addressFields)
-        Set ctrl = Me.Controls(addressFields(i))
+        Set ctrl = ResolveNamedControl(CStr(addressFields(i)))
         If Not ctrl Is Nothing Then
             ctrl.value = ""
             ctrl.backColor = RGB(255, 255, 255)
@@ -297,7 +303,7 @@ End Sub
 Private Sub ConfigureFormAppearance()
     Me.Font.Name = "Segoe UI"
     Me.Font.Size = 10
-    Me.Caption = t("form.letter_creator.title", "Формирование писем") & " v1.6.11"
+    Me.Caption = t("form.letter_creator.title", "Формирование писем") & " v1.6.12"
     
     On Error Resume Next
     
@@ -342,6 +348,7 @@ Private Sub ConfigureFormAppearance()
     txtAddressSearch.ControlTipText = t("form.letter_creator.tip.address_search", "Введите часть наименования для поиска адресата")
     txtLetterNumber.ControlTipText = t("form.letter_creator.tip.letter_number", "Введите номер после 7/ (например: 125 превратится в 7/125)")
     txtLetterDate.ControlTipText = t("form.letter_creator.tip.letter_date", "Формат: дд.мм.гггг")
+    SetResolvedControlTip ADDRESS_GROUP_TEXTBOX_NAME, t("form.letter_creator.tip.address_group", "Общая группа для адресов с одним почтовым адресом. Например: 5 ФЭО")
 End Sub
 
 Private Sub ApplyLocalizedStaticCaptions()
@@ -370,6 +377,7 @@ Private Sub ApplyLocalizedStaticCaptions()
     SetLocalizedCaption "Label16", "form.letter_creator.label.found_addresses", "Найденные адреса"
     SetLocalizedCaption "Label17", "form.letter_creator.label.street_house", "Улица, дом"
     SetLocalizedCaption "Label18", "form.letter_creator.label.addressee", "Получатель"
+    SetResolvedControlCaption ADDRESS_GROUP_LABEL_NAME, t("form.letter_creator.label.address_group", "Группа адреса")
     SetLocalizedCaption "Label19", "form.letter_creator.label.available_attachments", "Доступные приложения"
     SetLocalizedCaption "Label20", "form.letter_creator.label.number", "Номер"
     SetLocalizedCaption "Label21", "form.letter_creator.label.summary_addressee", "Адресат:"
@@ -404,15 +412,108 @@ Private Sub SetLocalizedCaption(controlName As String, localizationKey As String
 End Sub
 
 Private Sub SetControlCaption(controlName As String, captionText As String)
+    SetResolvedControlCaption controlName, captionText
+End Sub
+
+Private Sub SetResolvedControlCaption(controlName As String, captionText As String)
     On Error Resume Next
 
-    Dim ctrl As Control
-    Set ctrl = Me.Controls(controlName)
+    Dim ctrl As Object
+    Set ctrl = ResolveNamedControl(controlName)
     If Not ctrl Is Nothing Then
         ctrl.Caption = captionText
     End If
 
     On Error GoTo 0
+End Sub
+
+Private Sub SetResolvedControlTip(controlName As String, tipText As String)
+    On Error Resume Next
+
+    Dim ctrl As Object
+    Set ctrl = ResolveNamedControl(controlName)
+    If Not ctrl Is Nothing Then
+        ctrl.ControlTipText = tipText
+    End If
+
+    On Error GoTo 0
+End Sub
+
+Private Function ResolveNamedControl(controlName As String) As Object
+    On Error Resume Next
+    Set ResolveNamedControl = Me.Controls(controlName)
+    On Error GoTo 0
+
+    If Not ResolveNamedControl Is Nothing Then Exit Function
+
+    Dim hostControl As Control
+    For Each hostControl In Me.Controls
+        On Error Resume Next
+        Set ResolveNamedControl = hostControl.Controls(controlName)
+        On Error GoTo 0
+        If Not ResolveNamedControl Is Nothing Then Exit Function
+    Next hostControl
+End Function
+
+Private Sub EnsureAddressGroupControls()
+    On Error GoTo EnsureError
+
+    Dim addressFrame As Object
+    Set addressFrame = ResolveNamedControl("Frame1")
+    If addressFrame Is Nothing Then Exit Sub
+
+    addressFrame.Height = 294
+
+    Dim groupLabel As Object
+    Set groupLabel = Nothing
+    On Error Resume Next
+    Set groupLabel = addressFrame.Controls(ADDRESS_GROUP_LABEL_NAME)
+    On Error GoTo EnsureError
+
+    If groupLabel Is Nothing Then
+        Set groupLabel = addressFrame.Controls.Add("Forms.Label.1", ADDRESS_GROUP_LABEL_NAME, True)
+    End If
+
+    With groupLabel
+        .Caption = t("form.letter_creator.label.address_group", "Группа адреса")
+        .Left = 30
+        .Top = 252
+        .Width = 84
+        .Height = 12
+        .BackStyle = 0
+        .Font.Name = "Segoe UI"
+        .Font.Size = 9
+    End With
+
+    Dim groupTextBox As Object
+    Set groupTextBox = Nothing
+    On Error Resume Next
+    Set groupTextBox = addressFrame.Controls(ADDRESS_GROUP_TEXTBOX_NAME)
+    On Error GoTo EnsureError
+
+    If groupTextBox Is Nothing Then
+        Set groupTextBox = addressFrame.Controls.Add("Forms.TextBox.1", ADDRESS_GROUP_TEXTBOX_NAME, True)
+    End If
+
+    With groupTextBox
+        .Left = 126
+        .Top = 246
+        .Width = 276
+        .Height = 24
+        .BackColor = RGB(255, 255, 255)
+        .ControlTipText = t("form.letter_creator.tip.address_group", "Общая группа для адресов с одним почтовым адресом. Например: 5 ФЭО")
+        .Font.Name = "Segoe UI"
+        .Font.Size = 10
+        .MultiLine = False
+    End With
+
+    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 342
+    If Not btnEditAddress Is Nothing Then btnEditAddress.Top = 342
+    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Top = 342
+    Exit Sub
+
+EnsureError:
+    Debug.Print "Address group controls setup error: " & Err.Description
 End Sub
 
 Private Sub txtAddresseePhone_Change()
@@ -608,14 +709,16 @@ Private Sub txtAddressSearch_Change()
     
     If Not Me.Controls("lstAddresses") Is Nothing Then
         Me.Controls("lstAddresses").Clear
+        Set currentAddressSearchResults = New Collection
         
         ResetAddressFormState
         
         If Len(Trim(Me.Controls("txtAddressSearch").value)) > 0 Then
             Dim res As Collection, i As Long
             Set res = GetCachedAddresses(Me.Controls("txtAddressSearch").value)
+            Set currentAddressSearchResults = res
             For i = 1 To res.count
-                Me.Controls("lstAddresses").AddItem res(i)
+                Me.Controls("lstAddresses").AddItem GetAddressSearchResultDisplayText(res(i))
             Next i
         End If
     End If
@@ -650,21 +753,24 @@ Private Sub ResetAddressFormState()
 End Sub
 
 Private Sub lstAddresses_Click()
-    On Error Resume Next
+    On Error GoTo SelectError
     
     If lstAddresses Is Nothing Or lstAddresses.ListIndex < 0 Then Exit Sub
+    If currentAddressSearchResults Is Nothing Then Exit Sub
+    If lstAddresses.ListIndex + 1 > currentAddressSearchResults.count Then Exit Sub
     
-    Dim itm As String, parts As Variant
+    Dim searchResult As Variant
+    Dim addressArray As Variant
     Dim rowNumber As Long
     Dim errorMessage As String
-    itm = lstAddresses.List(lstAddresses.ListIndex)
+    searchResult = currentAddressSearchResults(lstAddresses.ListIndex + 1)
     
-    If Not TryParseAddressListItem(itm, parts, rowNumber, errorMessage) Then
+    If Not TryGetAddressSearchSelection(searchResult, addressArray, rowNumber, errorMessage) Then
         MsgBox errorMessage, vbExclamation
         Exit Sub
     End If
     
-    ApplyAddressPartsToControls parts
+    ApplyAddressPartsToControls addressArray
     selectedAddressRow = rowNumber
     
     If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Enabled = False
@@ -672,7 +778,10 @@ Private Sub lstAddresses_Click()
     If Not btnEditAddress Is Nothing Then btnEditAddress.Enabled = True
     If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Enabled = True
     
-    On Error GoTo 0
+    Exit Sub
+
+SelectError:
+    MsgBox t("form.letter_creator.msg.address_select_error", "Ошибка при выборе адреса: ") & Err.Description, vbExclamation
 End Sub
 
 Private Sub btnSaveNewAddress_Click()
@@ -760,6 +869,8 @@ Private Sub ClearAddressFields()
     If Not txtDistrict Is Nothing Then txtDistrict.value = ""
     If Not txtRegion Is Nothing Then txtRegion.value = ""
     If Not txtPostalCode Is Nothing Then txtPostalCode.value = ""
+    If Not txtAddresseePhone Is Nothing Then txtAddresseePhone.value = ""
+    SetControlValue ADDRESS_GROUP_TEXTBOX_NAME, ""
     On Error GoTo 0
 End Sub
 
@@ -1045,36 +1156,52 @@ End Function
 '  AUXILIARY FUNCTIONS FOR ADDRESS
 '=====================================================================
 Private Function CreateAddressArray() As Variant
-    Dim arr(AddressIndexPhone) As String
+    Dim arr(AddressIndexGroup) As String
     
-    On Error Resume Next
-    arr(AddressIndexAddressee) = Me.Controls("txtAddressee").value
-    arr(AddressIndexStreet) = Me.Controls("txtStreet").value
-    arr(AddressIndexCity) = Me.Controls("txtCity").value
-    arr(AddressIndexDistrict) = Me.Controls("txtDistrict").value
-    arr(AddressIndexRegion) = Me.Controls("txtRegion").value
-    arr(AddressIndexPostalCode) = Me.Controls("txtPostalCode").value
-    arr(AddressIndexPhone) = Me.Controls("txtAddresseePhone").value
-    On Error GoTo 0
+    arr(AddressIndexAddressee) = GetControlText("txtAddressee")
+    arr(AddressIndexStreet) = GetControlText("txtStreet")
+    arr(AddressIndexCity) = GetControlText("txtCity")
+    arr(AddressIndexDistrict) = GetControlText("txtDistrict")
+    arr(AddressIndexRegion) = GetControlText("txtRegion")
+    arr(AddressIndexPostalCode) = GetControlText("txtPostalCode")
+    arr(AddressIndexPhone) = GetControlText("txtAddresseePhone")
+    arr(AddressIndexGroup) = GetControlText(ADDRESS_GROUP_TEXTBOX_NAME)
     
     CreateAddressArray = arr
 End Function
 
 Private Sub ApplyAddressPartsToControls(addressParts As Variant)
-    Me.Controls("txtAddressee").value = addressParts(AddressPartAddressee)
-    Me.Controls("txtStreet").value = addressParts(AddressPartStreet)
-    Me.Controls("txtCity").value = addressParts(AddressPartCity)
-    Me.Controls("txtDistrict").value = addressParts(AddressPartDistrict)
-    Me.Controls("txtRegion").value = addressParts(AddressPartRegion)
-    Me.Controls("txtPostalCode").value = addressParts(AddressPartPostalCode)
-    Me.Controls("txtAddresseePhone").value = addressParts(AddressPartPhone)
+    SetControlValue "txtAddressee", CStr(addressParts(AddressIndexAddressee))
+    SetControlValue "txtStreet", CStr(addressParts(AddressIndexStreet))
+    SetControlValue "txtCity", CStr(addressParts(AddressIndexCity))
+    SetControlValue "txtDistrict", CStr(addressParts(AddressIndexDistrict))
+    SetControlValue "txtRegion", CStr(addressParts(AddressIndexRegion))
+    SetControlValue "txtPostalCode", CStr(addressParts(AddressIndexPostalCode))
+    SetControlValue "txtAddresseePhone", CStr(addressParts(AddressIndexPhone))
+    SetControlValue ADDRESS_GROUP_TEXTBOX_NAME, CStr(addressParts(AddressIndexGroup))
 End Sub
 
 Private Function GetControlText(controlName As String) As String
     On Error Resume Next
-    GetControlText = Trim(CStr(Me.Controls(controlName).value))
+    Dim ctrl As Object
+    Set ctrl = ResolveNamedControl(controlName)
+    If Not ctrl Is Nothing Then
+        GetControlText = Trim(CStr(ctrl.value))
+    Else
+        GetControlText = ""
+    End If
     On Error GoTo 0
 End Function
+
+Private Sub SetControlValue(controlName As String, controlValue As String)
+    On Error Resume Next
+    Dim ctrl As Object
+    Set ctrl = ResolveNamedControl(controlName)
+    If Not ctrl Is Nothing Then
+        ctrl.value = controlValue
+    End If
+    On Error GoTo 0
+End Sub
 
 Private Sub ShowValidationFailure(messageText As String, focusControlName As String)
     MsgBox messageText, vbExclamation
@@ -1083,7 +1210,7 @@ End Sub
 
 Private Function GetPageIndexForControl(controlName As String) As Integer
     Select Case controlName
-        Case "txtAddressee", "txtCity", "txtRegion", "txtPostalCode", "txtAddresseePhone"
+        Case "txtAddressee", "txtCity", "txtRegion", "txtPostalCode", "txtAddresseePhone", ADDRESS_GROUP_TEXTBOX_NAME
             GetPageIndexForControl = 0
         Case "txtLetterNumber", "txtLetterDate", "cmbExecutor"
             GetPageIndexForControl = 1
@@ -1170,7 +1297,7 @@ Private Sub ConfigureMultilineTextBoxes()
     textboxNames = Array("txtAddressee", "txtStreet", "txtCity", "txtDistrict", "txtRegion", "txtPostalCode")
     
     For i = LBound(textboxNames) To UBound(textboxNames)
-        Set ctrl = Me.Controls(textboxNames(i))
+        Set ctrl = ResolveNamedControl(CStr(textboxNames(i)))
         If Not ctrl Is Nothing Then
             ctrl.Multiline = True
             ctrl.WordWrap = True
@@ -1187,7 +1314,7 @@ Private Sub AutoResizeTextBoxHeight(controlName As String)
     On Error Resume Next
     
     Dim ctrl As Control
-    Set ctrl = Me.Controls(controlName)
+    Set ctrl = ResolveNamedControl(controlName)
     
     If Not ctrl Is Nothing Then
         Dim textLength As Long
@@ -1210,8 +1337,8 @@ End Sub
 '=====================================================================
 Private Sub SafeSetFocus(controlName As String)
     On Error Resume Next
-    Dim ctrl As Control
-    Set ctrl = Me.Controls(controlName)
+    Dim ctrl As Object
+    Set ctrl = ResolveNamedControl(controlName)
     If Not ctrl Is Nothing Then
         If ctrl.Enabled And ctrl.Visible Then
             ctrl.SetFocus

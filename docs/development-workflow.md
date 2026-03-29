@@ -116,6 +116,7 @@ Use `-RequireLocalizationModule` after importing updated modules into the workbo
 Use `-RequireStructuredTables` after workbook schema stages that depend on `tblAddresses` / `tblLetters`.
 Use `-RequireLocalizationSheet` after workbook-backed localization becomes part of the expected schema.
 Use `-RequireRibbonCustomization` after source-managed Ribbon changes or package customization work.
+Use `-RequireAddressGroupColumn` after address-schema stages that depend on the optional `AddressGroup` column in `tblAddresses`.
 
 ## Reusable COM Pattern
 
@@ -137,3 +138,4 @@ Use it as the baseline for future workbook projects when you want:
 - [Maintenance](maintenance.md) - Recovery and safe update checklist
 - [Architecture](architecture.md) - Module boundaries and migration constraints
 - Create restore points with `powershell -ExecutionPolicy Bypass -File .\scripts\create_restore_point.ps1 -Label "<feature-name>"`.
+- The `Addresses` schema supports an optional `AddressGroup` field for scenarios where different recipients share one postal address but must stay separate as named addressees.

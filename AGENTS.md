@@ -5,6 +5,7 @@
 ## Project Overview
 CreateLetter is an Excel VBA workbook used to prepare letters from templates using structured address/settings data and guided user forms.
 Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchronized with the workbook artifact through a manual modified `VbaModuleManager` workflow.
+The `Addresses` worksheet now supports an optional `AddressGroup` field for scenarios where several named recipients share one postal address.
 
 ## Tech Stack
 - **Language:** VBA
@@ -23,7 +24,7 @@ Source-managed VBA modules are stored in `CreateLetter.xlsm.modules/` and synchr
 │   ├── ModuleDates.bas                  # Date helpers
 │   ├── ModuleLocalization.bas           # Localization lookup foundation
 │   ├── ModuleRibbon.bas                 # Ribbon callbacks and folder settings
-│   ├── ModuleRepository.bas             # Workbook repository/search/export helpers
+│   ├── ModuleRepository.bas             # Workbook repository/search/export helpers, including structured address search
 │   ├── ModuleWordInterop.bas            # Explicit Word lifecycle and document generation helpers
 │   ├── ModuleCache.bas                  # Cache helpers
 │   ├── ModuleBackup.bas                 # Backup helpers

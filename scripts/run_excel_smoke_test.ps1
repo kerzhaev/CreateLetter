@@ -15,7 +15,10 @@ param(
     [switch]$AllowLegacyRussianSheetNames,
 
     [Parameter(Mandatory = $false)]
-    [switch]$RequireRibbonCustomization
+    [switch]$RequireRibbonCustomization,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireAddressGroupColumn
 )
 
 $ErrorActionPreference = "Stop"
@@ -67,6 +70,20 @@ function Get-WorksheetTableNames {
     }
 
     return $tableNames
+}
+
+function Get-TableColumnNames {
+    param(
+        [object]$ListObject
+    )
+
+    $columnNames = New-Object 'System.Collections.Generic.List[string]'
+
+    for ($i = 1; $i -le $ListObject.ListColumns.Count; $i++) {
+        $columnNames.Add([string]$ListObject.ListColumns.Item($i).Name) | Out-Null
+    }
+
+    return $columnNames
 }
 
 $resolvedWorkbookPath = Resolve-Path $WorkbookPath
@@ -148,6 +165,27 @@ try {
             Add-Result -Results $results -Name ("StructuredTable:" + $tableRequirement.Sheet) -Status "FAIL" -Details $_.Exception.Message
             $failed = $true
         }
+    }
+
+    try {
+        $addressesSheet = $workbook.Worksheets.Item("Addresses")
+        $addressesTable = $addressesSheet.ListObjects.Item("tblAddresses")
+        $addressColumnNames = Get-TableColumnNames -ListObject $addressesTable
+
+        if ($addressColumnNames.Contains("AddressGroup")) {
+            Add-Result -Results $results -Name "StructuredColumn:Addresses.AddressGroup" -Status "PASS" -Details "Column 'AddressGroup' is present in tblAddresses."
+        }
+        elseif ($RequireAddressGroupColumn) {
+            Add-Result -Results $results -Name "StructuredColumn:Addresses.AddressGroup" -Status "FAIL" -Details ("Column 'AddressGroup' is missing. Found: " + (($addressColumnNames | Select-Object -First 20) -join ", "))
+            $failed = $true
+        }
+        else {
+            Add-Result -Results $results -Name "StructuredColumn:Addresses.AddressGroup" -Status "WARN" -Details "Column 'AddressGroup' is missing."
+        }
+    }
+    catch {
+        Add-Result -Results $results -Name "StructuredColumn:Addresses.AddressGroup" -Status "FAIL" -Details $_.Exception.Message
+        $failed = $true
     }
 
     $formatPhoneResult = $excel.Run("'" + $workbook.Name + "'!FormatPhoneNumber", "89281234567")

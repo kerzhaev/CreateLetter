@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleRepository"
 ' Module: ModuleRepository
 ' Author: CreateLetter contributors
 ' Purpose: Workbook CRUD/search/export helpers with typed history DTO support
-' Version: 1.0.3 - 29.03.2026
+' Version: 1.0.4 - 29.03.2026
 ' ======================================================================
 
 Option Explicit
@@ -17,11 +17,11 @@ Public Function RepositorySearchAddresses(searchTerm As String) As Collection
     Set ws = ThisWorkbook.Worksheets("Addresses")
 
     Dim addressData As Variant
-    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnPhone, AddressesTableName)
+    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnGroup, AddressesTableName)
     If IsEmpty(addressData) Then Exit Function
 
     Dim startRow As Long
-    startRow = RepositoryGetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnPhone, AddressesTableName)
+    startRow = RepositoryGetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnGroup, AddressesTableName)
 
     Dim normalizedSearch As String
     normalizedSearch = UCase$(Trim$(searchTerm))
@@ -29,7 +29,7 @@ Public Function RepositorySearchAddresses(searchTerm As String) As Collection
     Dim i As Long
     For i = LBound(addressData, 1) To UBound(addressData, 1)
         If Len(normalizedSearch) = 0 Or InStr(1, UCase$(BuildAddressSearchLineFromMatrix(addressData, i)), normalizedSearch, vbTextCompare) > 0 Then
-            RepositorySearchAddresses.Add BuildAddressListItemFromMatrix(addressData, i, startRow + i - 1)
+            RepositorySearchAddresses.Add CreateAddressSearchResultFromMatrix(addressData, i, startRow + i - 1)
         End If
     Next i
 
@@ -37,6 +37,62 @@ Public Function RepositorySearchAddresses(searchTerm As String) As Collection
 
 SearchError:
     Debug.Print "RepositorySearchAddresses error: " & Err.Description
+End Function
+
+Public Function RepositoryGetAddressSearchResultDisplayText(addressSearchResult As Variant) As String
+    If IsAddressSearchResultArray(addressSearchResult) Then
+        RepositoryGetAddressSearchResultDisplayText = CStr(addressSearchResult(AddressSearchResultDisplayText))
+    Else
+        RepositoryGetAddressSearchResultDisplayText = CStr(addressSearchResult)
+    End If
+End Function
+
+Public Function RepositoryTryParseAddressSearchResult(addressSearchResult As Variant, ByRef addressArray As Variant, ByRef rowNumber As Long) As Boolean
+    rowNumber = 0
+    RepositoryTryParseAddressSearchResult = False
+
+    If IsAddressSearchResultArray(addressSearchResult) Then
+        Dim parsedAddress(AddressIndexGroup) As String
+
+        parsedAddress(AddressIndexAddressee) = CStr(addressSearchResult(AddressSearchResultAddressee))
+        parsedAddress(AddressIndexStreet) = CStr(addressSearchResult(AddressSearchResultStreet))
+        parsedAddress(AddressIndexCity) = CStr(addressSearchResult(AddressSearchResultCity))
+        parsedAddress(AddressIndexDistrict) = CStr(addressSearchResult(AddressSearchResultDistrict))
+        parsedAddress(AddressIndexRegion) = CStr(addressSearchResult(AddressSearchResultRegion))
+        parsedAddress(AddressIndexPostalCode) = CStr(addressSearchResult(AddressSearchResultPostalCode))
+        parsedAddress(AddressIndexPhone) = CStr(addressSearchResult(AddressSearchResultPhone))
+        parsedAddress(AddressIndexGroup) = CStr(addressSearchResult(AddressSearchResultGroup))
+
+        addressArray = parsedAddress
+        If IsNumeric(addressSearchResult(AddressSearchResultWorksheetRow)) Then
+            rowNumber = CLng(addressSearchResult(AddressSearchResultWorksheetRow))
+            RepositoryTryParseAddressSearchResult = (rowNumber > 0)
+        End If
+
+        Exit Function
+    End If
+
+    If VarType(addressSearchResult) = vbString Then
+        Dim legacyParts As Variant
+        Dim legacyErrorMessage As String
+        Dim legacyRow As Long
+        If TryParseAddressListItem(CStr(addressSearchResult), legacyParts, legacyRow, legacyErrorMessage) Then
+            Dim legacyAddress(AddressIndexGroup) As String
+
+            legacyAddress(AddressIndexAddressee) = CStr(legacyParts(AddressPartAddressee))
+            legacyAddress(AddressIndexStreet) = CStr(legacyParts(AddressPartStreet))
+            legacyAddress(AddressIndexCity) = CStr(legacyParts(AddressPartCity))
+            legacyAddress(AddressIndexDistrict) = CStr(legacyParts(AddressPartDistrict))
+            legacyAddress(AddressIndexRegion) = CStr(legacyParts(AddressPartRegion))
+            legacyAddress(AddressIndexPostalCode) = CStr(legacyParts(AddressPartPostalCode))
+            legacyAddress(AddressIndexPhone) = CStr(legacyParts(AddressPartPhone))
+            legacyAddress(AddressIndexGroup) = ""
+
+            addressArray = legacyAddress
+            rowNumber = legacyRow
+            RepositoryTryParseAddressSearchResult = (rowNumber > 0)
+        End If
+    End If
 End Function
 
 Public Function RepositorySearchAttachments(searchTerm As String) As Collection
@@ -172,11 +228,11 @@ Public Function RepositoryIsAddressDuplicate(addressArray As Variant, Optional e
     Set ws = ThisWorkbook.Worksheets("Addresses")
 
     Dim addressData As Variant
-    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnPhone, AddressesTableName)
+    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnGroup, AddressesTableName)
     If IsEmpty(addressData) Then Exit Function
 
     Dim startRow As Long
-    startRow = RepositoryGetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnPhone, AddressesTableName)
+    startRow = RepositoryGetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnGroup, AddressesTableName)
 
     Dim i As Long
     Dim matchCount As Integer
@@ -453,17 +509,58 @@ Private Function BuildAddressSearchLineFromMatrix(addressData As Variant, rowInd
                                        RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnDistrict) & " " & _
                                        RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnRegion) & " " & _
                                        RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPostalCode) & " " & _
-                                       RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPhone)
+                                       RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPhone) & " " & _
+                                       RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnGroup)
 End Function
 
-Private Function BuildAddressListItemFromMatrix(addressData As Variant, rowIndex As Long, worksheetRowNumber As Long) As String
-    BuildAddressListItemFromMatrix = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnAddressee) & " | " & _
-                                     RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnStreet) & " | " & _
-                                     RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnCity) & " | " & _
-                                     RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnDistrict) & " | " & _
-                                     RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnRegion) & " | " & _
-                                     RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPostalCode) & " | " & _
-                                     RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPhone) & " | " & worksheetRowNumber
+Private Function CreateAddressSearchResultFromMatrix(addressData As Variant, rowIndex As Long, worksheetRowNumber As Long) As Variant
+    Dim searchResult(AddressSearchResultGroup) As Variant
+
+    searchResult(AddressSearchResultDisplayText) = BuildAddressSearchDisplayTextFromMatrix(addressData, rowIndex)
+    searchResult(AddressSearchResultWorksheetRow) = worksheetRowNumber
+    searchResult(AddressSearchResultAddressee) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnAddressee)
+    searchResult(AddressSearchResultStreet) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnStreet)
+    searchResult(AddressSearchResultCity) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnCity)
+    searchResult(AddressSearchResultDistrict) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnDistrict)
+    searchResult(AddressSearchResultRegion) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnRegion)
+    searchResult(AddressSearchResultPostalCode) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPostalCode)
+    searchResult(AddressSearchResultPhone) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPhone)
+    searchResult(AddressSearchResultGroup) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnGroup)
+
+    CreateAddressSearchResultFromMatrix = searchResult
+End Function
+
+Private Function BuildAddressSearchDisplayTextFromMatrix(addressData As Variant, rowIndex As Long) As String
+    Dim displayText As String
+    Dim locationText As String
+    Dim groupText As String
+
+    displayText = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnAddressee)
+    locationText = BuildAddressLocationTextFromMatrix(addressData, rowIndex)
+    groupText = Trim$(RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnGroup))
+
+    If Len(groupText) > 0 Then
+        displayText = displayText & " [" & groupText & "]"
+    End If
+
+    If Len(locationText) > 0 Then
+        displayText = displayText & " | " & locationText
+    End If
+
+    BuildAddressSearchDisplayTextFromMatrix = displayText
+End Function
+
+Private Function BuildAddressLocationTextFromMatrix(addressData As Variant, rowIndex As Long) As String
+    Dim parts As Collection
+    Set parts = New Collection
+
+    AddNonEmptyPart parts, RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnStreet)
+    AddNonEmptyPart parts, RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnCity)
+    AddNonEmptyPart parts, RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnDistrict)
+    AddNonEmptyPart parts, RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnRegion)
+    AddNonEmptyPart parts, RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPostalCode)
+
+    BuildAddressLocationTextFromMatrix = JoinCollectionParts(parts, ", ")
 End Function
 
 Private Function CreateLetterHistoryRecordFromMatrix(letterData As Variant, rowIndex As Long, worksheetRowNumber As Long) As clsLetterHistoryRecord
@@ -503,7 +600,39 @@ Private Sub WriteAddressRow(ws As Worksheet, rowNumber As Long, addressArray As 
     ws.Cells(rowNumber, AddressColumnRegion).Value = addressArray(AddressIndexRegion)
     ws.Cells(rowNumber, AddressColumnPostalCode).Value = addressArray(AddressIndexPostalCode)
     ws.Cells(rowNumber, AddressColumnPhone).Value = FormatPhoneNumber(CStr(addressArray(AddressIndexPhone)))
+    ws.Cells(rowNumber, AddressColumnGroup).Value = addressArray(AddressIndexGroup)
 End Sub
+
+Private Function IsAddressSearchResultArray(addressSearchResult As Variant) As Boolean
+    On Error GoTo NotSearchResult
+
+    If Not IsArray(addressSearchResult) Then Exit Function
+    If UBound(addressSearchResult) < AddressSearchResultGroup Then Exit Function
+
+    IsAddressSearchResultArray = True
+    Exit Function
+
+NotSearchResult:
+    IsAddressSearchResultArray = False
+End Function
+
+Private Sub AddNonEmptyPart(parts As Collection, textValue As String)
+    If Len(Trim$(textValue)) > 0 Then
+        parts.Add Trim$(textValue)
+    End If
+End Sub
+
+Private Function JoinCollectionParts(parts As Collection, delimiter As String) As String
+    Dim resultText As String
+    Dim i As Long
+
+    For i = 1 To parts.Count
+        If i > 1 Then resultText = resultText & delimiter
+        resultText = resultText & CStr(parts(i))
+    Next i
+
+    JoinCollectionParts = resultText
+End Function
 
 Private Function TryGetLetterHistoryRecord(letterData As Variant, ByRef record As clsLetterHistoryRecord) As Boolean
     On Error GoTo ParseFailed

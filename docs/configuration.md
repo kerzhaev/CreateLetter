@@ -9,6 +9,7 @@ Key sheets are initialized/managed by `mdlInicialize.bas`:
 - Address sheet: recipient address fields
 - Letters sheet: generated/outgoing letter records
 - Settings sheet: static texts, executors, and helper values
+- `tblAddresses` can include an optional `AddressGroup` column for scenarios where several named recipients share the same postal address.
 
 ## Template Configuration
 
