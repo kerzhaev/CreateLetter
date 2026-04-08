@@ -40,9 +40,9 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form    : frmLetterCreator v1.6.16 - Thin-shell MultiPage wizard with workbook-backed localization, grouped address search, and search-first initial focus
+' Form    : frmLetterCreator v1.6.17 - Thin-shell MultiPage wizard with workbook-backed localization, grouped address search, and explicit startup focus
 
-' Version : 1.6.16 - 29.03.2026
+' Version : 1.6.17 - 29.03.2026
 
 ' Author  : CreateLetter contributors
 
@@ -140,11 +140,25 @@ Private Sub UserForm_Activate()
 
     If pendingInitialSearchFocus Then
 
-        pendingInitialSearchFocus = False
-
-        SafeSetFocus "txtAddressSearch"
+        ApplyInitialSearchFocus
 
     End If
+
+End Sub
+
+Public Sub ApplyInitialSearchFocus()
+
+    pendingInitialSearchFocus = False
+
+    On Error Resume Next
+
+    If Not mpgWizard Is Nothing Then mpgWizard.Value = 0
+
+    Me.Repaint
+    DoEvents
+    SafeSetFocus "txtAddressSearch"
+
+    On Error GoTo 0
 
 End Sub
 
@@ -728,7 +742,7 @@ Private Sub ConfigureFormAppearance()
 
     txtLetterDate.ControlTipText = t("form.letter_creator.tip.letter_date", "Формат: дд.мм.гггг")
 
-    SetResolvedControlTip ADDRESS_GROUP_TEXTBOX_NAME, t("form.letter_creator.tip.address_group", "Общая группа для адресов с одним почтовым адресом. Например: 5 ФЭО")
+    SetResolvedControlTip ADDRESS_GROUP_TEXTBOX_NAME, GetAddressGroupTooltipText()
 
 End Sub
 
@@ -982,7 +996,7 @@ Private Sub EnsureAddressGroupControls()
 
     With groupLabel
 
-        .Caption = t("form.letter_creator.label.address_group", GetAddressGroupLabelText())
+        .Caption = GetAddressGroupLabelText()
 
         .Left = 30
 
@@ -1034,7 +1048,7 @@ Private Sub EnsureAddressGroupControls()
 
         .backColor = RGB(255, 255, 255)
 
-        .ControlTipText = t("form.letter_creator.tip.address_group", GetAddressGroupTooltipText())
+        .ControlTipText = GetAddressGroupTooltipText()
 
         .Font.Name = "Segoe UI"
 

@@ -1578,6 +1578,8 @@ Public Sub SaveNewAddress(addressArray As Variant)
 
     RepositorySaveNewAddress addressArray
 
+    SafeWriteAuditLog AUDIT_SAVE_ADDRESS, BuildAddressAuditDetails("created", addressArray), SafeAddressAuditRecipient(addressArray)
+
 End Sub
 
 
@@ -1586,13 +1588,21 @@ Public Sub UpdateExistingAddress(rowNumber As Long, addressArray As Variant)
 
     RepositoryUpdateExistingAddress rowNumber, addressArray
 
+    SafeWriteAuditLog AUDIT_SAVE_ADDRESS, BuildAddressAuditDetails("updated row " & rowNumber, addressArray), SafeAddressAuditRecipient(addressArray)
+
 End Sub
 
 
 
 Public Sub DeleteExistingAddress(rowNumber As Long)
 
+    Dim deletedRecipient As String
+
+    deletedRecipient = GetAddressAuditRecipientByRow(rowNumber)
+
     RepositoryDeleteExistingAddress rowNumber
+
+    SafeWriteAuditLog AUDIT_SAVE_ADDRESS, "Address deleted from row " & rowNumber, deletedRecipient
 
 End Sub
 
@@ -1769,6 +1779,8 @@ Public Sub SaveLetterInfoWithSum(Addressee As String, letterNumber As String, le
     
 
     Debug.Print "=== DEBUG SaveLetterInfoWithSum SUCCESS END ==="
+
+    SafeWriteAuditLog AUDIT_CREATE_LETTER, BuildLetterAuditDetails(letterNumber, letterDate, Executor, documentType, documents), Addressee
 
     
 
@@ -2527,7 +2539,9 @@ Public Function FormatRecipientAddress(addressParts As Variant) As String
 
     Dim i As Integer
 
-    For i = AddressIndexStreet To AddressIndexPhone
+    ' The recipient postal address written into the letter must not include
+    ' the contact phone number. Phone stays available in the form only.
+    For i = AddressIndexStreet To AddressIndexPostalCode
 
         If Len(Trim(CStr(addressParts(i)))) > 0 Then
 
@@ -2890,6 +2904,7 @@ Public Sub ShowLetterCreatorDeferred()
     Load frmLetterCreator
 
     frmLetterCreator.Show vbModeless
+    frmLetterCreator.ApplyInitialSearchFocus
 
     Exit Sub
 
@@ -2916,6 +2931,7 @@ Public Sub ShowLetterCreator()
     Load frmLetterCreator
 
     frmLetterCreator.Show vbModeless
+    frmLetterCreator.ApplyInitialSearchFocus
 
 End Sub
 
@@ -3351,6 +3367,107 @@ Public Sub SetStatusBarMessage(message As String, Optional clearAfterSeconds As 
     On Error GoTo 0
 
 End Sub
+
+
+
+Private Sub SafeWriteAuditLog(action As String, details As String, Optional recipient As String = "")
+
+    On Error GoTo AuditWriteError
+
+    WriteAuditLog action, details, recipient
+    Exit Sub
+
+AuditWriteError:
+
+    Debug.Print "Audit logging skipped: " & Err.description
+
+End Sub
+
+
+
+Private Function BuildAddressAuditDetails(operationName As String, addressArray As Variant) As String
+
+    Dim addressGroup As String
+
+
+
+    If IsArray(addressArray) And UBound(addressArray) >= AddressIndexGroup Then
+
+        addressGroup = Trim$(CStr(addressArray(AddressIndexGroup)))
+
+    End If
+
+
+
+    BuildAddressAuditDetails = "Address " & operationName
+
+    If Len(addressGroup) > 0 Then
+
+        BuildAddressAuditDetails = BuildAddressAuditDetails & "; group=" & addressGroup
+
+    End If
+
+End Function
+
+
+
+Private Function SafeAddressAuditRecipient(addressArray As Variant) As String
+
+    If IsArray(addressArray) And UBound(addressArray) >= AddressIndexAddressee Then
+
+        SafeAddressAuditRecipient = Trim$(CStr(addressArray(AddressIndexAddressee)))
+
+    End If
+
+End Function
+
+
+
+Private Function GetAddressAuditRecipientByRow(rowNumber As Long) As String
+
+    On Error GoTo LookupError
+
+
+
+    Dim ws As Worksheet
+
+    Set ws = ThisWorkbook.Worksheets("Addresses")
+
+
+
+    GetAddressAuditRecipientByRow = Trim$(CStr(ws.Cells(rowNumber, AddressColumnAddressee).Value))
+
+    Exit Function
+
+LookupError:
+
+    GetAddressAuditRecipientByRow = ""
+
+End Function
+
+
+
+Private Function BuildLetterAuditDetails(letterNumber As String, letterDate As Date, Executor As String, documentType As String, documents As Collection) As String
+
+    Dim documentCount As Long
+
+
+
+    If Not documents Is Nothing Then
+
+        documentCount = documents.Count
+
+    End If
+
+
+
+    BuildLetterAuditDetails = "Letter created; number=" & Trim$(letterNumber) & _
+                              "; date=" & Format$(letterDate, "dd.mm.yyyy") & _
+                              "; executor=" & Trim$(Executor) & _
+                              "; type=" & ResolveDocumentTypeStorageValue(documentType) & _
+                              "; documents=" & documentCount
+
+End Function
 
 
 

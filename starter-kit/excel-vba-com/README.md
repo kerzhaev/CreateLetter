@@ -14,8 +14,14 @@ starter-kit/excel-vba-com/
 ├── scripts/
 │   ├── apply_custom_ui.py
 │   ├── create_restore_point.ps1
+│   ├── export_and_smoke.cmd
+│   ├── export_and_smoke.ps1
 │   ├── export_vba_to_modules.py
+│   ├── repair_workbook.cmd
+│   ├── repair_workbook.ps1
 │   ├── run_excel_smoke_test.ps1
+│   ├── sync_and_smoke.cmd
+│   ├── sync_and_smoke.ps1
 │   └── sync_vba_from_modules.py
 └── starter-checklist.md
 ```
@@ -67,6 +73,12 @@ python .\scripts\export_vba_to_modules.py .\Workbook.xlsm .\Workbook.xlsm.module
 python .\scripts\sync_vba_from_modules.py .\Workbook.xlsm .\Workbook.xlsm.modules .\Workbook.xlsm.document-modules
 ```
 
+Or use the one-command shortcut:
+
+```powershell
+.\scripts\sync_and_smoke.cmd
+```
+
 4. If you use Ribbon XML, run:
 
 ```powershell
@@ -77,6 +89,18 @@ python .\scripts\apply_custom_ui.py .\Workbook.xlsm
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\run_excel_smoke_test.ps1 -WorkbookPath .\Workbook.xlsm
+```
+
+If you edited VBA directly in the workbook and want to export back to source plus run smoke in one step:
+
+```powershell
+.\scripts\export_and_smoke.cmd
+```
+
+If the workbook gets into a bad state after a manual import or broken VBE session, rebuild it from source-managed files:
+
+```powershell
+.\scripts\repair_workbook.cmd
 ```
 
 6. If a change is risky, create a restore point first:

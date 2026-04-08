@@ -439,6 +439,7 @@ End Sub
 Public Sub ShowLetterCreatorLegacy()
 
     frmLetterCreator.Show vbModeless
+    frmLetterCreator.ApplyInitialSearchFocus
 
 End Sub
 

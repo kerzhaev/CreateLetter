@@ -16,6 +16,10 @@ Attribute VB_Name = "ModuleBackup"
 
 Option Explicit
 
+Private Const BackupFileBaseName As String = "FormirovanieLetters_backup_"
+
+Private Const DefaultBackupRetentionDays As Integer = 7
+
 
 
 Public Sub CreateBackup()
@@ -38,7 +42,7 @@ Public Sub CreateBackup()
 
 
 
-    backupFileName = "FormirovanieLetters_backup_" & Format$(Now, "yyyy-mm-dd_hh-mm-ss") & ".xlsx"
+    backupFileName = BuildBackupFileName()
 
     backupPath = backupFolder & backupFileName
 
@@ -46,7 +50,7 @@ Public Sub CreateBackup()
 
     ThisWorkbook.SaveCopyAs backupPath
 
-    CleanOldBackups backupFolder, 7
+    CleanOldBackups backupFolder, GetConfiguredBackupRetentionDays()
 
 
 
@@ -106,7 +110,7 @@ Private Sub CleanOldBackups(backupFolder As String, daysToKeep As Integer)
 
 
 
-    fileName = dir$(backupFolder & "FormirovanieLetters_backup_*.xlsx")
+    fileName = dir$(backupFolder & BackupFileBaseName & "*.xls*")
 
     Do While fileName <> ""
 
@@ -170,11 +174,15 @@ Public Sub AutoBackupOnStartup()
 
     Dim lastBackupDate As Date
 
+    Dim autoBackupEnabled As Boolean
+
     lastBackupDate = GetSetting("FormirovanieLetters", "Backup", "LastBackupDate", DateSerial(1900, 1, 1))
 
+    autoBackupEnabled = CBool(GetSetting("FormirovanieLetters", "Backup", "AutoBackupEnabled", True))
 
 
-    If Date - lastBackupDate >= 1 Then
+
+    If autoBackupEnabled And Date - lastBackupDate >= 1 Then
 
         CreateBackup
 
@@ -224,7 +232,7 @@ Public Sub ShowBackupInfo()
 
 
 
-    fileName = dir$(backupFolder & "FormirovanieLetters_backup_*.xlsx")
+    fileName = dir$(backupFolder & BackupFileBaseName & "*.xls*")
 
     backupList = t("backup.msg.list_title", "BACKUP LIST:") & vbCrLf & vbCrLf
 
@@ -384,6 +392,72 @@ SettingsError:
     Debug.Print "GetBackupSettings error: " & Err.description
 
     GetBackupSettings = t("backup.msg.settings_unavailable", "Backup settings are currently unavailable.")
+
+End Function
+
+
+
+Private Function BuildBackupFileName() As String
+
+    BuildBackupFileName = BackupFileBaseName & Format$(Now, "yyyy-mm-dd_hh-mm-ss") & GetWorkbookBackupExtension()
+
+End Function
+
+
+
+Private Function GetWorkbookBackupExtension() As String
+
+    Dim workbookName As String
+
+    Dim extensionPosition As Long
+
+
+
+    workbookName = ThisWorkbook.Name
+
+    extensionPosition = InStrRev(workbookName, ".")
+
+
+
+    If extensionPosition > 0 Then
+
+        GetWorkbookBackupExtension = Mid$(workbookName, extensionPosition)
+
+    Else
+
+        GetWorkbookBackupExtension = ".xlsm"
+
+    End If
+
+End Function
+
+
+
+Private Function GetConfiguredBackupRetentionDays() As Integer
+
+    Dim storedRetention As Variant
+
+
+
+    storedRetention = GetSetting("FormirovanieLetters", "Backup", "RetentionDays", DefaultBackupRetentionDays)
+
+    If IsNumeric(storedRetention) Then
+
+        GetConfiguredBackupRetentionDays = CInt(storedRetention)
+
+    Else
+
+        GetConfiguredBackupRetentionDays = DefaultBackupRetentionDays
+
+    End If
+
+
+
+    If GetConfiguredBackupRetentionDays < 1 Then
+
+        GetConfiguredBackupRetentionDays = DefaultBackupRetentionDays
+
+    End If
 
 End Function
 

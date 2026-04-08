@@ -18,7 +18,10 @@ param(
     [switch]$RequireRibbonCustomization,
 
     [Parameter(Mandatory = $false)]
-    [switch]$RequireAddressGroupColumn
+    [switch]$RequireAddressGroupColumn,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireLocalTemplates
 )
 
 $ErrorActionPreference = "Stop"
@@ -110,6 +113,7 @@ function Test-DocumentModuleSourceCoverage {
 }
 
 $resolvedWorkbookPath = Resolve-Path $WorkbookPath
+$workbookDirectory = Split-Path -Parent $resolvedWorkbookPath.Path
 $modulesDirectory = Join-Path (Split-Path -Parent $resolvedWorkbookPath.Path) ([System.IO.Path]::GetFileName($resolvedWorkbookPath.Path) + ".modules")
 $documentModulesDirectory = Join-Path (Split-Path -Parent $resolvedWorkbookPath.Path) ([System.IO.Path]::GetFileName($resolvedWorkbookPath.Path) + ".document-modules")
 $results = New-Object 'System.Collections.Generic.List[object]'
@@ -118,6 +122,27 @@ $workbook = $null
 $failed = $false
 
 try {
+    $templateNames = @("LetterTemplate.docx", "LetterTemplateFOU.docx")
+    $missingTemplates = New-Object 'System.Collections.Generic.List[string]'
+
+    foreach ($templateName in $templateNames) {
+        $templatePath = Join-Path $workbookDirectory $templateName
+        if (-not (Test-Path -LiteralPath $templatePath)) {
+            $missingTemplates.Add($templateName) | Out-Null
+        }
+    }
+
+    if ($missingTemplates.Count -eq 0) {
+        Add-Result -Results $results -Name "LocalTemplates" -Status "PASS" -Details "Required local Word templates are present."
+    }
+    elseif ($RequireLocalTemplates) {
+        Add-Result -Results $results -Name "LocalTemplates" -Status "FAIL" -Details ("Missing local templates: " + ($missingTemplates -join ", "))
+        $failed = $true
+    }
+    else {
+        Add-Result -Results $results -Name "LocalTemplates" -Status "WARN" -Details ("Missing local templates: " + ($missingTemplates -join ", "))
+    }
+
     $excel = New-Object -ComObject Excel.Application
     $excel.Visible = $false
     $excel.DisplayAlerts = $false

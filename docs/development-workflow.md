@@ -63,8 +63,44 @@ python .\scripts\export_vba_to_modules.py .\CreateLetter.xlsm .\CreateLetter.xls
 python .\scripts\sync_vba_from_modules.py .\CreateLetter.xlsm .\CreateLetter.xlsm.modules .\CreateLetter.xlsm.document-modules
 ```
 
+Shortcut:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\sync_and_smoke.ps1
+```
+
+or:
+
+```powershell
+.\scripts\sync_and_smoke.cmd
+```
+
 3. If automatic export/sync fails because of COM/VBProject access or a workbook-specific import edge case, fall back to the manual modified `VbaModuleManager` only for `CreateLetter.xlsm.modules/`.
 4. Export modules back to `CreateLetter.xlsm.modules/` and document modules back to `CreateLetter.xlsm.document-modules/` after validated workbook-side changes.
+
+If you edited VBA directly in VBE and want to push workbook code back to source files plus run the same smoke gate:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\export_and_smoke.ps1
+```
+
+or:
+
+```powershell
+.\scripts\export_and_smoke.cmd
+```
+
+If workbook behavior became inconsistent after a bad manual import or Excel/VBE session, rebuild the workbook from the source-managed files:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\repair_workbook.ps1
+```
+
+or:
+
+```powershell
+.\scripts\repair_workbook.cmd
+```
 5. Verify that workbook runtime behavior does not depend on automatic source-management hooks.
 
 Document-module note:

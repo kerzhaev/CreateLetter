@@ -27,6 +27,8 @@ Use this checklist when copying the starter kit into a new Excel/VBA repository.
 - update Ribbon callbacks and labels in `customUI.xml`
 - update any project-specific naming in restore-point output
 - decide which workbook and sheet document modules must be exported as tracked `.cls` files into `Workbook.xlsm.document-modules/`
+- decide whether `sync_and_smoke.cmd` and `export_and_smoke.cmd` should be the default daily workflow entrypoints for the team
+- decide whether `repair_workbook.cmd` should be documented as the team's standard recovery path after bad manual imports
 
 ## Early smoke gate
 

@@ -31,3 +31,4 @@ CreateLetter.xlsm.modules/*.frx
 
 # Python helper caches
 scripts/__pycache__/
+CreateLetter.xlsm.modules/*.log
