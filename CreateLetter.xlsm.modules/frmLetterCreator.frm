@@ -2,7 +2,7 @@ VERSION 5.00
 
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
 
-   Caption         =   "Формирование писем v1.6.11"
+   Caption         =   "Letter Builder v1.6.18"
 
    ClientHeight    =   10155
 
@@ -40,9 +40,9 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form    : frmLetterCreator v1.6.17 - Thin-shell MultiPage wizard with workbook-backed localization, grouped address search, and explicit startup focus
+' Form    : frmLetterCreator v1.6.18 - Thin-shell MultiPage wizard with workbook-backed localization, grouped address search, and explicit startup focus
 
-' Version : 1.6.17 - 29.03.2026
+' Version : 1.6.18 - 17.04.2026
 
 ' Author  : CreateLetter contributors
 
@@ -178,7 +178,7 @@ Private Sub ConfigureDocumentSumField()
 
             .Font.Size = 10
 
-            .ControlTipText = t("form.letter_creator.tip.document_sum", "Сумма документа в рублях (необязательно). Например: 125000")
+            .ControlTipText = t("form.letter_creator.tip.document_sum", "Document amount in rubles (optional). Example: 125000")
 
             .value = ""
 
@@ -486,7 +486,7 @@ Private Sub btnLetterHistory_Click()
 
 HistoryError:
 
-    MsgBox t("form.letter_creator.msg.history_open_error", "Ошибка при открытии формы истории: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.history_open_error", "Error opening the history form: ") & Err.description, vbCritical
 
 End Sub
 
@@ -652,7 +652,7 @@ Private Sub ConfigureFormAppearance()
 
     Me.Font.Size = 10
 
-    Me.Caption = t("form.letter_creator.title", "Формирование писем") & " v1.6.15"
+    Me.Caption = t("form.letter_creator.title", "Letter Builder") & " v1.6.18"
 
     
 
@@ -664,7 +664,7 @@ Private Sub ConfigureFormAppearance()
 
         lstSelectedAttachments.Font.Size = 9
 
-        lstSelectedAttachments.ControlTipText = t("form.letter_creator.tip.selected_attachments", "Для просмотра полного названия наведите курсор на элемент")
+        lstSelectedAttachments.ControlTipText = t("form.letter_creator.tip.selected_attachments", "Hover over the item to see the full name")
 
         lstSelectedAttachments.IntegralHeight = False
 
@@ -674,9 +674,9 @@ Private Sub ConfigureFormAppearance()
 
     If Not btnEditAddress Is Nothing Then
 
-        btnEditAddress.Caption = t("form.letter_creator.caption.edit_address", "Изменить адрес")
+        btnEditAddress.Caption = t("form.letter_creator.caption.edit_address", "Edit address")
 
-        btnEditAddress.ControlTipText = t("form.letter_creator.tip.edit_address", "Редактировать выбранный адрес")
+        btnEditAddress.ControlTipText = t("form.letter_creator.tip.edit_address", "Edit selected address")
 
         btnEditAddress.Enabled = False
 
@@ -686,9 +686,9 @@ Private Sub ConfigureFormAppearance()
 
     If Not btnDeleteAddress Is Nothing Then
 
-        btnDeleteAddress.Caption = t("form.letter_creator.caption.delete_address", "Удалить адрес")
+        btnDeleteAddress.Caption = t("form.letter_creator.caption.delete_address", "Delete address")
 
-        btnDeleteAddress.ControlTipText = t("form.letter_creator.tip.delete_address", "Удалить выбранный адрес")
+        btnDeleteAddress.ControlTipText = t("form.letter_creator.tip.delete_address", "Delete selected address")
 
         btnDeleteAddress.Enabled = False
 
@@ -698,7 +698,7 @@ Private Sub ConfigureFormAppearance()
 
     If Not txtAddresseePhone Is Nothing Then
 
-        txtAddresseePhone.ControlTipText = t("form.letter_creator.tip.phone", "Телефон адресата (формат: 8-xxx-xxx-xx-xx)")
+        txtAddresseePhone.ControlTipText = t("form.letter_creator.tip.phone", "Addressee phone (format: 8-xxx-xxx-xx-xx)")
 
         txtAddresseePhone.Enabled = True
 
@@ -712,7 +712,7 @@ Private Sub ConfigureFormAppearance()
 
         With btnLetterHistory
 
-            .Caption = t("form.letter_creator.caption.letter_history", "История писем")
+            .Caption = t("form.letter_creator.caption.letter_history", "Letters History")
 
             .Font.Name = "Segoe UI"
 
@@ -724,7 +724,7 @@ Private Sub ConfigureFormAppearance()
 
             .ForeColor = RGB(255, 255, 255)
 
-            .ControlTipText = t("form.letter_creator.tip.letter_history", "Открыть форму истории отправленных писем")
+            .ControlTipText = t("form.letter_creator.tip.letter_history", "Open sent letters history form")
 
         End With
 
@@ -736,11 +736,11 @@ Private Sub ConfigureFormAppearance()
 
     
 
-    txtAddressSearch.ControlTipText = t("form.letter_creator.tip.address_search", "Введите часть наименования для поиска адресата")
+    txtAddressSearch.ControlTipText = t("form.letter_creator.tip.address_search", "Enter part of the name to search for the addressee")
 
-    txtLetterNumber.ControlTipText = t("form.letter_creator.tip.letter_number", "Введите номер после 7/ (например: 125 превратится в 7/125)")
+    txtLetterNumber.ControlTipText = t("form.letter_creator.tip.letter_number", "Enter the number after 7/ (for example: 125 becomes 7/125)")
 
-    txtLetterDate.ControlTipText = t("form.letter_creator.tip.letter_date", "Формат: дд.мм.гггг")
+    txtLetterDate.ControlTipText = t("form.letter_creator.tip.letter_date", "Format: dd.mm.yyyy")
 
     SetResolvedControlTip ADDRESS_GROUP_TEXTBOX_NAME, GetAddressGroupTooltipText()
 
@@ -754,7 +754,7 @@ Private Sub ApplyLocalizedStaticCaptions()
 
 
 
-    SetLocalizedCaption "lblStep1", "form.letter_creator.label.stage", "Этап:"
+    SetLocalizedCaption "lblStep1", "form.letter_creator.label.stage", "Stage:"
 
     SetControlCaption "lblStep2", ""
 
@@ -764,93 +764,93 @@ Private Sub ApplyLocalizedStaticCaptions()
 
     SetControlCaption "lblStep5", ""
 
-    SetLocalizedCaption "lblCurrentAction", "form.letter_creator.label.current_action", "Текущее действие"
+    SetLocalizedCaption "lblCurrentAction", "form.letter_creator.label.current_action", "Current action"
 
-    SetLocalizedCaption "Label1", "form.letter_creator.label.search_addressee", "Поиск существующего адресата"
+    SetLocalizedCaption "Label1", "form.letter_creator.label.search_addressee", "Search existing addressee"
 
-    SetLocalizedCaption "Label2", "form.letter_creator.label.city", "Город"
+    SetLocalizedCaption "Label2", "form.letter_creator.label.city", "City"
 
-    SetLocalizedCaption "Label3", "form.letter_creator.label.district", "Район"
+    SetLocalizedCaption "Label3", "form.letter_creator.label.district", "District"
 
-    SetLocalizedCaption "Label4", "form.letter_creator.label.region", "Регион"
+    SetLocalizedCaption "Label4", "form.letter_creator.label.region", "Region"
 
-    SetLocalizedCaption "Label5", "form.letter_creator.label.postal_code", "Почтовый индекс"
+    SetLocalizedCaption "Label5", "form.letter_creator.label.postal_code", "Postal code"
 
-    SetLocalizedCaption "Label6", "form.letter_creator.label.executor", "Исполнитель"
+    SetLocalizedCaption "Label6", "form.letter_creator.label.executor", "Executor"
 
-    SetLocalizedCaption "Label7", "form.letter_creator.label.letter_date", "Дата письма"
+    SetLocalizedCaption "Label7", "form.letter_creator.label.letter_date", "Letter date"
 
-    SetLocalizedCaption "Label8", "form.letter_creator.label.letter_number", "Номер письма"
+    SetLocalizedCaption "Label8", "form.letter_creator.label.letter_number", "Letter number"
 
-    SetLocalizedCaption "Label9", "form.letter_creator.label.search_attachment", "Поиск приложения"
+    SetLocalizedCaption "Label9", "form.letter_creator.label.search_attachment", "Search attachment"
 
-    SetLocalizedCaption "Label10", "form.letter_creator.label.selected_attachments", "Выбранные приложения"
+    SetLocalizedCaption "Label10", "form.letter_creator.label.selected_attachments", "Selected attachments"
 
-    SetLocalizedCaption "Label11", "form.letter_creator.label.document_ownership", "Тип документа"
+    SetLocalizedCaption "Label11", "form.letter_creator.label.document_ownership", "Document type"
 
-    SetLocalizedCaption "Label13", "form.letter_creator.label.date", "Дата"
+    SetLocalizedCaption "Label13", "form.letter_creator.label.date", "Date"
 
-    SetLocalizedCaption "Label14", "form.letter_creator.label.copies", "Экз."
+    SetLocalizedCaption "Label14", "form.letter_creator.label.copies", "Copies"
 
-    SetLocalizedCaption "Label15", "form.letter_creator.label.sheets", "Листы"
+    SetLocalizedCaption "Label15", "form.letter_creator.label.sheets", "Sheets"
 
-    SetLocalizedCaption "Label16", "form.letter_creator.label.found_addresses", "Найденные адреса"
+    SetLocalizedCaption "Label16", "form.letter_creator.label.found_addresses", "Found addresses"
 
-    SetLocalizedCaption "Label17", "form.letter_creator.label.street_house", "Улица, дом"
+    SetLocalizedCaption "Label17", "form.letter_creator.label.street_house", "Street, house"
 
-    SetLocalizedCaption "Label18", "form.letter_creator.label.addressee", "Получатель"
+    SetLocalizedCaption "Label18", "form.letter_creator.label.addressee", "Addressee"
 
-    SetResolvedControlCaption ADDRESS_GROUP_LABEL_NAME, t("form.letter_creator.label.address_group", "Группа адреса")
+    SetResolvedControlCaption ADDRESS_GROUP_LABEL_NAME, t("form.letter_creator.label.address_group", "Address group")
 
-    SetLocalizedCaption "Label19", "form.letter_creator.label.available_attachments", "Доступные приложения"
+    SetLocalizedCaption "Label19", "form.letter_creator.label.available_attachments", "Available attachments"
 
-    SetLocalizedCaption "Label20", "form.letter_creator.label.number", "Номер"
+    SetLocalizedCaption "Label20", "form.letter_creator.label.number", "Number"
 
-    SetLocalizedCaption "Label21", "form.letter_creator.label.summary_addressee", "Адресат:"
+    SetLocalizedCaption "Label21", "form.letter_creator.label.summary_addressee", "Addressee:"
 
-    SetLocalizedCaption "Label23", "form.letter_creator.label.summary_letter_number", "Номер письма:"
+    SetLocalizedCaption "Label23", "form.letter_creator.label.summary_letter_number", "Letter number:"
 
-    SetLocalizedCaption "Label25", "form.letter_creator.label.summary_date", "Дата:"
+    SetLocalizedCaption "Label25", "form.letter_creator.label.summary_date", "Date:"
 
-    SetLocalizedCaption "Label27", "form.letter_creator.label.summary_executor", "Исполнитель:"
+    SetLocalizedCaption "Label27", "form.letter_creator.label.summary_executor", "Executor:"
 
-    SetLocalizedCaption "Label29", "form.letter_creator.label.summary_document_count", "Количество документов:"
+    SetLocalizedCaption "Label29", "form.letter_creator.label.summary_document_count", "Document count:"
 
-    SetLocalizedCaption "Label30", "form.letter_creator.label.summary_attachments", "Приложения:"
+    SetLocalizedCaption "Label30", "form.letter_creator.label.summary_attachments", "Attachments:"
 
-    SetLocalizedCaption "Label31", "form.letter_creator.label.document_sum", "Сумма документа"
+    SetLocalizedCaption "Label31", "form.letter_creator.label.document_sum", "Document amount"
 
-    SetLocalizedCaption "lblSelectedDocument", "form.letter_creator.label.selected_document", "Выбранный документ:"
+    SetLocalizedCaption "lblSelectedDocument", "form.letter_creator.label.selected_document", "Selected document:"
 
-    SetLocalizedCaption "Frame1", "form.letter_creator.frame.address_details", "Данные адресата"
+    SetLocalizedCaption "Frame1", "form.letter_creator.frame.address_details", "Address details"
 
-    SetLocalizedCaption "Frame5", "form.letter_creator.frame.letter_summary", "Сводка письма"
+    SetLocalizedCaption "Frame5", "form.letter_creator.frame.letter_summary", "Letter summary"
 
-    SetLocalizedCaption "btnSaveNewAddress", "form.letter_creator.caption.save_address", "Сохранить адрес"
+    SetLocalizedCaption "btnSaveNewAddress", "form.letter_creator.caption.save_address", "Save address"
 
-    SetLocalizedCaption "btnClearSearch", "form.letter_creator.caption.clear_search", "Очистить"
+    SetLocalizedCaption "btnClearSearch", "form.letter_creator.caption.clear_search", "Clear"
 
-    SetLocalizedCaption "btnPrevious", "form.letter_creator.caption.back", "< Назад"
+    SetLocalizedCaption "btnPrevious", "form.letter_creator.caption.back", "< Back"
 
-    SetLocalizedCaption "btnNext", "form.letter_creator.caption.next", "Далее >"
+    SetLocalizedCaption "btnNext", "form.letter_creator.caption.next", "Next >"
 
-    SetLocalizedCaption "btnCancel", "form.letter_creator.caption.cancel", "Отмена"
+    SetLocalizedCaption "btnCancel", "form.letter_creator.caption.cancel", "Cancel"
 
-    SetLocalizedCaption "btnEditAddress", "form.letter_creator.caption.edit_address", "Изменить адрес"
+    SetLocalizedCaption "btnEditAddress", "form.letter_creator.caption.edit_address", "Edit address"
 
-    SetLocalizedCaption "btnDeleteAddress", "form.letter_creator.caption.delete_address", "Удалить адрес"
+    SetLocalizedCaption "btnDeleteAddress", "form.letter_creator.caption.delete_address", "Delete address"
 
-    SetLocalizedCaption "btnLetterHistory", "form.letter_creator.caption.letter_history", "История писем"
+    SetLocalizedCaption "btnLetterHistory", "form.letter_creator.caption.letter_history", "Letters History"
 
 
 
-    mpgWizard.Pages(0).Caption = t("form.letter_creator.page.step_1", "Шаг 1: Адресат")
+    mpgWizard.Pages(0).Caption = t("form.letter_creator.page.step_1", "Step 1: Addressee")
 
-    mpgWizard.Pages(1).Caption = t("form.letter_creator.page.step_2", "Шаг 2: Письмо")
+    mpgWizard.Pages(1).Caption = t("form.letter_creator.page.step_2", "Step 2: Letter")
 
-    mpgWizard.Pages(2).Caption = t("form.letter_creator.page.step_3", "Шаг 3: Приложения")
+    mpgWizard.Pages(2).Caption = t("form.letter_creator.page.step_3", "Step 3: Attachments")
 
-    mpgWizard.Pages(3).Caption = t("form.letter_creator.page.step_4", "Шаг 4: Создание")
+    mpgWizard.Pages(3).Caption = t("form.letter_creator.page.step_4", "Step 4: Create")
 
 
 
@@ -1264,7 +1264,7 @@ Private Sub btnNext_Click()
 
             SaveLetterToDatabase
 
-            MsgBox t("form.letter_creator.msg.letter_created", "Письмо успешно создано!"), vbInformation
+            MsgBox t("form.letter_creator.msg.letter_created", "Letter created successfully!"), vbInformation
 
             Unload Me
 
@@ -1300,7 +1300,7 @@ Private Sub SwitchToPage(pg As Integer)
 
     If pg = TOTAL_PAGES - 1 Then
 
-        btnNext.Caption = t("form.letter_creator.caption.create_letter", "СОЗДАТЬ ПИСЬМО")
+        btnNext.Caption = t("form.letter_creator.caption.create_letter", "CREATE LETTER")
 
         btnNext.backColor = RGB(76, 175, 80)
 
@@ -1312,7 +1312,7 @@ Private Sub SwitchToPage(pg As Integer)
 
     Else
 
-        btnNext.Caption = t("form.letter_creator.caption.next", "Далее >")
+        btnNext.Caption = t("form.letter_creator.caption.next", "Next >")
 
         btnNext.backColor = RGB(240, 240, 240)
 
@@ -1647,7 +1647,7 @@ Private Sub lstAddresses_Click()
 
 SelectError:
 
-    MsgBox t("form.letter_creator.msg.address_select_error", "Ошибка при выборе адреса: ") & Err.description, vbExclamation
+    MsgBox t("form.letter_creator.msg.address_select_error", "Error selecting address: ") & Err.description, vbExclamation
 
 End Sub
 
@@ -1703,7 +1703,7 @@ Private Sub btnSaveNewAddress_Click()
 
     SaveNewAddress addressArray
 
-    MsgBox t("form.letter_creator.msg.address_saved", "Адрес сохранен."), vbInformation
+    MsgBox t("form.letter_creator.msg.address_saved", "Address saved."), vbInformation
 
     
 
@@ -1763,7 +1763,7 @@ Private Sub btnEditAddress_Click()
 
     
 
-    MsgBox t("form.letter_creator.msg.address_updated", "Адрес успешно обновлен."), vbInformation
+    MsgBox t("form.letter_creator.msg.address_updated", "Address updated successfully."), vbInformation
 
     On Error GoTo 0
 
@@ -1793,11 +1793,11 @@ Private Sub btnDeleteAddress_Click()
 
     
 
-    If MsgBox(t("form.letter_creator.msg.address_delete_confirm", "Вы уверены, что хотите удалить этот адрес?"), vbYesNo + vbQuestion + vbDefaultButton2) = vbYes Then
+    If MsgBox(t("form.letter_creator.msg.address_delete_confirm", "Are you sure you want to delete this address?"), vbYesNo + vbQuestion + vbDefaultButton2) = vbYes Then
 
         DeleteExistingAddress selectedAddressRow
 
-        MsgBox t("form.letter_creator.msg.address_deleted", "Адрес успешно удален."), vbInformation
+        MsgBox t("form.letter_creator.msg.address_deleted", "Address deleted successfully."), vbInformation
 
         
 
@@ -1823,7 +1823,7 @@ Private Sub btnDeleteAddress_Click()
 
 DeleteError:
 
-    MsgBox t("form.letter_creator.msg.address_delete_error", "Ошибка при удалении адреса: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.address_delete_error", "Error deleting address: ") & Err.description, vbCritical
 
 End Sub
 
@@ -1933,7 +1933,7 @@ Private Sub btnAddAttachment_Click()
 
     If lstAvailableAttachments Is Nothing Or lstAvailableAttachments.ListIndex < 0 Then
 
-        MsgBox t("form.letter_creator.msg.select_document_left", "Выберите документ в левом списке."), vbExclamation
+        MsgBox t("form.letter_creator.msg.select_document_left", "Select a document in the left list."), vbExclamation
 
         Exit Sub
 
@@ -1975,7 +1975,7 @@ Private Sub btnRemoveAttachment_Click()
 
     If lstSelectedAttachments Is Nothing Or lstSelectedAttachments.ListIndex < 0 Then
 
-        MsgBox t("form.letter_creator.msg.select_document_right", "Выберите документ в правом списке."), vbExclamation
+        MsgBox t("form.letter_creator.msg.select_document_right", "Select a document in the right list."), vbExclamation
 
         Exit Sub
 
@@ -2147,7 +2147,7 @@ Public Sub DuplicateDocument()
 
 DuplicateError:
 
-    MsgBox t("form.letter_creator.msg.duplicate_document_error", "Ошибка при дублировании документа: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.duplicate_document_error", "Error duplicating document: ") & Err.description, vbCritical
 
 End Sub
 
@@ -2558,7 +2558,7 @@ Private Sub CreateWordLetter()
 
 ErrorHandler:
 
-    MsgBox t("form.letter_creator.msg.create_letter_error", "Ошибка при создании письма: ") & Err.description, vbCritical
+    MsgBox t("form.letter_creator.msg.create_letter_error", "Error creating letter: ") & Err.description, vbCritical
 
 End Sub
 
@@ -2785,7 +2785,7 @@ Private Sub btnCancel_Click()
 
     isClosingForm = True
 
-    If MsgBox(t("dialog.cancel_letter_creation", "Отменить создание письма?"), vbYesNo + vbQuestion) = vbYes Then
+    If MsgBox(t("dialog.cancel_letter_creation", "Cancel letter creation?"), vbYesNo + vbQuestion) = vbYes Then
 
         ClearCache
 
@@ -2905,7 +2905,7 @@ Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
 
     If documentsList.count > 0 Then
 
-        If MsgBox(t("dialog.discard_unsaved_documents", "Несохраненные документы будут потеряны. Закрыть?"), vbYesNo + vbQuestion) = vbNo Then
+        If MsgBox(t("dialog.discard_unsaved_documents", "Unsaved documents will be lost. Close anyway?"), vbYesNo + vbQuestion) = vbNo Then
 
             isClosingForm = False
 

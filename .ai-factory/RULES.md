@@ -12,6 +12,7 @@
 - Treat `CreateLetter.xlsm.modules/` as the source of truth for standard VBA modules, class modules, and forms. Treat `CreateLetter.xlsm.document-modules/` as the source of truth for workbook and worksheet document modules.
 - New internal identifiers, module names, constants, sheet keys, and placeholder keys must use English ASCII only.
 - User-facing Russian text must come from localization data, not from new hardcoded literals in business logic.
+- In VBE-managed modules and forms, default fallback literals inside `t(...)` or similar runtime lookups must be ASCII-safe English unless the text is produced through a Unicode-safe builder. Russian user-facing text should come from localization data to avoid mojibake in exported/imported VBA code.
 - Do not start the next migration stage until the previous stage passes a manual smoke test in Excel.
 - Every VBA module or form edited during an iteration must have its top header metadata updated: keep the module/form description accurate, bump the visible version number, and refresh the change date.
 - Before asking the user for a manual VBA import, first try synchronizing the workbook automatically through the local COM tooling and run the smoke tests yourself.
