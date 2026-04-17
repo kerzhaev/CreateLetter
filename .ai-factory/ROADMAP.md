@@ -86,3 +86,8 @@ The next bounded feature stages for code quality and maintainability are:
   Add GitHub issue templates, a PR template, and a source-only repository consistency workflow so the public repo has basic contribution and publication guardrails.
 - [x] `pisces/feature-36-repository-word-dto-refactor`
   Add `ModuleRepository`, `ModuleWordInterop`, and `clsLetterHistoryRecord`, move typed history loading away from pipe-delimited strings, route Word lifecycle through explicit acquire/release helpers, and keep `ModuleMain` as a compatibility façade with smoke assertions for the new contracts.
+
+## Deferred Backlog
+
+- [ ] `recipient-title-normalization`
+  Add a controlled `RecipientTemplateKey` to `tblAddresses`, let operators choose an approved recipient-title template in `frmLetterCreator`, and build the final addressee line programmatically so users stop inventing inconsistent variants such as `Командиру`, `Начальнику`, or `Для ...` in free text.
