@@ -6,7 +6,7 @@ Attribute VB_Name = "ModuleLocalization"
 
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
 
-' Version: 1.4.5 - 29.03.2026
+' Version: 1.4.6 - 26.04.2026
 
 ' Notes:
 
@@ -1096,6 +1096,62 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "ribbon.msg.folder_unavailable", "Configured path is unavailable, using workbook path:"
 
+    AddTranslation "ru", "ribbon.caption.mail_dispatch", "Почтовые отправления"
+
+    AddTranslation "en", "ribbon.caption.mail_dispatch", "Mail dispatch"
+
+    AddTranslation "ru", "ribbon.tip.mail_dispatch", "Открыть контур подготовки конвертов и внутреннего почтового реестра"
+
+    AddTranslation "en", "ribbon.tip.mail_dispatch", "Open the envelope and internal registry preparation flow"
+
+    AddTranslation "ru", "dispatch.foundation.stub.title", "Почтовые отправления"
+
+    AddTranslation "en", "dispatch.foundation.stub.title", "Mail dispatch"
+
+    AddTranslation "ru", "dispatch.foundation.stub.message", "Основание почтового контура уже подготовлено. Отдельная форма почтовых отправлений будет добавлена следующим этапом."
+
+    AddTranslation "en", "dispatch.foundation.stub.message", "Mail dispatch foundation is ready. The dedicated dispatch form will be added in the next feature."
+
+    AddTranslation "ru", "dispatch.envelope_format.c4", "Конверт C4"
+
+    AddTranslation "en", "dispatch.envelope_format.c4", "Envelope C4"
+
+    AddTranslation "ru", "dispatch.envelope_format.c5", "Конверт C5"
+
+    AddTranslation "en", "dispatch.envelope_format.c5", "Envelope C5"
+
+    AddTranslation "ru", "dispatch.envelope_format.dl", "Конверт DL"
+
+    AddTranslation "en", "dispatch.envelope_format.dl", "Envelope DL"
+
+    AddTranslation "ru", "form.mail_dispatch.title", "Почтовые отправления"
+
+    AddTranslation "en", "form.mail_dispatch.title", "Mail dispatch"
+
+    AddTranslation "ru", "form.mail_dispatch.label.sender", "Отправитель"
+
+    AddTranslation "en", "form.mail_dispatch.label.sender", "Sender"
+
+    AddTranslation "ru", "form.mail_dispatch.label.envelope_format", "Формат конверта"
+
+    AddTranslation "en", "form.mail_dispatch.label.envelope_format", "Envelope format"
+
+    AddTranslation "ru", "form.mail_dispatch.label.mail_type", "Вид отправления"
+
+    AddTranslation "en", "form.mail_dispatch.label.mail_type", "Mail type"
+
+    AddTranslation "ru", "form.mail_dispatch.label.registry", "Реестр"
+
+    AddTranslation "en", "form.mail_dispatch.label.registry", "Registry"
+
+    AddTranslation "ru", "form.mail_dispatch.label.letters", "Письма"
+
+    AddTranslation "en", "form.mail_dispatch.label.letters", "Letters"
+
+    AddTranslation "ru", "form.mail_dispatch.label.preview", "Предпросмотр"
+
+    AddTranslation "en", "form.mail_dispatch.label.preview", "Preview"
+
     AddTranslation "ru", "core.date.unknown_month", "неизвестный_месяц"
 
     AddTranslation "en", "core.date.unknown_month", "unknown_month"
@@ -1511,8 +1567,6 @@ Private Function NormalizeLocalizationKey(ByVal key As String) As String
     NormalizeLocalizationKey = LCase$(Trim$(key))
 
 End Function
-
-
 
 
 

@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks and user-configurable folder settings
 
-' Version: 1.0.4 - 29.03.2026
+' Version: 1.0.5 - 26.04.2026
 
 ' ======================================================================
 
@@ -53,6 +53,16 @@ End Sub
 Public Sub RibbonOpenHistoryForm(control As IRibbonControl)
 
     ShowLetterHistoryModeless
+
+End Sub
+
+
+
+Public Sub RibbonOpenMailDispatch(control As IRibbonControl)
+
+    MsgBox t("dispatch.foundation.stub.message", "Mail dispatch foundation is ready. The dedicated dispatch form will be added in the next feature."), _
+           vbInformation, _
+           t("dispatch.foundation.stub.title", "Mail dispatch")
 
 End Sub
 
@@ -300,6 +310,4 @@ Private Function BuildUnicodeText(ParamArray codePoints() As Variant) As String
     Next i
 
 End Function
-
-
 

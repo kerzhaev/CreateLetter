@@ -12,15 +12,26 @@ developer automation only. It does not hook into workbook runtime events.
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 from pathlib import Path
 
 import pythoncom
-import win32com.client
+import win32com.client.gencache
+from win32com.client.dynamic import Dispatch
 
 
 SUPPORTED_EXTENSIONS = (".bas", ".cls", ".frm")
 SOURCE_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "cp1251", "cp866", "mbcs")
+
+
+def reset_excel_gen_cache() -> None:
+    gen_path = Path(win32com.client.gencache.GetGeneratePath())
+    for child in gen_path.glob("00020813-0000-0000-C000-000000000046*"):
+        if child.is_dir():
+            shutil.rmtree(child, ignore_errors=True)
+        elif child.exists():
+            child.unlink(missing_ok=True)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -172,7 +183,8 @@ def sync_workbook(
     source_files = iter_source_files(modules_dir, resolved_document_modules_dir)
 
     pythoncom.CoInitialize()
-    excel = win32com.client.DispatchEx("Excel.Application")
+    reset_excel_gen_cache()
+    excel = Dispatch("Excel.Application")
     excel.Visible = visible
     excel.DisplayAlerts = False
 

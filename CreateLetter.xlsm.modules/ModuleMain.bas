@@ -10,7 +10,7 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.7.6 - 29.03.2026
+' Version: 1.8.0 - 26.04.2026
 
 ' ======================================================================
 
@@ -43,6 +43,14 @@ Private Const LegacyLetterTextsTableNameLocalized As String = "Текст"
 Public Const AddressesTableName As String = "tblAddresses"
 
 Public Const LettersTableName As String = "tblLetters"
+
+Public Const EnvelopeFormatsTableName As String = "tblEnvelopeFormats"
+
+Public Const SendersTableName As String = "tblSenders"
+
+Public Const DispatchItemsTableName As String = "tblDispatchItems"
+
+Public Const DispatchRegistryTableName As String = "tblDispatchRegistry"
 
 Private Const DocumentTypeKeyConfirmed As String = "confirmed_documents"
 
@@ -144,6 +152,36 @@ Public Enum SettingsColumns
 
 End Enum
 
+Public Enum EnvelopeFormatColumns
+
+    EnvelopeFormatColumnKey = 1
+
+    EnvelopeFormatColumnDisplayName = 2
+
+    EnvelopeFormatColumnIsActive = 3
+
+    EnvelopeFormatColumnSortOrder = 4
+
+End Enum
+
+Public Enum SenderColumns
+
+    SenderColumnName = 1
+
+    SenderColumnAddressLine1 = 2
+
+    SenderColumnAddressLine2 = 3
+
+    SenderColumnAddressLine3 = 4
+
+    SenderColumnPostalCode = 5
+
+    SenderColumnPhone = 6
+
+    SenderColumnIsDefault = 7
+
+End Enum
+
 
 
 Public Enum AddressArrayIndexes
@@ -229,6 +267,70 @@ Public Enum DocumentArrayIndexes
     DocumentIndexSheets = 4
 
     DocumentIndexSum = 5
+
+End Enum
+
+Public Enum DispatchItemColumns
+
+    DispatchItemColumnId = 1
+
+    DispatchItemColumnLetterNumber = 2
+
+    DispatchItemColumnLetterDate = 3
+
+    DispatchItemColumnAddressee = 4
+
+    DispatchItemColumnAddressLine = 5
+
+    DispatchItemColumnPostalCode = 6
+
+    DispatchItemColumnSenderName = 7
+
+    DispatchItemColumnEnvelopeFormatKey = 8
+
+    DispatchItemColumnMailType = 9
+
+    DispatchItemColumnMass = 10
+
+    DispatchItemColumnDeclaredValue = 11
+
+    DispatchItemColumnComment = 12
+
+    DispatchItemColumnPhone = 13
+
+    DispatchItemColumnBatchId = 14
+
+    DispatchItemColumnStatus = 15
+
+    DispatchItemColumnCreatedAt = 16
+
+End Enum
+
+Public Enum DispatchRegistryColumns
+
+    DispatchRegistryColumnAddressLine = 1
+
+    DispatchRegistryColumnAddressee = 2
+
+    DispatchRegistryColumnMailType = 3
+
+    DispatchRegistryColumnEnvelopeFormatKey = 4
+
+    DispatchRegistryColumnMass = 5
+
+    DispatchRegistryColumnDeclaredValue = 6
+
+    DispatchRegistryColumnPayment = 7
+
+    DispatchRegistryColumnComment = 8
+
+    DispatchRegistryColumnPhone = 9
+
+    DispatchRegistryColumnIndexFrom = 10
+
+    DispatchRegistryColumnBatchId = 11
+
+    DispatchRegistryColumnCreatedAt = 12
 
 End Enum
 
@@ -3468,7 +3570,6 @@ Private Function BuildLetterAuditDetails(letterNumber As String, letterDate As D
                               "; documents=" & documentCount
 
 End Function
-
 
 
 

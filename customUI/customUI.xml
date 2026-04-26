@@ -18,6 +18,13 @@
                   onAction="RibbonOpenHistoryForm"
                   screentip="Поиск писем"
                   supertip="Открывает форму поиска и просмотра истории писем." />
+          <button id="btnRibbonOpenMailDispatch"
+                  label="Почтовые отправления"
+                  size="large"
+                  imageMso="FileSendAsAttachment"
+                  onAction="RibbonOpenMailDispatch"
+                  screentip="Почтовые отправления"
+                  supertip="Открывает контур подготовки конвертов и почтового реестра." />
           <button id="btnRibbonTemplateFolder"
                   label="Папка шаблонов"
                   size="large"

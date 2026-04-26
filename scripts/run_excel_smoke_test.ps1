@@ -21,7 +21,22 @@ param(
     [switch]$RequireAddressGroupColumn,
 
     [Parameter(Mandatory = $false)]
-    [switch]$RequireLocalTemplates
+    [switch]$RequireLocalTemplates,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireEnvelopeTables,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireDispatchItemsTable,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireDispatchRegistryTable,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireMailDispatchRibbon,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireEnvelopeFormatsSeed
 )
 
 $ErrorActionPreference = "Stop"
@@ -196,6 +211,21 @@ try {
         @{ Sheet = "Settings"; Table = "tblLetterTexts" }
     )
 
+    if ($RequireEnvelopeTables) {
+        $structuredTableRequirements += @(
+            @{ Sheet = "EnvelopeFormats"; Table = "tblEnvelopeFormats" },
+            @{ Sheet = "Senders"; Table = "tblSenders" }
+        )
+    }
+
+    if ($RequireDispatchItemsTable) {
+        $structuredTableRequirements += @{ Sheet = "DispatchItems"; Table = "tblDispatchItems" }
+    }
+
+    if ($RequireDispatchRegistryTable) {
+        $structuredTableRequirements += @{ Sheet = "DispatchRegistry"; Table = "tblDispatchRegistry" }
+    }
+
     foreach ($tableRequirement in $structuredTableRequirements) {
         try {
             $sheet = $workbook.Worksheets.Item($tableRequirement.Sheet)
@@ -236,6 +266,36 @@ try {
     catch {
         Add-Result -Results $results -Name "StructuredColumn:Addresses.AddressGroup" -Status "FAIL" -Details $_.Exception.Message
         $failed = $true
+    }
+
+    if ($RequireEnvelopeFormatsSeed) {
+        try {
+            $envelopeSheet = $workbook.Worksheets.Item("EnvelopeFormats")
+            $envelopeTable = $envelopeSheet.ListObjects.Item("tblEnvelopeFormats")
+            $envelopeRows = $envelopeTable.DataBodyRange.Value2
+            $envelopeKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+
+            if ($envelopeRows -is [System.Array]) {
+                for ($rowIndex = 1; $rowIndex -le $envelopeRows.GetLength(0); $rowIndex++) {
+                    $envelopeKey = [string]$envelopeRows.GetValue($rowIndex, 1)
+                    if (-not [string]::IsNullOrWhiteSpace($envelopeKey)) {
+                        [void]$envelopeKeys.Add($envelopeKey.Trim())
+                    }
+                }
+            }
+
+            if ($envelopeKeys.Contains("c4") -and $envelopeKeys.Contains("c5") -and $envelopeKeys.Contains("dl")) {
+                Add-Result -Results $results -Name "EnvelopeFormatsSeed" -Status "PASS" -Details "Envelope formats c4, c5, and dl are present."
+            }
+            else {
+                Add-Result -Results $results -Name "EnvelopeFormatsSeed" -Status "FAIL" -Details ("Missing one or more required envelope formats. Found: " + (($envelopeKeys | Select-Object -First 20) -join ", "))
+                $failed = $true
+            }
+        }
+        catch {
+            Add-Result -Results $results -Name "EnvelopeFormatsSeed" -Status "FAIL" -Details $_.Exception.Message
+            $failed = $true
+        }
     }
 
     try {
@@ -404,6 +464,10 @@ try {
         $hasRibbonModule = ($moduleRibbonText -like "*Public Sub RibbonOpenLetterForm(control As IRibbonControl)*") -and
                            ($moduleRibbonText -like "*Public Function GetConfiguredTemplateFolderPath()*") -and
                            ($moduleRibbonText -like "*Public Function GetConfiguredOutputFolderPath()*")
+
+        if ($RequireMailDispatchRibbon) {
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonOpenMailDispatch(control As IRibbonControl)*")
+        }
 
         $hasCustomUiPart = $null -ne $customUiEntry
         $hasRibbonRelationship = $false
