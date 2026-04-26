@@ -470,6 +470,28 @@ try {
             }
         }
 
+        if ($RequireDispatchRegistryTable) {
+            $dispatchRegistryPath = Join-Path $modulesDirectory "ModuleDispatchRegistry.bas"
+
+            if (Test-Path -LiteralPath $dispatchRegistryPath) {
+                $dispatchRegistryText = Get-Content -Path $dispatchRegistryPath -Raw
+                $hasDispatchRegistryContract = ($dispatchRegistryText -like "*Public Function BuildDispatchRegistryFromDispatchItems()*") -and
+                                               ($dispatchRegistryText -like "*Public Sub ClearDispatchRegistry()*")
+
+                if ($hasDispatchRegistryContract) {
+                    Add-Result -Results $results -Name "DispatchRegistryContract" -Status "PASS" -Details "Dispatch registry builder functions are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "DispatchRegistryContract" -Status "FAIL" -Details "ModuleDispatchRegistry is missing the expected registry builder functions."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "DispatchRegistryContract" -Status "FAIL" -Details "ModuleDispatchRegistry.bas is missing from source-managed modules."
+                $failed = $true
+            }
+        }
+
         if ($RequireMailDispatchRibbon) {
             $mailDispatchFormPath = Join-Path $modulesDirectory "frmMailDispatch.frm"
 
@@ -517,6 +539,10 @@ try {
 
         if ($RequireMailDispatchRibbon) {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonOpenMailDispatch(control As IRibbonControl)*")
+        }
+
+        if ($RequireDispatchRegistryTable) {
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonBuildDispatchRegistry(control As IRibbonControl)*")
         }
 
         $hasCustomUiPart = $null -ne $customUiEntry

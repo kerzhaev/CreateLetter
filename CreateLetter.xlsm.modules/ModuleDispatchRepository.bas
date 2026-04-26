@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleDispatchRepository"
 ' Module: ModuleDispatchRepository
 ' Author: CreateLetter contributors
 ' Purpose: Workbook repository helpers for envelope formats, senders, and dispatch items
-' Version: 1.0.1 - 26.04.2026
+' Version: 1.0.2 - 26.04.2026
 ' ======================================================================
 
 Option Explicit
@@ -91,6 +91,20 @@ Public Function DispatchRepositoryGetDefaultSenderName() As String
 
 LoadError:
     Debug.Print "DispatchRepositoryGetDefaultSenderName error: " & Err.description
+End Function
+
+Public Function DispatchRepositoryGetSenderPostalCode(senderName As String) As String
+    On Error GoTo LookupError
+
+    Dim senderDescriptor As Variant
+    If DispatchRepositoryTryGetSenderDescriptor(senderName, senderDescriptor) Then
+        DispatchRepositoryGetSenderPostalCode = CStr(senderDescriptor(SenderColumnPostalCode))
+    End If
+
+    Exit Function
+
+LookupError:
+    DispatchRepositoryGetSenderPostalCode = ""
 End Function
 
 Public Function DispatchRepositoryGetEnvelopeFormatDisplay(envelopeFormatKey As String) As String
@@ -390,4 +404,30 @@ Private Function DispatchRepositoryGetSenderName(senderDescriptor As Variant) As
     Exit Function
 MissingName:
     DispatchRepositoryGetSenderName = ""
+End Function
+
+Private Function DispatchRepositoryTryGetSenderDescriptor(senderName As String, ByRef senderDescriptor As Variant) As Boolean
+    DispatchRepositoryTryGetSenderDescriptor = False
+
+    On Error GoTo LookupError
+
+    Dim senders As Collection
+    Set senders = DispatchRepositoryLoadSenders()
+
+    Dim normalizedSenderName As String
+    normalizedSenderName = UCase$(Trim$(senderName))
+
+    Dim i As Long
+    For i = 1 To senders.count
+        If UCase$(Trim$(CStr(senders(i)(SenderColumnName)))) = normalizedSenderName Then
+            senderDescriptor = senders(i)
+            DispatchRepositoryTryGetSenderDescriptor = True
+            Exit Function
+        End If
+    Next i
+
+    Exit Function
+
+LookupError:
+    DispatchRepositoryTryGetSenderDescriptor = False
 End Function

@@ -1104,6 +1104,14 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "ribbon.tip.mail_dispatch", "Open the envelope and internal registry preparation flow"
 
+    AddTranslation "ru", "ribbon.caption.build_dispatch_registry", "Сформировать реестр"
+
+    AddTranslation "en", "ribbon.caption.build_dispatch_registry", "Build registry"
+
+    AddTranslation "ru", "ribbon.tip.build_dispatch_registry", "Собрать внутренний Excel-реестр из подготовленных почтовых отправлений"
+
+    AddTranslation "en", "ribbon.tip.build_dispatch_registry", "Build the internal Excel registry from prepared dispatch items"
+
     AddTranslation "ru", "dispatch.foundation.stub.title", "Почтовые отправления"
 
     AddTranslation "en", "dispatch.foundation.stub.title", "Mail dispatch"
@@ -1219,6 +1227,22 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "form.mail_dispatch.msg.created", "Отправление добавлено в таблицу почтовых отправлений."
 
     AddTranslation "en", "form.mail_dispatch.msg.created", "Dispatch item added to the dispatch worksheet."
+
+    AddTranslation "ru", "dispatch.registry.title", "Почтовый реестр"
+
+    AddTranslation "en", "dispatch.registry.title", "Dispatch registry"
+
+    AddTranslation "ru", "dispatch.registry.msg.built", "Внутренний реестр сформирован из почтовых отправлений."
+
+    AddTranslation "en", "dispatch.registry.msg.built", "Internal registry built from dispatch items."
+
+    AddTranslation "ru", "dispatch.registry.msg.no_items", "Нет почтовых отправлений для включения в реестр."
+
+    AddTranslation "en", "dispatch.registry.msg.no_items", "There are no dispatch items to include in the registry."
+
+    AddTranslation "ru", "dispatch.registry.msg.error", "Не удалось сформировать внутренний почтовый реестр: "
+
+    AddTranslation "en", "dispatch.registry.msg.error", "Failed to build the internal dispatch registry: "
 
     AddTranslation "ru", "core.date.unknown_month", "неизвестный_месяц"
 
@@ -1635,7 +1659,6 @@ Private Function NormalizeLocalizationKey(ByVal key As String) As String
     NormalizeLocalizationKey = LCase$(Trim$(key))
 
 End Function
-
 
 
 

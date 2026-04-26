@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks and user-configurable folder settings
 
-' Version: 1.0.6 - 26.04.2026
+' Version: 1.0.7 - 26.04.2026
 
 ' ======================================================================
 
@@ -63,6 +63,33 @@ Public Sub RibbonOpenMailDispatch(control As IRibbonControl)
     Load frmMailDispatch
     frmMailDispatch.Show vbModeless
 
+End Sub
+
+
+
+Public Sub RibbonBuildDispatchRegistry(control As IRibbonControl)
+
+    On Error GoTo RegistryError
+
+    Dim builtCount As Long
+    builtCount = BuildDispatchRegistryFromDispatchItems()
+
+    If builtCount > 0 Then
+        MsgBox t("dispatch.registry.msg.built", "Registry built from dispatch items.") & vbCrLf & builtCount, _
+               vbInformation, _
+               t("dispatch.registry.title", "Dispatch registry")
+    Else
+        MsgBox t("dispatch.registry.msg.no_items", "There are no dispatch items to include in the registry."), _
+               vbExclamation, _
+               t("dispatch.registry.title", "Dispatch registry")
+    End If
+
+    Exit Sub
+
+RegistryError:
+    MsgBox t("dispatch.registry.msg.error", "Failed to build the internal dispatch registry: ") & Err.description, _
+           vbCritical, _
+           t("dispatch.registry.title", "Dispatch registry")
 End Sub
 
 
