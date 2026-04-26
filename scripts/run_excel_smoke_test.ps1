@@ -444,6 +444,31 @@ try {
             Add-Result -Results $results -Name "WordInteropContract" -Status "FAIL" -Details "Expected explicit Word lifecycle API or ModuleMain facade wrappers are missing."
             $failed = $true
         }
+
+        if ($RequireDispatchItemsTable) {
+            $dispatchRepositoryPath = Join-Path $modulesDirectory "ModuleDispatchRepository.bas"
+
+            if (Test-Path -LiteralPath $dispatchRepositoryPath) {
+                $dispatchRepositoryText = Get-Content -Path $dispatchRepositoryPath -Raw
+                $hasDispatchRepositoryContract = ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadEnvelopeFormats()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadSenders()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCreateItemFromLetterFields(*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCreateItemFromHistoryRecord(*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadDispatchItems()*")
+
+                if ($hasDispatchRepositoryContract) {
+                    Add-Result -Results $results -Name "DispatchRepositoryContract" -Status "PASS" -Details "Dispatch repository foundation functions are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "DispatchRepositoryContract" -Status "FAIL" -Details "Dispatch repository module is missing expected envelope/sender/dispatch item functions."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "DispatchRepositoryContract" -Status "FAIL" -Details "ModuleDispatchRepository.bas is missing from source-managed modules."
+                $failed = $true
+            }
+        }
     }
     catch {
         Add-Result -Results $results -Name "RefactorContract" -Status "FAIL" -Details ("Repository/Word contract inspection failed: " + $_.Exception.Message)
