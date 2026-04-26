@@ -469,6 +469,31 @@ try {
                 $failed = $true
             }
         }
+
+        if ($RequireMailDispatchRibbon) {
+            $mailDispatchFormPath = Join-Path $modulesDirectory "frmMailDispatch.frm"
+
+            if (Test-Path -LiteralPath $mailDispatchFormPath) {
+                $mailDispatchFormText = Get-Content -Path $mailDispatchFormPath -Raw
+                $hasMailDispatchUiContract = ($mailDispatchFormText -like "*Private Sub UserForm_Initialize()*") -and
+                                             ($mailDispatchFormText -like "*Private Sub btnDispatchCreate_Click()*") -and
+                                             ($mailDispatchFormText -like "*Private Sub btnDispatchRefresh_Click()*") -and
+                                             ($mailDispatchFormText -like "*lstDispatchLetters*") -and
+                                             ($mailDispatchFormText -like "*cmbDispatchEnvelopeFormat*")
+
+                if ($hasMailDispatchUiContract) {
+                    Add-Result -Results $results -Name "MailDispatchUiContract" -Status "PASS" -Details "Dispatch form source and core UI handlers are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "MailDispatchUiContract" -Status "FAIL" -Details "Dispatch form is missing expected controls or core event handlers."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "MailDispatchUiContract" -Status "FAIL" -Details "frmMailDispatch.frm is missing from source-managed modules."
+                $failed = $true
+            }
+        }
     }
     catch {
         Add-Result -Results $results -Name "RefactorContract" -Status "FAIL" -Details ("Repository/Word contract inspection failed: " + $_.Exception.Message)

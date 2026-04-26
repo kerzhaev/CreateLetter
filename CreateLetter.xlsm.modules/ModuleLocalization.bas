@@ -1152,6 +1152,74 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.label.preview", "Preview"
 
+    AddTranslation "ru", "form.mail_dispatch.label.mass", "Масса"
+
+    AddTranslation "en", "form.mail_dispatch.label.mass", "Mass"
+
+    AddTranslation "ru", "form.mail_dispatch.label.declared_value", "Объявленная ценность"
+
+    AddTranslation "en", "form.mail_dispatch.label.declared_value", "Declared value"
+
+    AddTranslation "ru", "form.mail_dispatch.label.comment", "Комментарий"
+
+    AddTranslation "en", "form.mail_dispatch.label.comment", "Comment"
+
+    AddTranslation "ru", "form.mail_dispatch.button.refresh", "Обновить"
+
+    AddTranslation "en", "form.mail_dispatch.button.refresh", "Refresh"
+
+    AddTranslation "ru", "form.mail_dispatch.button.create", "Добавить в отправления"
+
+    AddTranslation "en", "form.mail_dispatch.button.create", "Add to dispatch"
+
+    AddTranslation "ru", "form.mail_dispatch.button.close", "Закрыть"
+
+    AddTranslation "en", "form.mail_dispatch.button.close", "Close"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.mail_type", "Например: заказное, простое, с уведомлением"
+
+    AddTranslation "en", "form.mail_dispatch.tip.mail_type", "Example: registered, regular, with notice"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.mass", "Масса отправления в граммах"
+
+    AddTranslation "en", "form.mail_dispatch.tip.mass", "Shipment mass in grams"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.declared_value", "Объявленная ценность в рублях"
+
+    AddTranslation "en", "form.mail_dispatch.tip.declared_value", "Declared value in rubles"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.comment", "Короткий служебный комментарий для отправления"
+
+    AddTranslation "en", "form.mail_dispatch.tip.comment", "Short operational comment for the dispatch item"
+
+    AddTranslation "ru", "form.mail_dispatch.default.mail_type", "заказное"
+
+    AddTranslation "en", "form.mail_dispatch.default.mail_type", "registered"
+
+    AddTranslation "ru", "form.mail_dispatch.error.no_letter", "Выберите письмо для подготовки отправления."
+
+    AddTranslation "en", "form.mail_dispatch.error.no_letter", "Select a letter before creating a dispatch item."
+
+    AddTranslation "ru", "form.mail_dispatch.error.no_sender", "Выберите отправителя."
+
+    AddTranslation "en", "form.mail_dispatch.error.no_sender", "Select a sender."
+
+    AddTranslation "ru", "form.mail_dispatch.error.no_envelope_format", "Выберите формат конверта."
+
+    AddTranslation "en", "form.mail_dispatch.error.no_envelope_format", "Select an envelope format."
+
+    AddTranslation "ru", "form.mail_dispatch.error.create_failed", "Не удалось добавить отправление в рабочую таблицу."
+
+    AddTranslation "en", "form.mail_dispatch.error.create_failed", "Failed to add the dispatch item to the worksheet."
+
+    AddTranslation "ru", "form.mail_dispatch.error.runtime", "Ошибка подготовки почтового отправления: "
+
+    AddTranslation "en", "form.mail_dispatch.error.runtime", "Mail dispatch preparation error: "
+
+    AddTranslation "ru", "form.mail_dispatch.msg.created", "Отправление добавлено в таблицу почтовых отправлений."
+
+    AddTranslation "en", "form.mail_dispatch.msg.created", "Dispatch item added to the dispatch worksheet."
+
     AddTranslation "ru", "core.date.unknown_month", "неизвестный_месяц"
 
     AddTranslation "en", "core.date.unknown_month", "unknown_month"
@@ -1567,7 +1635,6 @@ Private Function NormalizeLocalizationKey(ByVal key As String) As String
     NormalizeLocalizationKey = LCase$(Trim$(key))
 
 End Function
-
 
 
 

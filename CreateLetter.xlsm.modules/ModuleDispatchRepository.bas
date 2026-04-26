@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleDispatchRepository"
 ' Module: ModuleDispatchRepository
 ' Author: CreateLetter contributors
 ' Purpose: Workbook repository helpers for envelope formats, senders, and dispatch items
-' Version: 1.0.0 - 26.04.2026
+' Version: 1.0.1 - 26.04.2026
 ' ======================================================================
 
 Option Explicit
@@ -105,6 +105,28 @@ Public Function DispatchRepositoryGetEnvelopeFormatDisplay(envelopeFormatKey As 
     Case Else
         DispatchRepositoryGetEnvelopeFormatDisplay = UCase$(normalizedKey)
     End Select
+End Function
+
+Public Function DispatchRepositoryBuildRecipientPreviewByAddressee(addressee As String) As String
+    On Error GoTo BuildError
+
+    Dim addressLine As String
+    Dim postalCode As String
+    Dim phone As String
+
+    If DispatchRepositoryTryResolveAddressByAddressee(addressee, addressLine, postalCode, phone) Then
+        DispatchRepositoryBuildRecipientPreviewByAddressee = addressee
+        If Len(Trim$(addressLine)) > 0 Then
+            DispatchRepositoryBuildRecipientPreviewByAddressee = DispatchRepositoryBuildRecipientPreviewByAddressee & vbCrLf & addressLine
+        End If
+        Exit Function
+    End If
+
+    DispatchRepositoryBuildRecipientPreviewByAddressee = addressee
+    Exit Function
+
+BuildError:
+    DispatchRepositoryBuildRecipientPreviewByAddressee = addressee
 End Function
 
 Public Function DispatchRepositoryCreateItemFromLetterFields( _
