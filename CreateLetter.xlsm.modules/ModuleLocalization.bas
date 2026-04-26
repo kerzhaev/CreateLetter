@@ -1112,6 +1112,14 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "ribbon.tip.build_dispatch_registry", "Build the internal Excel registry from prepared dispatch items"
 
+    AddTranslation "ru", "ribbon.caption.prepare_envelope_print", "Подготовить конверты"
+
+    AddTranslation "en", "ribbon.caption.prepare_envelope_print", "Prepare envelopes"
+
+    AddTranslation "ru", "ribbon.tip.prepare_envelope_print", "Заполнить скрытые layout-листы C4, C5 и DL данными для печати конвертов"
+
+    AddTranslation "en", "ribbon.tip.prepare_envelope_print", "Fill hidden C4, C5, and DL layout sheets with envelope print data"
+
     AddTranslation "ru", "dispatch.foundation.stub.title", "Почтовые отправления"
 
     AddTranslation "en", "dispatch.foundation.stub.title", "Mail dispatch"
@@ -1243,6 +1251,22 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "dispatch.registry.msg.error", "Не удалось сформировать внутренний почтовый реестр: "
 
     AddTranslation "en", "dispatch.registry.msg.error", "Failed to build the internal dispatch registry: "
+
+    AddTranslation "ru", "dispatch.layouts.title", "Подготовка конвертов"
+
+    AddTranslation "en", "dispatch.layouts.title", "Envelope layouts"
+
+    AddTranslation "ru", "dispatch.layouts.msg.prepared", "Скрытые layout-листы конвертов заполнены данными для печати."
+
+    AddTranslation "en", "dispatch.layouts.msg.prepared", "Hidden envelope layout sheets were filled with print data."
+
+    AddTranslation "ru", "dispatch.layouts.msg.no_items", "Нет почтовых отправлений для подготовки конвертов."
+
+    AddTranslation "en", "dispatch.layouts.msg.no_items", "There are no dispatch items to prepare for envelope layouts."
+
+    AddTranslation "ru", "dispatch.layouts.msg.error", "Не удалось подготовить layout-листы конвертов: "
+
+    AddTranslation "en", "dispatch.layouts.msg.error", "Failed to prepare envelope layouts: "
 
     AddTranslation "ru", "core.date.unknown_month", "неизвестный_месяц"
 
@@ -1659,6 +1683,5 @@ Private Function NormalizeLocalizationKey(ByVal key As String) As String
     NormalizeLocalizationKey = LCase$(Trim$(key))
 
 End Function
-
 
 

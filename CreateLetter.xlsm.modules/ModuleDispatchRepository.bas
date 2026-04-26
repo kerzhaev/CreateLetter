@@ -121,30 +121,30 @@ Public Function DispatchRepositoryGetEnvelopeFormatDisplay(envelopeFormatKey As 
     End Select
 End Function
 
-Public Function DispatchRepositoryBuildRecipientPreviewByAddressee(addressee As String) As String
+Public Function DispatchRepositoryBuildRecipientPreviewByAddressee(Addressee As String) As String
     On Error GoTo BuildError
 
     Dim addressLine As String
     Dim postalCode As String
     Dim phone As String
 
-    If DispatchRepositoryTryResolveAddressByAddressee(addressee, addressLine, postalCode, phone) Then
-        DispatchRepositoryBuildRecipientPreviewByAddressee = addressee
+    If DispatchRepositoryTryResolveAddressByAddressee(Addressee, addressLine, postalCode, phone) Then
+        DispatchRepositoryBuildRecipientPreviewByAddressee = Addressee
         If Len(Trim$(addressLine)) > 0 Then
             DispatchRepositoryBuildRecipientPreviewByAddressee = DispatchRepositoryBuildRecipientPreviewByAddressee & vbCrLf & addressLine
         End If
         Exit Function
     End If
 
-    DispatchRepositoryBuildRecipientPreviewByAddressee = addressee
+    DispatchRepositoryBuildRecipientPreviewByAddressee = Addressee
     Exit Function
 
 BuildError:
-    DispatchRepositoryBuildRecipientPreviewByAddressee = addressee
+    DispatchRepositoryBuildRecipientPreviewByAddressee = Addressee
 End Function
 
 Public Function DispatchRepositoryCreateItemFromLetterFields( _
-    ByVal addressee As String, _
+    ByVal Addressee As String, _
     ByVal letterNumber As String, _
     ByVal letterDate As String, _
     ByVal senderName As String, _
@@ -162,7 +162,7 @@ Public Function DispatchRepositoryCreateItemFromLetterFields( _
     Dim addressLine As String
     Dim postalCode As String
     Dim resolvedPhone As String
-    Call DispatchRepositoryTryResolveAddressByAddressee(addressee, addressLine, postalCode, resolvedPhone)
+    Call DispatchRepositoryTryResolveAddressByAddressee(Addressee, addressLine, postalCode, resolvedPhone)
 
     If Len(Trim$(phone)) = 0 Then
         phone = resolvedPhone
@@ -181,7 +181,7 @@ Public Function DispatchRepositoryCreateItemFromLetterFields( _
         .Cells(1, DispatchItemColumnId).value = dispatchId
         .Cells(1, DispatchItemColumnLetterNumber).value = letterNumber
         .Cells(1, DispatchItemColumnLetterDate).value = letterDate
-        .Cells(1, DispatchItemColumnAddressee).value = addressee
+        .Cells(1, DispatchItemColumnAddressee).value = Addressee
         .Cells(1, DispatchItemColumnAddressLine).value = addressLine
         .Cells(1, DispatchItemColumnPostalCode).value = postalCode
         .Cells(1, DispatchItemColumnSenderName).value = senderName
@@ -261,7 +261,7 @@ End Function
 Private Function DispatchRepositoryGetTable(sheetName As String, tableName As String) As ListObject
     Dim ws As Worksheet
     Set ws = ThisWorkbook.Worksheets(sheetName)
-    Set DispatchRepositoryGetTable = ws.ListObjects.Item(tableName)
+    Set DispatchRepositoryGetTable = ws.ListObjects.item(tableName)
 End Function
 
 Private Function DispatchRepositoryCreateEnvelopeFormatDescriptor( _
@@ -329,7 +329,7 @@ Private Function DispatchRepositoryResolveDispatchStatus(status As String) As St
 End Function
 
 Private Function DispatchRepositoryTryResolveAddressByAddressee( _
-    ByVal addressee As String, _
+    ByVal Addressee As String, _
     ByRef addressLine As String, _
     ByRef postalCode As String, _
     ByRef phone As String) As Boolean
@@ -346,7 +346,7 @@ Private Function DispatchRepositoryTryResolveAddressByAddressee( _
     If IsEmpty(addressData) Then Exit Function
 
     Dim normalizedAddressee As String
-    normalizedAddressee = UCase$(Trim$(addressee))
+    normalizedAddressee = UCase$(Trim$(Addressee))
 
     Dim i As Long
     For i = LBound(addressData, 1) To UBound(addressData, 1)

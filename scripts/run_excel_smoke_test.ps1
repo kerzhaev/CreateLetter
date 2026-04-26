@@ -36,7 +36,10 @@ param(
     [switch]$RequireMailDispatchRibbon,
 
     [Parameter(Mandatory = $false)]
-    [switch]$RequireEnvelopeFormatsSeed
+    [switch]$RequireEnvelopeFormatsSeed,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireEnvelopeLayoutSheets
 )
 
 $ErrorActionPreference = "Stop"
@@ -268,6 +271,19 @@ try {
         $failed = $true
     }
 
+    if ($RequireEnvelopeLayoutSheets) {
+        foreach ($layoutSheetName in @("DispatchLayout_C4", "DispatchLayout_C5", "DispatchLayout_DL")) {
+            try {
+                $layoutSheet = $workbook.Worksheets.Item($layoutSheetName)
+                Add-Result -Results $results -Name ("Worksheet:" + $layoutSheetName) -Status "PASS" -Details ("Layout worksheet is present as '" + $layoutSheetName + "'.")
+            }
+            catch {
+                Add-Result -Results $results -Name ("Worksheet:" + $layoutSheetName) -Status "FAIL" -Details ("Missing layout worksheet '" + $layoutSheetName + "'.")
+                $failed = $true
+            }
+        }
+    }
+
     if ($RequireEnvelopeFormatsSeed) {
         try {
             $envelopeSheet = $workbook.Worksheets.Item("EnvelopeFormats")
@@ -492,6 +508,28 @@ try {
             }
         }
 
+        if ($RequireEnvelopeLayoutSheets) {
+            $envelopeLayoutsPath = Join-Path $modulesDirectory "ModuleEnvelopeLayouts.bas"
+
+            if (Test-Path -LiteralPath $envelopeLayoutsPath) {
+                $envelopeLayoutsText = Get-Content -Path $envelopeLayoutsPath -Raw
+                $hasEnvelopeLayoutContract = ($envelopeLayoutsText -like "*Public Function PrepareEnvelopePrint()*") -and
+                                             ($envelopeLayoutsText -like "*Public Function ResolveEnvelopeLayoutSheetName(envelopeFormatKey As String)*")
+
+                if ($hasEnvelopeLayoutContract) {
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "PASS" -Details "Envelope layout builder functions are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts is missing expected layout preparation functions."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts.bas is missing from source-managed modules."
+                $failed = $true
+            }
+        }
+
         if ($RequireMailDispatchRibbon) {
             $mailDispatchFormPath = Join-Path $modulesDirectory "frmMailDispatch.frm"
 
@@ -543,6 +581,10 @@ try {
 
         if ($RequireDispatchRegistryTable) {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonBuildDispatchRegistry(control As IRibbonControl)*")
+        }
+
+        if ($RequireEnvelopeLayoutSheets) {
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonPrepareEnvelopePrint(control As IRibbonControl)*")
         }
 
         $hasCustomUiPart = $null -ne $customUiEntry

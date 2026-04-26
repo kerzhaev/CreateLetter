@@ -32,6 +32,13 @@
                   onAction="RibbonBuildDispatchRegistry"
                   screentip="Сформировать реестр"
                   supertip="Собирает внутренний Excel-реестр из подготовленных почтовых отправлений." />
+          <button id="btnRibbonPrepareEnvelopePrint"
+                  label="Подготовить конверты"
+                  size="large"
+                  imageMso="PrintPreviewAndPrint"
+                  onAction="RibbonPrepareEnvelopePrint"
+                  screentip="Подготовить конверты"
+                  supertip="Заполняет скрытые layout-листы C4, C5 и DL данными для печати конвертов." />
           <button id="btnRibbonTemplateFolder"
                   label="Папка шаблонов"
                   size="large"

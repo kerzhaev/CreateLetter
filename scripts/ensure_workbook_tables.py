@@ -29,6 +29,12 @@ TABLE_SPECS = (
     ("DispatchRegistry", "tblDispatchRegistry", ("AddressLine", "Addressee", "MailType", "EnvelopeFormatKey", "Mass", "DeclaredValue", "Payment", "Comment", "Phone", "IndexFrom", "BatchId", "CreatedAt")),
 )
 
+LAYOUT_SHEET_SPECS = (
+    ("DispatchLayout_C4", ("DispatchId", "LetterNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "IndexFrom", "MailType", "Mass", "DeclaredValue", "Comment", "PreparedAt")),
+    ("DispatchLayout_C5", ("DispatchId", "LetterNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "IndexFrom", "MailType", "Mass", "DeclaredValue", "Comment", "PreparedAt")),
+    ("DispatchLayout_DL", ("DispatchId", "LetterNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "IndexFrom", "MailType", "Mass", "DeclaredValue", "Comment", "PreparedAt")),
+)
+
 ADDRESS_GROUP_COLUMN_NAME = "AddressGroup"
 ENVELOPE_FORMAT_DEFAULT_ROWS = (
     ("c4", "C4", True, 10),
@@ -164,6 +170,17 @@ def ensure_address_group_column(ws) -> str:
     return "created"
 
 
+def ensure_layout_sheet(workbook, sheet_name: str, headers: tuple[str, ...]) -> str:
+    ws, sheet_created = get_or_create_sheet(workbook, sheet_name)
+    header_status = ensure_sheet_headers(ws, headers)
+    ws.Visible = 2  # xlSheetVeryHidden
+    if sheet_created:
+        return "created"
+    if header_status == "updated":
+        return "updated"
+    return "existing"
+
+
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
@@ -193,6 +210,10 @@ def main() -> int:
             if table_name == "tblEnvelopeFormats":
                 seed_status = ensure_envelope_formats_seed(ws)
                 print(f"{sheet_name}:seed:{seed_status}")
+
+        for sheet_name, headers in LAYOUT_SHEET_SPECS:
+            layout_status = ensure_layout_sheet(workbook, sheet_name, headers)
+            print(f"{sheet_name}:layout:{layout_status}")
 
         address_group_status = ensure_address_group_column(workbook.Worksheets("Addresses"))
         print(f"Addresses:{ADDRESS_GROUP_COLUMN_NAME}:{address_group_status}")
