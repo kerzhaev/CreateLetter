@@ -6,6 +6,7 @@
 CreateLetter is an Excel VBA workbook used to prepare letters from templates using structured address/settings data and guided user forms.
 Source-managed VBA standard modules, class modules, and forms are stored in `CreateLetter.xlsm.modules/`. Workbook and worksheet document modules are stored separately in `CreateLetter.xlsm.document-modules/` so manual `VbaModuleManager` workflows do not import hidden sheet/workbook code as ordinary class modules. Both directories are synchronized with the workbook artifact through Excel COM automation, with manual `VbaModuleManager` fallback only for edge cases.
 The `Addresses` worksheet now supports an optional `AddressGroup` field for scenarios where several named recipients share one postal address.
+The workbook also now contains a dedicated `Mail Dispatch` subdomain with envelope formats, sender dictionary, dispatch items, internal registry, a dedicated `frmMailDispatch` form, and hidden layout sheets for `C4`, `C5`, and `DL`.
 
 ## Tech Stack
 - **Language:** VBA
@@ -25,19 +26,26 @@ The `Addresses` worksheet now supports an optional `AddressGroup` field for scen
 │   ├── ModuleLocalization.bas           # Localization lookup foundation
 │   ├── ModuleRibbon.bas                 # Ribbon callbacks and folder settings
 │   ├── ModuleRepository.bas             # Workbook repository/search/export helpers, including structured address search
+│   ├── ModuleDispatchRepository.bas     # Envelope format, sender, and dispatch-item repository helpers
+│   ├── ModuleDispatchRegistry.bas       # Internal dispatch-registry builder from DispatchItems
+│   ├── ModuleEnvelopeLayouts.bas        # Hidden C4/C5/DL layout preparation helpers
 │   ├── ModuleWordInterop.bas            # Explicit Word lifecycle and document generation helpers
 │   ├── ModuleCache.bas                  # Cache helpers
 │   ├── ModuleBackup.bas                 # Backup helpers
 │   ├── ModuleAuditLogger.bas            # Audit/logging helpers
 │   ├── VbaModuleManager.bas             # Legacy/manual import-export helper kept for fallback workflows
 │   ├── clsLetterHistoryRecord.cls       # Typed DTO for letter history rows
+│   ├── frmMailDispatch.frm              # Mail dispatch UI for creating dispatch items from existing letters
 │   └── MdlBackup1.bas                   # Legacy backup logic
 ├── CreateLetter.xlsm.document-modules/  # Workbook/sheet document-module exports
 │   ├── ЭтаКнига.cls                     # Workbook document-module source
 │   ├── Лист1.cls                        # Addresses sheet document-module source
 │   ├── Лист2.cls                        # Letters sheet document-module source
 │   ├── Лист3.cls                        # Settings sheet document-module source
-│   └── Лист4.cls                        # Localization sheet document-module source
+│   ├── Лист4.cls                        # Localization sheet document-module source
+│   ├── Лист9.cls                        # DispatchLayout_C4 hidden layout sheet source
+│   ├── Лист10.cls                       # DispatchLayout_C5 hidden layout sheet source
+│   └── Лист11.cls                       # DispatchLayout_DL hidden layout sheet source
 ├── filesarchive/                        # Archived workbook versions
 │   └── restore-point-*/                 # Local rollback snapshots before feature work
 ├── scripts/
@@ -62,6 +70,7 @@ The `Addresses` worksheet now supports an optional `AddressGroup` field for scen
 |------|---------|
 | CreateLetter.xlsm.modules/ModuleMain.bas | Core business rules and shared logic |
 | CreateLetter.xlsm.modules/frmLetterCreator.frm | Main letter creation flow |
+| CreateLetter.xlsm.modules/frmMailDispatch.frm | Mail dispatch flow for envelope prep and dispatch-item creation |
 | CreateLetter.xlsm.modules/mdlInicialize.bas | Initializes/reset required worksheets |
 | .ai-factory.json | AI Factory agent setup metadata |
 
