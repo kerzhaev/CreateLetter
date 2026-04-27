@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks and user-configurable folder settings
 
-' Version: 1.1.0 - 27.04.2026
+' Version: 1.2.0 - 28.04.2026
 
 ' ======================================================================
 
@@ -61,6 +61,22 @@ End Sub
 Public Sub RibbonOpenMailDispatch(control As IRibbonControl)
 
     OpenMailDispatch
+
+End Sub
+
+
+
+Public Sub RibbonOpenDispatchJournal(control As IRibbonControl)
+
+    OpenDispatchJournal
+
+End Sub
+
+
+
+Public Sub RibbonReturnDispatchPackage(control As IRibbonControl)
+
+    PromptReturnDispatchPackageToWork
 
 End Sub
 
@@ -121,7 +137,7 @@ Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)
     Exit Sub
 
 ExportError:
-    MsgBox t("postal.registry.pdf.msg.error", "Failed to export postal registry PDF: ") & Err.Description, vbCritical, t("postal.registry.pdf.title", "Postal registry PDF")
+    MsgBox t("postal.registry.pdf.msg.error", "Failed to export postal registry PDF: ") & Err.description, vbCritical, t("postal.registry.pdf.title", "Postal registry PDF")
 End Sub
 
 

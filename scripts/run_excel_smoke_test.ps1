@@ -226,6 +226,7 @@ try {
 
     if ($RequireDispatchItemsTable) {
         $structuredTableRequirements += @{ Sheet = "DispatchItems"; Table = "tblDispatchItems" }
+        $structuredTableRequirements += @{ Sheet = "DispatchJournal"; Table = "tblDispatchJournal" }
     }
 
     if ($RequireDispatchRegistryTable) {
@@ -537,6 +538,7 @@ try {
 
         if ($RequireDispatchItemsTable) {
             $dispatchRepositoryPath = Join-Path $modulesDirectory "ModuleDispatchRepository.bas"
+            $dispatchJournalPath = Join-Path $modulesDirectory "ModuleDispatchJournal.bas"
 
             if (Test-Path -LiteralPath $dispatchRepositoryPath) {
                 $dispatchRepositoryText = Get-Content -Path $dispatchRepositoryPath -Raw
@@ -558,6 +560,23 @@ try {
             }
             else {
                 Add-Result -Results $results -Name "DispatchRepositoryContract" -Status "FAIL" -Details "ModuleDispatchRepository.bas is missing from source-managed modules."
+                $failed = $true
+            }
+
+            if (Test-Path -LiteralPath $dispatchJournalPath) {
+                $dispatchJournalText = Get-Content -Path $dispatchJournalPath -Raw
+                $hasDispatchJournalContract = ($dispatchJournalText -like "*Public Function BuildDispatchJournal()*") -and ($dispatchJournalText -like "*Public Sub OpenDispatchJournal()*") -and ($dispatchJournalText -like "*Public Sub PromptReturnDispatchPackageToWork()*") -and ($dispatchJournalText -like "*Public Function ReturnDispatchPackageToWork(*") -and ($dispatchJournalText -like "*DispatchStatusRegistryPrinted*")
+
+                if ($hasDispatchJournalContract) {
+                    Add-Result -Results $results -Name "DispatchJournalContract" -Status "PASS" -Details "Dispatch journal and safe package-return functions are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "DispatchJournalContract" -Status "FAIL" -Details "ModuleDispatchJournal is missing expected journal or return functions."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "DispatchJournalContract" -Status "FAIL" -Details "ModuleDispatchJournal.bas is missing from source-managed modules."
                 $failed = $true
             }
         }
@@ -691,6 +710,8 @@ try {
 
         if ($RequireMailDispatchRibbon) {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonOpenMailDispatch(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonOpenDispatchJournal(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonReturnDispatchPackage(control As IRibbonControl)*")
         }
 
         if ($RequireDispatchRegistryTable) {

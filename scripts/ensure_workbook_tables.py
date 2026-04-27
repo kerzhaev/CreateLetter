@@ -27,6 +27,7 @@ TABLE_SPECS = (
     ("Senders", "tblSenders", ("SenderName", "AddressLine1", "AddressLine2", "AddressLine3", "PostalCode", "Phone", "IsDefault")),
     ("DispatchItems", "tblDispatchItems", ("DispatchId", "LetterNumber", "LetterDate", "LetterRowNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Comment", "Phone", "BatchId", "Status", "CreatedAt", "RegistryNumber", "RegistryDate")),
     ("DispatchRegistry", "tblDispatchRegistry", ("RegistryNumber", "RegistryDate", "BatchId", "Addressee", "AddressLine", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Payment", "Comment", "Phone", "IndexFrom", "SenderName", "OutgoingNumbers", "CreatedAt", "PostalCode")),
+    ("DispatchJournal", "tblDispatchJournal", ("BatchId", "Status", "RegistryNumber", "RegistryDate", "Addressee", "LetterCount", "OutgoingNumbers", "SenderName", "EnvelopeFormatKey", "MailType", "CreatedAt", "Comment")),
 )
 
 LAYOUT_SHEET_SPECS = (
