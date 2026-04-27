@@ -20,6 +20,7 @@ filesarchive/
 # Local workbook/runtime artifacts
 Backups/
 _tmp_export/
+postal-registry-pdf/
 CreateLetter.xlsm
 LetterTemplate.docx
 LetterTemplateFOU.docx

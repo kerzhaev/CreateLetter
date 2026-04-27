@@ -3,7 +3,7 @@ Attribute VB_Name = "ModulePostalRegistryPrint"
 ' Module: ModulePostalRegistryPrint
 ' Author: CreateLetter contributors
 ' Purpose: Build a printable postal registry sheet from the internal dispatch registry
-' Version: 1.0.1 - 27.04.2026
+' Version: 1.1.0 - 27.04.2026
 ' ======================================================================
 
 Option Explicit
@@ -11,6 +11,13 @@ Option Explicit
 Private Const PostalRegistryPrintSheetName As String = "PostalRegistryPrint"
 Private Const PostalRegistryHeaderRow As Long = 7
 Private Const PostalRegistryFirstDataRow As Long = 8
+Private Const PostalRegistrySettingsAppName As String = "CreateLetter"
+Private Const PostalRegistrySettingsSection As String = "PostalRegistry"
+Private Const PostalRegistrySettingPostOfficeName As String = "PostOfficeName"
+Private Const PostalRegistrySettingSenderSignatureName As String = "SenderSignatureName"
+Private Const PostalRegistrySettingReceiverSignatureName As String = "ReceiverSignatureName"
+Private Const PostalRegistrySettingPdfFolder As String = "PdfFolder"
+Private Const msoFileDialogFolderPicker As Long = 4
 
 Public Function BuildPostalRegistryPrintSheet() As Long
     On Error GoTo BuildError
@@ -32,7 +39,7 @@ Public Function BuildPostalRegistryPrintSheet() As Long
 
     Dim writtenRows As Long
     WritePostalRegistryTable printSheet, registryData, writtenRows
-    WritePostalRegistryFooter printSheet, PostalRegistryFirstDataRow + writtenRows + 2
+    WritePostalRegistryFooter printSheet, PostalRegistryFirstDataRow + writtenRows + 2, registryData, writtenRows
     ConfigurePostalRegistryPage printSheet
 
     BuildPostalRegistryPrintSheet = writtenRows
@@ -43,6 +50,63 @@ BuildError:
     Debug.Print "BuildPostalRegistryPrintSheet error: " & Err.Description
     BuildPostalRegistryPrintSheet = 0
 End Function
+
+Public Function ExportPostalRegistryPrintPdf() As String
+    On Error GoTo ExportError
+
+    Dim printSheet As Worksheet
+    Set printSheet = GetOrCreatePostalRegistryPrintSheet()
+
+    If Len(Trim$(CStr(printSheet.Range("A1").Value))) = 0 Then
+        BuildPostalRegistryPrintSheet
+    End If
+
+    If Len(Trim$(CStr(printSheet.Range("A1").Value))) = 0 Then
+        Err.Raise vbObjectError + 4801, "ExportPostalRegistryPrintPdf", "Postal registry print sheet is empty."
+    End If
+
+    Dim pdfFolder As String
+    pdfFolder = GetPostalRegistryPdfFolder()
+    EnsureFolderExists pdfFolder
+
+    Dim pdfPath As String
+    pdfPath = pdfFolder & "\" & BuildPostalRegistryPdfFileName(printSheet)
+
+    printSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=pdfPath, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=False
+
+    ExportPostalRegistryPrintPdf = pdfPath
+    Exit Function
+
+ExportError:
+    Debug.Print "ExportPostalRegistryPrintPdf error: " & Err.Description
+    ExportPostalRegistryPrintPdf = ""
+End Function
+
+Public Sub ConfigurePostalRegistryPrintSettings()
+    On Error GoTo ConfigureError
+
+    Dim postOfficeName As String
+    postOfficeName = InputBox(t("postal.registry.settings.prompt.post_office", "Post office name:"), t("postal.registry.settings.title", "Postal registry settings"), GetPostalRegistryPostOfficeName())
+    If Len(Trim$(postOfficeName)) > 0 Then SaveSetting PostalRegistrySettingsAppName, PostalRegistrySettingsSection, PostalRegistrySettingPostOfficeName, Trim$(postOfficeName)
+
+    Dim senderSignatureName As String
+    senderSignatureName = InputBox(t("postal.registry.settings.prompt.sender_signature", "Sender signature name:"), t("postal.registry.settings.title", "Postal registry settings"), GetPostalRegistrySenderSignatureName(""))
+    SaveSetting PostalRegistrySettingsAppName, PostalRegistrySettingsSection, PostalRegistrySettingSenderSignatureName, Trim$(senderSignatureName)
+
+    Dim receiverSignatureName As String
+    receiverSignatureName = InputBox(t("postal.registry.settings.prompt.receiver_signature", "Receiver signature name:"), t("postal.registry.settings.title", "Postal registry settings"), GetPostalRegistryReceiverSignatureName())
+    SaveSetting PostalRegistrySettingsAppName, PostalRegistrySettingsSection, PostalRegistrySettingReceiverSignatureName, Trim$(receiverSignatureName)
+
+    Dim selectedFolder As String
+    selectedFolder = PromptForPostalRegistryPdfFolder()
+    If Len(Trim$(selectedFolder)) > 0 Then SaveSetting PostalRegistrySettingsAppName, PostalRegistrySettingsSection, PostalRegistrySettingPdfFolder, Trim$(selectedFolder)
+
+    MsgBox t("postal.registry.settings.msg.saved", "Postal registry settings saved."), vbInformation, t("postal.registry.settings.title", "Postal registry settings")
+    Exit Sub
+
+ConfigureError:
+    MsgBox t("postal.registry.settings.msg.error", "Failed to save postal registry settings: ") & Err.Description, vbExclamation, t("postal.registry.settings.title", "Postal registry settings")
+End Sub
 
 Private Function GetPostalRegistrySourceTable() As ListObject
     Set GetPostalRegistrySourceTable = ThisWorkbook.Worksheets("DispatchRegistry").ListObjects.Item(DispatchRegistryTableName)
@@ -104,7 +168,7 @@ Private Sub WritePostalRegistryHeader(targetSheet As Worksheet, registryData As 
         .Range("A3").Font.Size = 13
 
         .Range("A5:F5").Merge
-        .Range("A5").Value = registryDate
+        .Range("A5").Value = FormatPostalRegistryDateCaption(registryDate)
         .Range("A5").HorizontalAlignment = xlCenter
         .Range("A5").Font.Size = 13
     End With
@@ -156,33 +220,40 @@ Private Sub WritePostalRegistryTable(targetSheet As Worksheet, registryData As V
     Next sourceRow
 End Sub
 
-Private Sub WritePostalRegistryFooter(targetSheet As Worksheet, footerStartRow As Long)
+Private Sub WritePostalRegistryFooter(targetSheet As Worksheet, footerStartRow As Long, registryData As Variant, packageCount As Long)
+    Dim senderName As String
+    senderName = FirstNonEmptyRegistryValue(registryData, DispatchRegistryColumnSenderName)
+
+    Dim senderSignatureName As String
+    senderSignatureName = GetPostalRegistrySenderSignatureName(senderName)
+
+    Dim receiverSignatureName As String
+    receiverSignatureName = GetPostalRegistryReceiverSignatureName()
+
     With targetSheet
         .Cells(footerStartRow, 1).Value = t("postal.registry.print.footer.total", "TOTAL")
-        .Cells(footerStartRow, 2).Value = CountPostalRegistryPackages()
-        .Cells(footerStartRow, 3).Value = t("postal.registry.print.footer.package", "package.")
+        .Cells(footerStartRow, 2).Value = packageCount
+        .Cells(footerStartRow, 3).Value = t("postal.registry.print.footer.package", "package(s).")
         .Range(.Cells(footerStartRow, 1), .Cells(footerStartRow, 3)).Font.Bold = True
 
         .Cells(footerStartRow + 2, 1).Value = t("postal.registry.print.footer.sender_signature", "Sender signature:")
         .Range(.Cells(footerStartRow + 2, 2), .Cells(footerStartRow + 2, 4)).Merge
-        .Cells(footerStartRow + 2, 2).Value = "________________________"
+        .Cells(footerStartRow + 2, 2).Value = BuildSignatureLine(senderSignatureName)
 
         .Cells(footerStartRow + 4, 1).Value = t("postal.registry.print.footer.stamp", "Stamp")
 
         .Cells(footerStartRow + 6, 1).Value = t("postal.registry.print.footer.accepted_by_registry", "Accepted by this registry:")
         .Range(.Cells(footerStartRow + 6, 3), .Cells(footerStartRow + 6, 4)).Merge
-        .Cells(footerStartRow + 6, 3).Value = t("postal.registry.print.footer.documents", "____ documents.")
+        .Cells(footerStartRow + 6, 3).Value = CStr(packageCount) & " " & t("postal.registry.print.footer.documents", "documents.")
 
         .Cells(footerStartRow + 8, 1).Value = t("postal.registry.print.footer.stamp", "Stamp")
 
-        .Cells(footerStartRow + 10, 1).Value = t("postal.registry.print.footer.quote_open", """")
-        .Cells(footerStartRow + 10, 2).Value = t("postal.registry.print.footer.quote_close", """")
-        .Cells(footerStartRow + 10, 3).Value = "202"
-        .Cells(footerStartRow + 10, 4).Value = t("postal.registry.print.footer.year_word", "year")
+        .Range(.Cells(footerStartRow + 10, 1), .Cells(footerStartRow + 10, 4)).Merge
+        .Cells(footerStartRow + 10, 1).Value = t("postal.registry.print.footer.date_blank", """___"" __________ 202__ year")
 
         .Cells(footerStartRow + 12, 1).Value = t("postal.registry.print.footer.receiver_signature", "Receiver signature")
         .Range(.Cells(footerStartRow + 12, 2), .Cells(footerStartRow + 12, 4)).Merge
-        .Cells(footerStartRow + 12, 2).Value = "________________________"
+        .Cells(footerStartRow + 12, 2).Value = BuildSignatureLine(receiverSignatureName)
     End With
 End Sub
 
@@ -211,11 +282,92 @@ Private Function FirstNonEmptyRegistryValue(registryData As Variant, columnIndex
 End Function
 
 Private Function GetPostalRegistryPostOfficeName() As String
-    GetPostalRegistryPostOfficeName = GetSetting("CreateLetter", "PostalRegistry", "PostOfficeName", "")
+    GetPostalRegistryPostOfficeName = GetSetting(PostalRegistrySettingsAppName, PostalRegistrySettingsSection, PostalRegistrySettingPostOfficeName, "")
     If Len(Trim$(GetPostalRegistryPostOfficeName)) = 0 Then
         GetPostalRegistryPostOfficeName = t("postal.registry.print.default_post_office", "post office")
     End If
 End Function
+
+Private Function GetPostalRegistrySenderSignatureName(defaultName As String) As String
+    GetPostalRegistrySenderSignatureName = GetSetting(PostalRegistrySettingsAppName, PostalRegistrySettingsSection, PostalRegistrySettingSenderSignatureName, "")
+    If Len(Trim$(GetPostalRegistrySenderSignatureName)) = 0 Then
+        GetPostalRegistrySenderSignatureName = defaultName
+    End If
+End Function
+
+Private Function GetPostalRegistryReceiverSignatureName() As String
+    GetPostalRegistryReceiverSignatureName = GetSetting(PostalRegistrySettingsAppName, PostalRegistrySettingsSection, PostalRegistrySettingReceiverSignatureName, "")
+End Function
+
+Private Function GetPostalRegistryPdfFolder() As String
+    GetPostalRegistryPdfFolder = GetSetting(PostalRegistrySettingsAppName, PostalRegistrySettingsSection, PostalRegistrySettingPdfFolder, "")
+    If Len(Trim$(GetPostalRegistryPdfFolder)) = 0 Then
+        GetPostalRegistryPdfFolder = ThisWorkbook.Path & "\postal-registry-pdf"
+    End If
+End Function
+
+Private Function PromptForPostalRegistryPdfFolder() As String
+    On Error GoTo PromptError
+
+    Dim currentFolder As String
+    currentFolder = GetPostalRegistryPdfFolder()
+
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        .Title = t("postal.registry.settings.prompt.pdf_folder", "Select PDF export folder")
+        .AllowMultiSelect = False
+        If Len(Trim$(currentFolder)) > 0 Then .InitialFileName = currentFolder
+        If .Show = -1 Then PromptForPostalRegistryPdfFolder = .SelectedItems(1)
+    End With
+
+    Exit Function
+
+PromptError:
+    PromptForPostalRegistryPdfFolder = ""
+End Function
+
+Private Function BuildSignatureLine(signatureName As String) As String
+    BuildSignatureLine = "________________________"
+    If Len(Trim$(signatureName)) > 0 Then BuildSignatureLine = BuildSignatureLine & " /" & Trim$(signatureName) & "/"
+End Function
+
+Private Function FormatPostalRegistryDateCaption(registryDate As String) As String
+    If Len(Trim$(registryDate)) = 0 Then
+        FormatPostalRegistryDateCaption = FormatLetterDate(CStr(Date)) & " " & t("postal.registry.print.footer.year_word", "year")
+    Else
+        FormatPostalRegistryDateCaption = FormatLetterDate(registryDate) & " " & t("postal.registry.print.footer.year_word", "year")
+    End If
+End Function
+
+Private Function BuildPostalRegistryPdfFileName(printSheet As Worksheet) As String
+    Dim registryNumber As String
+    registryNumber = Replace(CStr(printSheet.Range("A1").Value), t("postal.registry.print.registry_prefix", "Registry No. "), "")
+
+    If Len(Trim$(registryNumber)) = 0 Then registryNumber = "registry"
+
+    BuildPostalRegistryPdfFileName = "postal_registry_" & SanitizeFileName(registryNumber) & "_" & Format$(Now, "yyyymmdd_hhnnss") & ".pdf"
+End Function
+
+Private Function SanitizeFileName(rawName As String) As String
+    Dim sanitizedName As String
+    sanitizedName = Trim$(rawName)
+
+    Dim forbiddenChars As Variant
+    forbiddenChars = Array("\", "/", ":", "*", "?", """", "<", ">", "|")
+
+    Dim i As Long
+    For i = LBound(forbiddenChars) To UBound(forbiddenChars)
+        sanitizedName = Replace(sanitizedName, CStr(forbiddenChars(i)), "_")
+    Next i
+
+    SanitizeFileName = sanitizedName
+End Function
+
+Private Sub EnsureFolderExists(folderPath As String)
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If Not fso.FolderExists(folderPath) Then fso.CreateFolder folderPath
+End Sub
 
 Private Function BuildPostalRegistryOutgoingCell(outgoingNumbersText As String) As String
     Dim normalizedText As String

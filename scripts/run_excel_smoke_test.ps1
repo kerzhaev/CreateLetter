@@ -610,6 +610,8 @@ try {
             if (Test-Path -LiteralPath $postalRegistryPrintPath) {
                 $postalRegistryPrintText = Get-Content -Path $postalRegistryPrintPath -Raw
                 $hasPostalRegistryPrintContract = ($postalRegistryPrintText -like "*Public Function BuildPostalRegistryPrintSheet()*") -and
+                                                  ($postalRegistryPrintText -like "*Public Function ExportPostalRegistryPrintPdf()*") -and
+                                                  ($postalRegistryPrintText -like "*Public Sub ConfigurePostalRegistryPrintSettings()*") -and
                                                   ($postalRegistryPrintText -like "*PostalRegistryPrintSheetName*")
 
                 if ($hasPostalRegistryPrintContract) {
@@ -691,6 +693,11 @@ try {
 
         if ($RequireDispatchRegistryTable) {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonBuildDispatchRegistry(control As IRibbonControl)*")
+        }
+
+        if ($RequirePostalRegistryPrintSheet) {
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonConfigurePostalRegistry(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)*")
         }
 
         if ($RequireEnvelopeLayoutSheets) {

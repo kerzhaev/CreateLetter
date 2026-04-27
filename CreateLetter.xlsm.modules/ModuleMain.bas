@@ -3102,6 +3102,22 @@ End Function
 
 
 
+Public Function ExportPostalRegistryPrint() As String
+
+    ExportPostalRegistryPrint = ExportPostalRegistryPrintPdf()
+
+End Function
+
+
+
+Public Sub ConfigurePostalRegistryPrint()
+
+    ConfigurePostalRegistryPrintSettings
+
+End Sub
+
+
+
 Public Function PrepareDispatchEnvelopeLayouts() As Long
 
     PrepareDispatchEnvelopeLayouts = PrepareEnvelopePrint()
