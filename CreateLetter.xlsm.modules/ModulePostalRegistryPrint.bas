@@ -9,8 +9,8 @@ Attribute VB_Name = "ModulePostalRegistryPrint"
 Option Explicit
 
 Private Const PostalRegistryPrintSheetName As String = "PostalRegistryPrint"
-Private Const PostalRegistryHeaderRow As Long = 7
-Private Const PostalRegistryFirstDataRow As Long = 8
+Private Const PostalRegistryHeaderRow As Long = 6
+Private Const PostalRegistryFirstDataRow As Long = 7
 Private Const PostalRegistrySettingsAppName As String = "CreateLetter"
 Private Const PostalRegistrySettingsSection As String = "PostalRegistry"
 Private Const PostalRegistrySettingPostOfficeName As String = "PostOfficeName"
@@ -132,12 +132,14 @@ Private Sub PreparePostalRegistryPrintSheet(targetSheet As Worksheet)
     targetSheet.Cells.Font.Name = "Times New Roman"
     targetSheet.Cells.Font.Size = 12
 
-    targetSheet.Columns("A").ColumnWidth = 5
+    targetSheet.Columns("A").ColumnWidth = 7
     targetSheet.Columns("B").ColumnWidth = 10
-    targetSheet.Columns("C").ColumnWidth = 30
-    targetSheet.Columns("D").ColumnWidth = 28
-    targetSheet.Columns("E").ColumnWidth = 21
+    targetSheet.Columns("C").ColumnWidth = 34
+    targetSheet.Columns("D").ColumnWidth = 30
+    targetSheet.Columns("E").ColumnWidth = 22
     targetSheet.Columns("F").ColumnWidth = 16
+
+    targetSheet.Rows.RowHeight = 18
 End Sub
 
 Private Sub WritePostalRegistryHeader(targetSheet As Worksheet, registryData As Variant)
@@ -155,24 +157,30 @@ Private Sub WritePostalRegistryHeader(targetSheet As Worksheet, registryData As 
         .Range("A1").Value = t("postal.registry.print.registry_prefix", "Registry No. ") & registryNumber
         .Range("A1").HorizontalAlignment = xlCenter
         .Range("A1").Font.Bold = True
-        .Range("A1").Font.Size = 14
+        .Range("A1").Font.Size = 13
 
         .Range("A2:F2").Merge
         .Range("A2").Value = t("postal.registry.print.submitted_to", "Correspondence submitted to ") & GetPostalRegistryPostOfficeName()
         .Range("A2").HorizontalAlignment = xlCenter
-        .Range("A2").Font.Size = 13
+        .Range("A2").Font.Size = 12
 
-        .Range("A3:F4").Merge
+        .Range("A3:F3").Merge
         .Range("A3").Value = t("postal.registry.print.sender_prefix", "Sender: ") & senderName
         .Range("A3").HorizontalAlignment = xlCenter
         .Range("A3").VerticalAlignment = xlCenter
         .Range("A3").WrapText = True
-        .Range("A3").Font.Size = 13
+        .Range("A3").Font.Size = 12
 
-        .Range("A5:F5").Merge
-        .Range("A5").Value = FormatPostalRegistryDateCaption(registryDate)
-        .Range("A5").HorizontalAlignment = xlCenter
-        .Range("A5").Font.Size = 13
+        .Range("A4:F4").Merge
+        .Range("A4").Value = FormatPostalRegistryHeaderDate(registryDate)
+        .Range("A4").HorizontalAlignment = xlCenter
+        .Range("A4").Font.Size = 12
+
+        .Rows(1).RowHeight = 19
+        .Rows(2).RowHeight = 17
+        .Rows(3).RowHeight = 34
+        .Rows(4).RowHeight = 18
+        .Rows(5).RowHeight = 7
     End With
 End Sub
 
@@ -190,7 +198,10 @@ Private Sub WritePostalRegistryTable(targetSheet As Worksheet, registryData As V
             .HorizontalAlignment = xlCenter
             .VerticalAlignment = xlCenter
             .Borders.LineStyle = xlContinuous
+            .Font.Size = 11
         End With
+
+        .Rows(PostalRegistryHeaderRow).RowHeight = 22
     End With
 
     Dim sourceRow As Long
@@ -210,11 +221,16 @@ Private Sub WritePostalRegistryTable(targetSheet As Worksheet, registryData As V
                 .WrapText = True
                 .VerticalAlignment = xlCenter
                 .Borders.LineStyle = xlContinuous
+                .Font.Size = 12
             End With
 
             .Cells(targetRow, 1).HorizontalAlignment = xlCenter
             .Cells(targetRow, 2).HorizontalAlignment = xlCenter
+            .Cells(targetRow, 3).HorizontalAlignment = xlLeft
+            .Cells(targetRow, 4).HorizontalAlignment = xlLeft
+            .Cells(targetRow, 5).HorizontalAlignment = xlLeft
             .Cells(targetRow, 6).HorizontalAlignment = xlCenter
+            .Cells(targetRow, 6).Font.Bold = True
             .Rows(targetRow).RowHeight = EstimatePostalRegistryRowHeight(CStr(registryData(sourceRow, DispatchRegistryColumnOutgoingNumbers)))
         End With
 
@@ -237,25 +253,31 @@ Private Sub WritePostalRegistryFooter(targetSheet As Worksheet, footerStartRow A
         .Cells(footerStartRow, 2).Value = packageCount
         .Cells(footerStartRow, 3).Value = t("postal.registry.print.footer.package", "package(s).")
         .Range(.Cells(footerStartRow, 1), .Cells(footerStartRow, 3)).Font.Bold = True
+        .Rows(footerStartRow).RowHeight = 24
 
+        .Range(.Cells(footerStartRow + 2, 1), .Cells(footerStartRow + 2, 3)).Merge
         .Cells(footerStartRow + 2, 1).Value = t("postal.registry.print.footer.sender_signature", "Sender signature:")
-        .Range(.Cells(footerStartRow + 2, 2), .Cells(footerStartRow + 2, 4)).Merge
-        .Cells(footerStartRow + 2, 2).Value = BuildSignatureLine(senderSignatureName)
+        .Range(.Cells(footerStartRow + 2, 4), .Cells(footerStartRow + 2, 5)).Merge
+        .Cells(footerStartRow + 2, 4).Value = BuildSignatureLine(senderSignatureName)
 
         .Cells(footerStartRow + 4, 1).Value = t("postal.registry.print.footer.stamp", "Stamp")
 
+        .Range(.Cells(footerStartRow + 6, 1), .Cells(footerStartRow + 6, 3)).Merge
         .Cells(footerStartRow + 6, 1).Value = t("postal.registry.print.footer.accepted_by_registry", "Accepted by this registry:")
-        .Range(.Cells(footerStartRow + 6, 3), .Cells(footerStartRow + 6, 4)).Merge
-        .Cells(footerStartRow + 6, 3).Value = CStr(packageCount) & " " & t("postal.registry.print.footer.documents", "documents.")
+        .Range(.Cells(footerStartRow + 6, 4), .Cells(footerStartRow + 6, 5)).Merge
+        .Cells(footerStartRow + 6, 4).Value = t("postal.registry.print.footer.documents_blank", "____documents.")
 
         .Cells(footerStartRow + 8, 1).Value = t("postal.registry.print.footer.stamp", "Stamp")
 
-        .Range(.Cells(footerStartRow + 10, 1), .Cells(footerStartRow + 10, 4)).Merge
+        .Range(.Cells(footerStartRow + 10, 1), .Cells(footerStartRow + 10, 5)).Merge
         .Cells(footerStartRow + 10, 1).Value = t("postal.registry.print.footer.date_blank", """___"" __________ 202__ year")
 
+        .Range(.Cells(footerStartRow + 12, 1), .Cells(footerStartRow + 12, 2)).Merge
         .Cells(footerStartRow + 12, 1).Value = t("postal.registry.print.footer.receiver_signature", "Receiver signature")
-        .Range(.Cells(footerStartRow + 12, 2), .Cells(footerStartRow + 12, 4)).Merge
-        .Cells(footerStartRow + 12, 2).Value = BuildSignatureLine(receiverSignatureName)
+        .Range(.Cells(footerStartRow + 12, 3), .Cells(footerStartRow + 12, 5)).Merge
+        .Cells(footerStartRow + 12, 3).Value = BuildSignatureLine(receiverSignatureName)
+
+        .Range(.Cells(footerStartRow, 1), .Cells(footerStartRow + 12, 6)).Font.Size = 12
     End With
 End Sub
 
@@ -268,8 +290,9 @@ Private Sub ConfigurePostalRegistryPage(targetSheet As Worksheet)
         .FitToPagesTall = False
         .LeftMargin = Application.CentimetersToPoints(1.4)
         .RightMargin = Application.CentimetersToPoints(1.4)
-        .TopMargin = Application.CentimetersToPoints(1.2)
-        .BottomMargin = Application.CentimetersToPoints(1.2)
+        .TopMargin = Application.CentimetersToPoints(1)
+        .BottomMargin = Application.CentimetersToPoints(1)
+        .CenterHorizontally = True
     End With
 End Sub
 
@@ -328,15 +351,19 @@ PromptError:
 End Function
 
 Private Function BuildSignatureLine(signatureName As String) As String
-    BuildSignatureLine = "________________________"
-    If Len(Trim$(signatureName)) > 0 Then BuildSignatureLine = BuildSignatureLine & " /" & Trim$(signatureName) & "/"
+    BuildSignatureLine = "____________________"
+    If Len(Trim$(signatureName)) > 0 Then BuildSignatureLine = BuildSignatureLine & Trim$(signatureName)
 End Function
 
-Private Function FormatPostalRegistryDateCaption(registryDate As String) As String
+Private Function FormatPostalRegistryHeaderDate(registryDate As String) As String
+    Dim parsedDate As Date
+
     If Len(Trim$(registryDate)) = 0 Then
-        FormatPostalRegistryDateCaption = FormatLetterDate(CStr(Date)) & " " & t("postal.registry.print.footer.year_word", "year")
+        FormatPostalRegistryHeaderDate = Format$(Date, "dd.mm.yyyy")
+    ElseIf TryParseDateExtended(registryDate, parsedDate) Then
+        FormatPostalRegistryHeaderDate = Format$(parsedDate, "dd.mm.yyyy")
     Else
-        FormatPostalRegistryDateCaption = FormatLetterDate(registryDate) & " " & t("postal.registry.print.footer.year_word", "year")
+        FormatPostalRegistryHeaderDate = Trim$(registryDate)
     End If
 End Function
 
@@ -416,7 +443,7 @@ Private Function EstimatePostalRegistryRowHeight(outgoingNumbersText As String) 
     lineCount = UBound(Split(Replace(outgoingNumbersText, vbCrLf, vbLf), vbLf)) + 1
     If lineCount < 1 Then lineCount = 1
 
-    EstimatePostalRegistryRowHeight = 48 + ((lineCount - 1) * 22)
+    EstimatePostalRegistryRowHeight = 52 + ((lineCount - 1) * 23)
 End Function
 
 Private Function CountPostalRegistryPackages() As Long

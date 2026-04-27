@@ -91,3 +91,12 @@ The next bounded feature stages for code quality and maintainability are:
 
 - [ ] `recipient-title-normalization`
   Add a controlled `RecipientTemplateKey` to `tblAddresses`, let operators choose an approved recipient-title template in `frmLetterCreator`, and build the final addressee line programmatically so users stop inventing inconsistent variants such as `Командиру`, `Начальнику`, or `Для ...` in free text.
+
+## Mail Dispatch Subplan
+
+- [x] `pisces/feature-48-dispatch-journal`
+  Add a package journal, lifecycle status visibility, and safe return-to-work logic for packages that have not yet been exported as printed PDF registries.
+- [x] `pisces/feature-49-postal-registry-layout`
+  Align the printable postal registry sheet closer to the provided Russian Post sample: compact centered header, six-column table, short registry date, stacked outgoing numbers, bold mail type, and signature/stamp footer.
+- [ ] `pisces/feature-50-envelope-print-finalization`
+  Finalize C4/C5/DL envelope print layouts from dispatch packages, including stacked outgoing numbers for multi-letter packages.
