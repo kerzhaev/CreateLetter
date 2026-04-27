@@ -11,12 +11,14 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import sys
 from collections import defaultdict
 from pathlib import Path
 
 import pythoncom
-import win32com.client
+import win32com.client.gencache
+from win32com.client.dynamic import Dispatch
 
 
 LOCALIZATION_SHEET_NAME = "Localization"
@@ -25,6 +27,15 @@ TRANSLATION_PATTERN = re.compile(
     r'AddTranslation\s+"(?P<lang>[^"]+)",\s+"(?P<key>[^"]+)",\s+"(?P<value>[^"]*)"',
     re.IGNORECASE,
 )
+
+
+def reset_excel_gen_cache() -> None:
+    gen_path = Path(win32com.client.gencache.GetGeneratePath())
+    for child in gen_path.glob("00020813-0000-0000-C000-000000000046*"):
+        if child.is_dir():
+            shutil.rmtree(child, ignore_errors=True)
+        elif child.exists():
+            child.unlink(missing_ok=True)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -97,7 +108,8 @@ def main() -> int:
         return 1
 
     pythoncom.CoInitialize()
-    excel = win32com.client.DispatchEx("Excel.Application")
+    reset_excel_gen_cache()
+    excel = Dispatch("Excel.Application")
     excel.Visible = False
     excel.DisplayAlerts = False
     workbook = None

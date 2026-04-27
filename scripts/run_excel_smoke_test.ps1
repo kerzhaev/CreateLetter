@@ -21,7 +21,28 @@ param(
     [switch]$RequireAddressGroupColumn,
 
     [Parameter(Mandatory = $false)]
-    [switch]$RequireLocalTemplates
+    [switch]$RequireLocalTemplates,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireEnvelopeTables,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireDispatchItemsTable,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireDispatchRegistryTable,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireMailDispatchRibbon,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireEnvelopeFormatsSeed,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireEnvelopeLayoutSheets,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequirePostalRegistryPrintSheet
 )
 
 $ErrorActionPreference = "Stop"
@@ -196,6 +217,21 @@ try {
         @{ Sheet = "Settings"; Table = "tblLetterTexts" }
     )
 
+    if ($RequireEnvelopeTables) {
+        $structuredTableRequirements += @(
+            @{ Sheet = "EnvelopeFormats"; Table = "tblEnvelopeFormats" },
+            @{ Sheet = "Senders"; Table = "tblSenders" }
+        )
+    }
+
+    if ($RequireDispatchItemsTable) {
+        $structuredTableRequirements += @{ Sheet = "DispatchItems"; Table = "tblDispatchItems" }
+    }
+
+    if ($RequireDispatchRegistryTable) {
+        $structuredTableRequirements += @{ Sheet = "DispatchRegistry"; Table = "tblDispatchRegistry" }
+    }
+
     foreach ($tableRequirement in $structuredTableRequirements) {
         try {
             $sheet = $workbook.Worksheets.Item($tableRequirement.Sheet)
@@ -236,6 +272,120 @@ try {
     catch {
         Add-Result -Results $results -Name "StructuredColumn:Addresses.AddressGroup" -Status "FAIL" -Details $_.Exception.Message
         $failed = $true
+    }
+
+    try {
+        $lettersSheet = $workbook.Worksheets.Item("Letters")
+        $lettersTable = $lettersSheet.ListObjects.Item("tblLetters")
+        if ($lettersTable.ListColumns.Count -ge 12) {
+            Add-Result -Results $results -Name "StructuredColumn:Letters.DispatchTracking" -Status "PASS" -Details "Dispatch tracking columns are present in tblLetters."
+        }
+        else {
+            Add-Result -Results $results -Name "StructuredColumn:Letters.DispatchTracking" -Status "FAIL" -Details ("Expected at least 12 columns in tblLetters, found " + $lettersTable.ListColumns.Count)
+            $failed = $true
+        }
+    }
+    catch {
+        Add-Result -Results $results -Name "StructuredColumn:Letters.DispatchTracking" -Status "FAIL" -Details $_.Exception.Message
+        $failed = $true
+    }
+
+    if ($RequireDispatchItemsTable) {
+        try {
+            $dispatchItemsSheet = $workbook.Worksheets.Item("DispatchItems")
+            $dispatchItemsTable = $dispatchItemsSheet.ListObjects.Item("tblDispatchItems")
+            $dispatchItemColumnNames = Get-TableColumnNames -ListObject $dispatchItemsTable
+            $requiredDispatchItemColumns = @("LetterRowNumber", "RegistryNumber", "RegistryDate")
+            $missingDispatchItemColumns = $requiredDispatchItemColumns | Where-Object { -not $dispatchItemColumnNames.Contains($_) }
+
+            if ($missingDispatchItemColumns.Count -eq 0) {
+                Add-Result -Results $results -Name "StructuredColumn:DispatchItems.PackageFields" -Status "PASS" -Details "Dispatch package columns are present in tblDispatchItems."
+            }
+            else {
+                Add-Result -Results $results -Name "StructuredColumn:DispatchItems.PackageFields" -Status "FAIL" -Details ("Missing dispatch item columns: " + ($missingDispatchItemColumns -join ", "))
+                $failed = $true
+            }
+        }
+        catch {
+            Add-Result -Results $results -Name "StructuredColumn:DispatchItems.PackageFields" -Status "FAIL" -Details $_.Exception.Message
+            $failed = $true
+        }
+    }
+
+    if ($RequireDispatchRegistryTable) {
+        try {
+            $dispatchRegistrySheet = $workbook.Worksheets.Item("DispatchRegistry")
+            $dispatchRegistryTable = $dispatchRegistrySheet.ListObjects.Item("tblDispatchRegistry")
+            $dispatchRegistryColumnNames = Get-TableColumnNames -ListObject $dispatchRegistryTable
+            $requiredDispatchRegistryColumns = @("RegistryNumber", "RegistryDate", "OutgoingNumbers", "SenderName", "PostalCode")
+            $missingDispatchRegistryColumns = $requiredDispatchRegistryColumns | Where-Object { -not $dispatchRegistryColumnNames.Contains($_) }
+
+            if ($missingDispatchRegistryColumns.Count -eq 0) {
+                Add-Result -Results $results -Name "StructuredColumn:DispatchRegistry.PackageFields" -Status "PASS" -Details "Registry package columns are present in tblDispatchRegistry."
+            }
+            else {
+                Add-Result -Results $results -Name "StructuredColumn:DispatchRegistry.PackageFields" -Status "FAIL" -Details ("Missing dispatch registry columns: " + ($missingDispatchRegistryColumns -join ", "))
+                $failed = $true
+            }
+        }
+        catch {
+            Add-Result -Results $results -Name "StructuredColumn:DispatchRegistry.PackageFields" -Status "FAIL" -Details $_.Exception.Message
+            $failed = $true
+        }
+    }
+
+    if ($RequireEnvelopeLayoutSheets) {
+        foreach ($layoutSheetName in @("DispatchLayout_C4", "DispatchLayout_C5", "DispatchLayout_DL")) {
+            try {
+                $layoutSheet = $workbook.Worksheets.Item($layoutSheetName)
+                Add-Result -Results $results -Name ("Worksheet:" + $layoutSheetName) -Status "PASS" -Details ("Layout worksheet is present as '" + $layoutSheetName + "'.")
+            }
+            catch {
+                Add-Result -Results $results -Name ("Worksheet:" + $layoutSheetName) -Status "FAIL" -Details ("Missing layout worksheet '" + $layoutSheetName + "'.")
+                $failed = $true
+            }
+        }
+    }
+
+    if ($RequirePostalRegistryPrintSheet) {
+        try {
+            $postalRegistryPrintSheet = $workbook.Worksheets.Item("PostalRegistryPrint")
+            Add-Result -Results $results -Name "Worksheet:PostalRegistryPrint" -Status "PASS" -Details "Printable postal registry worksheet is present."
+        }
+        catch {
+            Add-Result -Results $results -Name "Worksheet:PostalRegistryPrint" -Status "FAIL" -Details "Missing printable postal registry worksheet 'PostalRegistryPrint'."
+            $failed = $true
+        }
+    }
+
+    if ($RequireEnvelopeFormatsSeed) {
+        try {
+            $envelopeSheet = $workbook.Worksheets.Item("EnvelopeFormats")
+            $envelopeTable = $envelopeSheet.ListObjects.Item("tblEnvelopeFormats")
+            $envelopeRows = $envelopeTable.DataBodyRange.Value2
+            $envelopeKeys = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+
+            if ($envelopeRows -is [System.Array]) {
+                for ($rowIndex = 1; $rowIndex -le $envelopeRows.GetLength(0); $rowIndex++) {
+                    $envelopeKey = [string]$envelopeRows.GetValue($rowIndex, 1)
+                    if (-not [string]::IsNullOrWhiteSpace($envelopeKey)) {
+                        [void]$envelopeKeys.Add($envelopeKey.Trim())
+                    }
+                }
+            }
+
+            if ($envelopeKeys.Contains("c4") -and $envelopeKeys.Contains("c5") -and $envelopeKeys.Contains("dl")) {
+                Add-Result -Results $results -Name "EnvelopeFormatsSeed" -Status "PASS" -Details "Envelope formats c4, c5, and dl are present."
+            }
+            else {
+                Add-Result -Results $results -Name "EnvelopeFormatsSeed" -Status "FAIL" -Details ("Missing one or more required envelope formats. Found: " + (($envelopeKeys | Select-Object -First 20) -join ", "))
+                $failed = $true
+            }
+        }
+        catch {
+            Add-Result -Results $results -Name "EnvelopeFormatsSeed" -Status "FAIL" -Details $_.Exception.Message
+            $failed = $true
+        }
     }
 
     try {
@@ -384,6 +534,136 @@ try {
             Add-Result -Results $results -Name "WordInteropContract" -Status "FAIL" -Details "Expected explicit Word lifecycle API or ModuleMain facade wrappers are missing."
             $failed = $true
         }
+
+        if ($RequireDispatchItemsTable) {
+            $dispatchRepositoryPath = Join-Path $modulesDirectory "ModuleDispatchRepository.bas"
+
+            if (Test-Path -LiteralPath $dispatchRepositoryPath) {
+                $dispatchRepositoryText = Get-Content -Path $dispatchRepositoryPath -Raw
+                $hasDispatchRepositoryContract = ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadEnvelopeFormats()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadSenders()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCreatePackageFromHistoryRecords(*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetQueuedLetterKeySet()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadDispatchItems()*")
+
+                if ($hasDispatchRepositoryContract) {
+                    Add-Result -Results $results -Name "DispatchRepositoryContract" -Status "PASS" -Details "Dispatch repository foundation functions are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "DispatchRepositoryContract" -Status "FAIL" -Details "Dispatch repository module is missing expected envelope/sender/package functions."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "DispatchRepositoryContract" -Status "FAIL" -Details "ModuleDispatchRepository.bas is missing from source-managed modules."
+                $failed = $true
+            }
+        }
+
+        if ($RequireDispatchRegistryTable) {
+            $dispatchRegistryPath = Join-Path $modulesDirectory "ModuleDispatchRegistry.bas"
+
+            if (Test-Path -LiteralPath $dispatchRegistryPath) {
+                $dispatchRegistryText = Get-Content -Path $dispatchRegistryPath -Raw
+                $hasDispatchRegistryContract = ($dispatchRegistryText -like "*Public Function BuildDispatchRegistryFromDispatchItems()*") -and
+                                               ($dispatchRegistryText -like "*Public Sub ClearDispatchRegistry()*")
+
+                if ($hasDispatchRegistryContract) {
+                    Add-Result -Results $results -Name "DispatchRegistryContract" -Status "PASS" -Details "Dispatch registry builder functions are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "DispatchRegistryContract" -Status "FAIL" -Details "ModuleDispatchRegistry is missing the expected registry builder functions."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "DispatchRegistryContract" -Status "FAIL" -Details "ModuleDispatchRegistry.bas is missing from source-managed modules."
+                $failed = $true
+            }
+        }
+
+        if ($RequireEnvelopeLayoutSheets) {
+            $envelopeLayoutsPath = Join-Path $modulesDirectory "ModuleEnvelopeLayouts.bas"
+
+            if (Test-Path -LiteralPath $envelopeLayoutsPath) {
+                $envelopeLayoutsText = Get-Content -Path $envelopeLayoutsPath -Raw
+                $hasEnvelopeLayoutContract = ($envelopeLayoutsText -like "*Public Function PrepareEnvelopePrint()*") -and
+                                             ($envelopeLayoutsText -like "*Public Function ResolveEnvelopeLayoutSheetName(envelopeFormatKey As String)*")
+
+                if ($hasEnvelopeLayoutContract) {
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "PASS" -Details "Envelope layout builder functions are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts is missing expected layout preparation functions."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts.bas is missing from source-managed modules."
+                $failed = $true
+            }
+        }
+
+        if ($RequirePostalRegistryPrintSheet) {
+            $postalRegistryPrintPath = Join-Path $modulesDirectory "ModulePostalRegistryPrint.bas"
+
+            if (Test-Path -LiteralPath $postalRegistryPrintPath) {
+                $postalRegistryPrintText = Get-Content -Path $postalRegistryPrintPath -Raw
+                $hasPostalRegistryPrintContract = ($postalRegistryPrintText -like "*Public Function BuildPostalRegistryPrintSheet()*") -and
+                                                  ($postalRegistryPrintText -like "*PostalRegistryPrintSheetName*")
+
+                if ($hasPostalRegistryPrintContract) {
+                    Add-Result -Results $results -Name "PostalRegistryPrintContract" -Status "PASS" -Details "Printable postal registry builder functions are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "PostalRegistryPrintContract" -Status "FAIL" -Details "ModulePostalRegistryPrint is missing expected printable registry functions."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "PostalRegistryPrintContract" -Status "FAIL" -Details "ModulePostalRegistryPrint.bas is missing from source-managed modules."
+                $failed = $true
+            }
+        }
+
+        if ($RequireMailDispatchRibbon) {
+            $mailDispatchFormPath = Join-Path $modulesDirectory "frmMailDispatch.frm"
+
+            if (Test-Path -LiteralPath $mailDispatchFormPath) {
+                $mailDispatchFormText = Get-Content -Path $mailDispatchFormPath -Raw
+                $hasMailDispatchUiContract = ($mailDispatchFormText -like "*Private Sub UserForm_Initialize()*") -and
+                                             ($mailDispatchFormText -like "*Private Sub btnDispatchCreate_Click()*") -and
+                                             ($mailDispatchFormText -like "*Private Sub btnDispatchRefresh_Click()*") -and
+                                             ($mailDispatchFormText -like "*lstDispatchLetters*") -and
+                                             ($mailDispatchFormText -like "*lstDispatchPackage*") -and
+                                             ($mailDispatchFormText -like "*txtDispatchRegistryNumber*") -and
+                                             ($mailDispatchFormText -like "*txtDispatchRegistryDate*") -and
+                                             ($mailDispatchFormText -like "*HandleDynamicButtonClick*")
+
+                if ($hasMailDispatchUiContract) {
+                    Add-Result -Results $results -Name "MailDispatchUiContract" -Status "PASS" -Details "Dispatch form source and core UI handlers are present."
+                }
+                else {
+                    Add-Result -Results $results -Name "MailDispatchUiContract" -Status "FAIL" -Details "Dispatch form is missing expected controls or core event handlers."
+                    $failed = $true
+                }
+
+                $hasUnsafeDispatchListMultiSelect = $mailDispatchFormText -like "*fmMultiSelectExtended*"
+                $hasDoubleClickSelectionGuard = $mailDispatchFormText -like "*SelectSingleListIndex*"
+
+                if ((-not $hasUnsafeDispatchListMultiSelect) -and $hasDoubleClickSelectionGuard) {
+                    Add-Result -Results $results -Name "MailDispatchListSelectionMode" -Status "PASS" -Details "Dispatch double-click lists avoid Extended range selection."
+                }
+                else {
+                    Add-Result -Results $results -Name "MailDispatchListSelectionMode" -Status "FAIL" -Details "Dispatch double-click lists can still create accidental range selections."
+                    $failed = $true
+                }
+            }
+            else {
+                Add-Result -Results $results -Name "MailDispatchUiContract" -Status "FAIL" -Details "frmMailDispatch.frm is missing from source-managed modules."
+                $failed = $true
+            }
+        }
     }
     catch {
         Add-Result -Results $results -Name "RefactorContract" -Status "FAIL" -Details ("Repository/Word contract inspection failed: " + $_.Exception.Message)
@@ -404,6 +684,18 @@ try {
         $hasRibbonModule = ($moduleRibbonText -like "*Public Sub RibbonOpenLetterForm(control As IRibbonControl)*") -and
                            ($moduleRibbonText -like "*Public Function GetConfiguredTemplateFolderPath()*") -and
                            ($moduleRibbonText -like "*Public Function GetConfiguredOutputFolderPath()*")
+
+        if ($RequireMailDispatchRibbon) {
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonOpenMailDispatch(control As IRibbonControl)*")
+        }
+
+        if ($RequireDispatchRegistryTable) {
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonBuildDispatchRegistry(control As IRibbonControl)*")
+        }
+
+        if ($RequireEnvelopeLayoutSheets) {
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonPrepareEnvelopePrint(control As IRibbonControl)*")
+        }
 
         $hasCustomUiPart = $null -ne $customUiEntry
         $hasRibbonRelationship = $false

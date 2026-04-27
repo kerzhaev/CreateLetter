@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks and user-configurable folder settings
 
-' Version: 1.0.4 - 29.03.2026
+' Version: 1.0.9 - 27.04.2026
 
 ' ======================================================================
 
@@ -54,6 +54,72 @@ Public Sub RibbonOpenHistoryForm(control As IRibbonControl)
 
     ShowLetterHistoryModeless
 
+End Sub
+
+
+
+Public Sub RibbonOpenMailDispatch(control As IRibbonControl)
+
+    OpenMailDispatch
+
+End Sub
+
+
+
+Public Sub RibbonBuildDispatchRegistry(control As IRibbonControl)
+
+    On Error GoTo RegistryError
+
+    Dim builtCount As Long
+    builtCount = BuildDispatchRegistryFromDispatchItems()
+
+    If builtCount > 0 Then
+        Dim printCount As Long
+        printCount = BuildPostalRegistryPrintSheet()
+
+        MsgBox t("dispatch.registry.msg.built", "Registry built from dispatch items.") & vbCrLf & builtCount & vbCrLf & _
+               t("dispatch.registry.msg.print_sheet", "Печатная форма: PostalRegistryPrint") & vbCrLf & printCount, _
+               vbInformation, _
+               t("dispatch.registry.title", "Dispatch registry")
+    Else
+        MsgBox t("dispatch.registry.msg.no_items", "There are no dispatch items to include in the registry."), _
+               vbExclamation, _
+               t("dispatch.registry.title", "Dispatch registry")
+    End If
+
+    Exit Sub
+
+RegistryError:
+    MsgBox t("dispatch.registry.msg.error", "Failed to build the internal dispatch registry: ") & Err.description, _
+           vbCritical, _
+           t("dispatch.registry.title", "Dispatch registry")
+End Sub
+
+
+
+Public Sub RibbonPrepareEnvelopePrint(control As IRibbonControl)
+
+    On Error GoTo PrepareError
+
+    Dim preparedCount As Long
+    preparedCount = PrepareEnvelopePrint()
+
+    If preparedCount > 0 Then
+        MsgBox t("dispatch.layouts.msg.prepared", "Envelope layouts prepared.") & vbCrLf & preparedCount, _
+               vbInformation, _
+               t("dispatch.layouts.title", "Envelope layouts")
+    Else
+        MsgBox t("dispatch.layouts.msg.no_items", "There are no dispatch items to prepare for envelope layouts."), _
+               vbExclamation, _
+               t("dispatch.layouts.title", "Envelope layouts")
+    End If
+
+    Exit Sub
+
+PrepareError:
+    MsgBox t("dispatch.layouts.msg.error", "Failed to prepare envelope layouts: ") & Err.description, _
+           vbCritical, _
+           t("dispatch.layouts.title", "Envelope layouts")
 End Sub
 
 
@@ -300,6 +366,3 @@ Private Function BuildUnicodeText(ParamArray codePoints() As Variant) As String
     Next i
 
 End Function
-
-
-

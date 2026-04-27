@@ -13,6 +13,7 @@
 - New internal identifiers, module names, constants, sheet keys, and placeholder keys must use English ASCII only.
 - User-facing Russian text must come from localization data, not from new hardcoded literals in business logic.
 - In VBE-managed modules and forms, default fallback literals inside `t(...)` or similar runtime lookups must be ASCII-safe English unless the text is produced through a Unicode-safe builder. Russian user-facing text should come from localization data to avoid mojibake in exported/imported VBA code.
+- Do not introduce new VBA line continuations with `_`. They are fragile in exported/imported `.bas/.cls/.frm` files and repeatedly break compilation when blank lines appear after them. Prefer local variables, helper functions, or one-line calls instead.
 - Do not start the next migration stage until the previous stage passes a manual smoke test in Excel.
 - Every VBA module or form edited during an iteration must have its top header metadata updated: keep the module/form description accurate, bump the visible version number, and refresh the change date.
 - Before asking the user for a manual VBA import, first try synchronizing the workbook automatically through the local COM tooling and run the smoke tests yourself.
@@ -50,3 +51,8 @@
 - For user-editable workbook dictionaries such as `tblAddresses`, forms must not trust cached search payloads as the final source of truth when a row is selected; they must resolve the worksheet row and reload current values from the workbook before editing or auto-updating the record.
 - Workbook and worksheet document modules are part of the source-managed boundary. Hidden sheet/workbook macros must be exported into `CreateLetter.xlsm.document-modules/*.cls`, kept under git, and covered by the COM export/sync workflow so fixes do not live only inside the binary workbook.
 - Keep workbook/sheet document modules out of the manual `VbaModuleManager` import path. `VbaModuleManager` may operate on `CreateLetter.xlsm.modules/`, but document modules must sync through COM tooling so they are updated in place instead of imported as extra class modules.
+- Mail-dispatch packages are grouped by addressee. One package may contain multiple outgoing letters, but all letters inside the same package must target the same addressee and share package-level registry metadata.
+- When a UserForm needs controls that are impractical to maintain in exported `.frm/.frx` designer state, runtime-created controls must use an explicit `WithEvents` bridge class so button/list interactions stay source-managed and compile-safe.
+- UserForm ListBox controls that support double-click transfer must not use `fmMultiSelectExtended` unless the handler first isolates the current `ListIndex`. Prefer `fmMultiSelectMulti` for package builders to avoid accidental Shift-range selection and mass transfers.
+- When VBA modules depend on fixed ListObject column ordinals, workbook bootstrap must include explicit schema/data migration for operational tables. Renaming headers and appending missing columns is not enough if earlier rows were written under a legacy column order.
+- Ribbon callbacks must not open modeless UserForms directly. Queue modeless form opening through a deferred standard-module macro (for example via `Application.OnTime`) so Excel can return from the Ribbon callback before the form is shown.

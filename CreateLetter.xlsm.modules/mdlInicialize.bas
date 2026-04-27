@@ -222,4 +222,3 @@ Private Function TryGetListObjectByName(ws As Worksheet, tableName As String) As
 LookupError:
     Set TryGetListObjectByName = Nothing
 End Function
-

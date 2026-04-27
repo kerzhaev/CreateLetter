@@ -6,7 +6,7 @@ Attribute VB_Name = "ModuleLocalization"
 
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
 
-' Version: 1.4.5 - 29.03.2026
+' Version: 1.4.6 - 26.04.2026
 
 ' Notes:
 
@@ -263,6 +263,10 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "common.of", "из"
 
     AddTranslation "en", "common.of", "of"
+
+    AddTranslation "ru", "common.preposition.from", "от"
+
+    AddTranslation "en", "common.preposition.from", "dated"
 
     AddTranslation "ru", "common.not_specified", "Не указано"
 
@@ -1096,6 +1100,319 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "ribbon.msg.folder_unavailable", "Configured path is unavailable, using workbook path:"
 
+    AddTranslation "ru", "ribbon.caption.mail_dispatch", "Почтовые отправления"
+
+    AddTranslation "en", "ribbon.caption.mail_dispatch", "Mail dispatch"
+
+    AddTranslation "ru", "ribbon.tip.mail_dispatch", "Открыть контур подготовки конвертов и внутреннего почтового реестра"
+
+    AddTranslation "en", "ribbon.tip.mail_dispatch", "Open the envelope and internal registry preparation flow"
+
+    AddTranslation "ru", "ribbon.caption.build_dispatch_registry", "Сформировать реестр"
+
+    AddTranslation "en", "ribbon.caption.build_dispatch_registry", "Build registry"
+
+    AddTranslation "ru", "ribbon.tip.build_dispatch_registry", "Собрать внутренний Excel-реестр из подготовленных почтовых отправлений"
+
+    AddTranslation "en", "ribbon.tip.build_dispatch_registry", "Build the internal Excel registry from prepared dispatch items"
+
+    AddTranslation "ru", "ribbon.caption.prepare_envelope_print", "Подготовить конверты"
+
+    AddTranslation "en", "ribbon.caption.prepare_envelope_print", "Prepare envelopes"
+
+    AddTranslation "ru", "ribbon.tip.prepare_envelope_print", "Заполнить скрытые layout-листы C4, C5 и DL данными для печати конвертов"
+
+    AddTranslation "en", "ribbon.tip.prepare_envelope_print", "Fill hidden C4, C5, and DL layout sheets with envelope print data"
+
+    AddTranslation "ru", "dispatch.foundation.stub.title", "Почтовые отправления"
+
+    AddTranslation "en", "dispatch.foundation.stub.title", "Mail dispatch"
+
+    AddTranslation "ru", "dispatch.foundation.stub.message", "Основание почтового контура уже подготовлено. Отдельная форма почтовых отправлений будет добавлена следующим этапом."
+
+    AddTranslation "en", "dispatch.foundation.stub.message", "Mail dispatch foundation is ready. The dedicated dispatch form will be added in the next feature."
+
+    AddTranslation "ru", "dispatch.envelope_format.c4", "Конверт C4"
+
+    AddTranslation "en", "dispatch.envelope_format.c4", "Envelope C4"
+
+    AddTranslation "ru", "dispatch.envelope_format.c5", "Конверт C5"
+
+    AddTranslation "en", "dispatch.envelope_format.c5", "Envelope C5"
+
+    AddTranslation "ru", "dispatch.envelope_format.dl", "Конверт DL"
+
+    AddTranslation "en", "dispatch.envelope_format.dl", "Envelope DL"
+
+    AddTranslation "ru", "form.mail_dispatch.title", "Почтовые отправления"
+
+    AddTranslation "en", "form.mail_dispatch.title", "Mail dispatch"
+
+    AddTranslation "ru", "form.mail_dispatch.label.sender", "Отправитель"
+
+    AddTranslation "en", "form.mail_dispatch.label.sender", "Sender"
+
+    AddTranslation "ru", "form.mail_dispatch.label.envelope_format", "Формат конверта"
+
+    AddTranslation "en", "form.mail_dispatch.label.envelope_format", "Envelope format"
+
+    AddTranslation "ru", "form.mail_dispatch.label.mail_type", "Вид отправления"
+
+    AddTranslation "en", "form.mail_dispatch.label.mail_type", "Mail type"
+
+    AddTranslation "ru", "form.mail_dispatch.label.registry", "Реестр"
+
+    AddTranslation "en", "form.mail_dispatch.label.registry", "Registry"
+
+    AddTranslation "ru", "form.mail_dispatch.label.letters", "Письма"
+
+    AddTranslation "en", "form.mail_dispatch.label.letters", "Letters"
+
+    AddTranslation "ru", "form.mail_dispatch.label.available_letters", "Доступные письма"
+
+    AddTranslation "en", "form.mail_dispatch.label.available_letters", "Available letters"
+
+    AddTranslation "ru", "form.mail_dispatch.label.search_letters", "Поиск писем"
+
+    AddTranslation "en", "form.mail_dispatch.label.search_letters", "Search letters"
+
+    AddTranslation "ru", "form.mail_dispatch.label.package_letters", "Пакет отправки"
+
+    AddTranslation "en", "form.mail_dispatch.label.package_letters", "Dispatch package"
+
+    AddTranslation "ru", "form.mail_dispatch.label.preview", "Предпросмотр"
+
+    AddTranslation "en", "form.mail_dispatch.label.preview", "Preview"
+
+    AddTranslation "ru", "form.mail_dispatch.label.registry_number", "Номер реестра"
+
+    AddTranslation "en", "form.mail_dispatch.label.registry_number", "Registry number"
+
+    AddTranslation "ru", "form.mail_dispatch.label.registry_date", "Дата реестра"
+
+    AddTranslation "en", "form.mail_dispatch.label.registry_date", "Registry date"
+
+    AddTranslation "ru", "form.mail_dispatch.label.mass", "Масса"
+
+    AddTranslation "en", "form.mail_dispatch.label.mass", "Mass"
+
+    AddTranslation "ru", "form.mail_dispatch.label.declared_value", "Объявленная ценность"
+
+    AddTranslation "en", "form.mail_dispatch.label.declared_value", "Declared value"
+
+    AddTranslation "ru", "form.mail_dispatch.label.comment", "Комментарий"
+
+    AddTranslation "en", "form.mail_dispatch.label.comment", "Comment"
+
+    AddTranslation "ru", "form.mail_dispatch.button.refresh", "Обновить"
+
+    AddTranslation "en", "form.mail_dispatch.button.refresh", "Refresh"
+
+    AddTranslation "ru", "form.mail_dispatch.button.create", "Добавить в отправления"
+
+    AddTranslation "en", "form.mail_dispatch.button.create", "Add to dispatch"
+
+    AddTranslation "ru", "form.mail_dispatch.button.create_package", "Сохранить пакет"
+
+    AddTranslation "en", "form.mail_dispatch.button.create_package", "Save package"
+
+    AddTranslation "ru", "form.mail_dispatch.button.close", "Закрыть"
+
+    AddTranslation "en", "form.mail_dispatch.button.close", "Close"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.mail_type", "Например: заказное, простое, с уведомлением"
+
+    AddTranslation "en", "form.mail_dispatch.tip.mail_type", "Example: registered, regular, with notice"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.search_letters", "Введите номер, дату, адресата или текст письма для фильтрации списка"
+
+    AddTranslation "en", "form.mail_dispatch.tip.search_letters", "Type number, date, addressee, or letter text to filter the list"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.mass", "Масса отправления в граммах"
+
+    AddTranslation "en", "form.mail_dispatch.tip.mass", "Shipment mass in grams"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.declared_value", "Объявленная ценность в рублях"
+
+    AddTranslation "en", "form.mail_dispatch.tip.declared_value", "Declared value in rubles"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.comment", "Короткий служебный комментарий для отправления"
+
+    AddTranslation "en", "form.mail_dispatch.tip.comment", "Short operational comment for the dispatch item"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.registry_number", "Номер внутреннего реестра для этого пакета"
+
+    AddTranslation "en", "form.mail_dispatch.tip.registry_number", "Internal registry number for this package"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.registry_date", "Дата внутреннего реестра в формате дд.мм.гггг"
+
+    AddTranslation "en", "form.mail_dispatch.tip.registry_date", "Internal registry date in dd.mm.yyyy format"
+
+    AddTranslation "ru", "form.mail_dispatch.default.mail_type", "заказное"
+
+    AddTranslation "en", "form.mail_dispatch.default.mail_type", "registered"
+
+    AddTranslation "ru", "form.mail_dispatch.error.no_letter", "Выберите письмо для подготовки отправления."
+
+    AddTranslation "en", "form.mail_dispatch.error.no_letter", "Select a letter before creating a dispatch item."
+
+    AddTranslation "ru", "form.mail_dispatch.error.no_package_items", "Добавьте хотя бы одно письмо в пакет отправки."
+
+    AddTranslation "en", "form.mail_dispatch.error.no_package_items", "Add at least one letter to the dispatch package."
+
+    AddTranslation "ru", "form.mail_dispatch.error.no_sender", "Выберите отправителя."
+
+    AddTranslation "en", "form.mail_dispatch.error.no_sender", "Select a sender."
+
+    AddTranslation "ru", "form.mail_dispatch.error.no_envelope_format", "Выберите формат конверта."
+
+    AddTranslation "en", "form.mail_dispatch.error.no_envelope_format", "Select an envelope format."
+
+    AddTranslation "ru", "form.mail_dispatch.error.no_registry_number", "Укажите номер реестра для пакета."
+
+    AddTranslation "en", "form.mail_dispatch.error.no_registry_number", "Enter a registry number for the package."
+
+    AddTranslation "ru", "form.mail_dispatch.error.invalid_registry_date", "Укажите корректную дату реестра в формате дд.мм.гггг."
+
+    AddTranslation "en", "form.mail_dispatch.error.invalid_registry_date", "Enter a valid registry date in dd.mm.yyyy format."
+
+    AddTranslation "ru", "form.mail_dispatch.error.mixed_addressee", "В один пакет можно добавлять только письма одному адресату."
+
+    AddTranslation "en", "form.mail_dispatch.error.mixed_addressee", "Only letters for one addressee can be added to one package."
+
+    AddTranslation "ru", "form.mail_dispatch.error.transfer_failed", "Не удалось переместить выбранные письма в пакет."
+
+    AddTranslation "en", "form.mail_dispatch.error.transfer_failed", "Failed to move selected letters into the package."
+
+    AddTranslation "ru", "form.mail_dispatch.error.transfer_back_failed", "Не удалось вернуть письма из пакета."
+
+    AddTranslation "en", "form.mail_dispatch.error.transfer_back_failed", "Failed to return letters from the package."
+
+    AddTranslation "ru", "form.mail_dispatch.error.create_failed", "Не удалось добавить отправление в рабочую таблицу."
+
+    AddTranslation "en", "form.mail_dispatch.error.create_failed", "Failed to add the dispatch item to the worksheet."
+
+    AddTranslation "ru", "form.mail_dispatch.error.runtime", "Ошибка подготовки почтового отправления: "
+
+    AddTranslation "en", "form.mail_dispatch.error.runtime", "Mail dispatch preparation error: "
+
+    AddTranslation "ru", "form.mail_dispatch.msg.created", "Отправление добавлено в таблицу почтовых отправлений."
+
+    AddTranslation "en", "form.mail_dispatch.msg.created", "Dispatch item added to the dispatch worksheet."
+
+    AddTranslation "ru", "form.mail_dispatch.msg.package_created", "Пакет отправлений сохранен в рабочую таблицу."
+
+    AddTranslation "en", "form.mail_dispatch.msg.package_created", "Dispatch package saved into the worksheet."
+
+    AddTranslation "ru", "form.mail_dispatch.msg.letters_in_package", "Писем в пакете: "
+
+    AddTranslation "en", "form.mail_dispatch.msg.letters_in_package", "Letters in package: "
+
+    AddTranslation "ru", "form.mail_dispatch.preview.outgoing_numbers", "Исходящие номера:"
+
+    AddTranslation "en", "form.mail_dispatch.preview.outgoing_numbers", "Outgoing numbers:"
+
+    AddTranslation "ru", "form.mail_dispatch.preview.sender", "Отправитель:"
+
+    AddTranslation "en", "form.mail_dispatch.preview.sender", "Sender:"
+
+    AddTranslation "ru", "form.mail_dispatch.preview.registry", "Реестр:"
+
+    AddTranslation "en", "form.mail_dispatch.preview.registry", "Registry:"
+
+    AddTranslation "ru", "dispatch.registry.title", "Почтовый реестр"
+
+    AddTranslation "en", "dispatch.registry.title", "Dispatch registry"
+
+    AddTranslation "ru", "dispatch.registry.msg.built", "Внутренний реестр сформирован из почтовых отправлений."
+
+    AddTranslation "en", "dispatch.registry.msg.built", "Internal registry built from dispatch items."
+
+    AddTranslation "ru", "dispatch.registry.msg.print_sheet", "Печатная форма сформирована на листе PostalRegistryPrint."
+
+    AddTranslation "en", "dispatch.registry.msg.print_sheet", "Printable registry sheet built on PostalRegistryPrint."
+
+    AddTranslation "ru", "dispatch.registry.msg.no_items", "Нет почтовых отправлений для включения в реестр."
+
+    AddTranslation "en", "dispatch.registry.msg.no_items", "There are no dispatch items to include in the registry."
+
+    AddTranslation "ru", "dispatch.registry.msg.error", "Не удалось сформировать внутренний почтовый реестр: "
+
+    AddTranslation "en", "dispatch.registry.msg.error", "Failed to build the internal dispatch registry: "
+
+    AddTranslation "ru", "dispatch.layouts.title", "Подготовка конвертов"
+
+    AddTranslation "en", "dispatch.layouts.title", "Envelope layouts"
+
+    AddTranslation "ru", "dispatch.layouts.msg.prepared", "Скрытые layout-листы конвертов заполнены данными для печати."
+
+    AddTranslation "en", "dispatch.layouts.msg.prepared", "Hidden envelope layout sheets were filled with print data."
+
+    AddTranslation "ru", "dispatch.layouts.msg.no_items", "Нет почтовых отправлений для подготовки конвертов."
+
+    AddTranslation "en", "dispatch.layouts.msg.no_items", "There are no dispatch items to prepare for envelope layouts."
+
+    AddTranslation "ru", "dispatch.layouts.msg.error", "Не удалось подготовить layout-листы конвертов: "
+
+    AddTranslation "en", "dispatch.layouts.msg.error", "Failed to prepare envelope layouts: "
+
+    AddTranslation "ru", "postal.registry.print.default_post_office", "почтовое отделение"
+    AddTranslation "en", "postal.registry.print.default_post_office", "post office"
+    AddTranslation "ru", "postal.registry.print.registry_prefix", "Реестр № "
+    AddTranslation "en", "postal.registry.print.registry_prefix", "Registry No. "
+    AddTranslation "ru", "postal.registry.print.submitted_to", "На корреспонденцию сданную в "
+    AddTranslation "en", "postal.registry.print.submitted_to", "Correspondence submitted to "
+    AddTranslation "ru", "postal.registry.print.sender_prefix", "Отправитель: "
+    AddTranslation "en", "postal.registry.print.sender_prefix", "Sender: "
+    AddTranslation "ru", "postal.registry.print.column.number", "№"
+    AddTranslation "en", "postal.registry.print.column.number", "No."
+    AddTranslation "ru", "postal.registry.print.column.index", "Индекс"
+    AddTranslation "en", "postal.registry.print.column.index", "Index"
+    AddTranslation "ru", "postal.registry.print.column.destination", "Куда"
+    AddTranslation "en", "postal.registry.print.column.destination", "Destination"
+    AddTranslation "ru", "postal.registry.print.column.addressee", "Кому"
+    AddTranslation "en", "postal.registry.print.column.addressee", "Addressee"
+    AddTranslation "ru", "postal.registry.print.column.letter_number", "№ письма"
+    AddTranslation "en", "postal.registry.print.column.letter_number", "Letter No."
+    AddTranslation "ru", "postal.registry.print.column.note", "Примечание"
+    AddTranslation "en", "postal.registry.print.column.note", "Note"
+    AddTranslation "ru", "postal.registry.print.footer.total", "ИТОГО"
+    AddTranslation "en", "postal.registry.print.footer.total", "TOTAL"
+    AddTranslation "ru", "postal.registry.print.footer.package", "пакет."
+    AddTranslation "en", "postal.registry.print.footer.package", "package."
+    AddTranslation "ru", "postal.registry.print.footer.sender_signature", "Подпись отправителя:"
+    AddTranslation "en", "postal.registry.print.footer.sender_signature", "Sender signature:"
+    AddTranslation "ru", "postal.registry.print.footer.stamp", "М.П."
+    AddTranslation "en", "postal.registry.print.footer.stamp", "Stamp"
+    AddTranslation "ru", "postal.registry.print.footer.accepted_by_registry", "По настоящему реестру принято:"
+    AddTranslation "en", "postal.registry.print.footer.accepted_by_registry", "Accepted by this registry:"
+    AddTranslation "ru", "postal.registry.print.footer.documents", "____ документов."
+    AddTranslation "en", "postal.registry.print.footer.documents", "____ documents."
+    AddTranslation "ru", "postal.registry.print.footer.quote_open", "«"
+    AddTranslation "en", "postal.registry.print.footer.quote_open", """"
+    AddTranslation "ru", "postal.registry.print.footer.quote_close", "»"
+    AddTranslation "en", "postal.registry.print.footer.quote_close", """"
+    AddTranslation "ru", "postal.registry.print.footer.year_word", "года"
+    AddTranslation "en", "postal.registry.print.footer.year_word", "year"
+    AddTranslation "ru", "postal.registry.print.footer.receiver_signature", "Подпись приёмщика"
+    AddTranslation "en", "postal.registry.print.footer.receiver_signature", "Receiver signature"
+    AddTranslation "ru", "postal.registry.print.outgoing_prefix", "Исх. № "
+    AddTranslation "en", "postal.registry.print.outgoing_prefix", "Out. No. "
+    AddTranslation "ru", "postal.registry.print.year_suffix", "г."
+    AddTranslation "en", "postal.registry.print.year_suffix", "yr."
+
+    AddTranslation "ru", "history.dispatch_status.not_packed", "Нет"
+
+    AddTranslation "en", "history.dispatch_status.not_packed", "No"
+
+    AddTranslation "ru", "history.dispatch_status.packed", "Да"
+
+    AddTranslation "en", "history.dispatch_status.packed", "Yes"
+
+    AddTranslation "ru", "history.dispatch_status.registry_prefix", "Реестр"
+
+    AddTranslation "en", "history.dispatch_status.registry_prefix", "Registry"
+
     AddTranslation "ru", "core.date.unknown_month", "неизвестный_месяц"
 
     AddTranslation "en", "core.date.unknown_month", "unknown_month"
@@ -1511,10 +1828,5 @@ Private Function NormalizeLocalizationKey(ByVal key As String) As String
     NormalizeLocalizationKey = LCase$(Trim$(key))
 
 End Function
-
-
-
-
-
 
 

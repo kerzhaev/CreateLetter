@@ -1,32 +1,24 @@
 VERSION 5.00
-
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-
    Caption         =   "Letter Builder v1.6.18"
-
    ClientHeight    =   10155
-
    ClientLeft      =   120
-
    ClientTop       =   465
-
    ClientWidth     =   16320
-
    OleObjectBlob   =   "frmLetterCreator.frx":0000
-
    StartUpPosition =   1  'CenterOwner
-
 End
-
 Attribute VB_Name = "frmLetterCreator"
-
 Attribute VB_GlobalNameSpace = False
-
 Attribute VB_Creatable = False
-
 Attribute VB_PredeclaredId = True
-
 Attribute VB_Exposed = False
+
+
+
+
+
+
 
 
 
@@ -152,7 +144,7 @@ Public Sub ApplyInitialSearchFocus()
 
     On Error Resume Next
 
-    If Not mpgWizard Is Nothing Then mpgWizard.Value = 0
+    If Not mpgWizard Is Nothing Then mpgWizard.value = 0
 
     Me.Repaint
     DoEvents
@@ -622,7 +614,7 @@ Private Sub CheckRequiredFields()
 
     
 
-    If Me.Controls("cmbExecutor").ListIndex < 0 Or Len(Trim(Me.Controls("cmbExecutor").value)) = 0 Then
+    If Me.Controls("cmbExecutor").listIndex < 0 Or Len(Trim(Me.Controls("cmbExecutor").value)) = 0 Then
 
         Me.Controls("cmbExecutor").backColor = RGB(255, 240, 240)
 
@@ -1054,7 +1046,7 @@ Private Sub EnsureAddressGroupControls()
 
         .Font.Size = 10
 
-        .Multiline = False
+        .MultiLine = False
 
     End With
 
@@ -1597,11 +1589,11 @@ Private Sub lstAddresses_Click()
 
     
 
-    If lstAddresses Is Nothing Or lstAddresses.ListIndex < 0 Then Exit Sub
+    If lstAddresses Is Nothing Or lstAddresses.listIndex < 0 Then Exit Sub
 
     If currentAddressSearchResults Is Nothing Then Exit Sub
 
-    If lstAddresses.ListIndex + 1 > currentAddressSearchResults.count Then Exit Sub
+    If lstAddresses.listIndex + 1 > currentAddressSearchResults.count Then Exit Sub
 
     
 
@@ -1613,7 +1605,7 @@ Private Sub lstAddresses_Click()
 
     Dim errorMessage As String
 
-    searchResult = currentAddressSearchResults(lstAddresses.ListIndex + 1)
+    searchResult = currentAddressSearchResults(lstAddresses.listIndex + 1)
 
     
 
@@ -1907,7 +1899,7 @@ Private Sub lstAvailableAttachments_MouseUp(ByVal Button As Integer, ByVal Shift
 
     On Error Resume Next
 
-    If lstAvailableAttachments.ListIndex >= 0 And Not txtDocNumber Is Nothing Then
+    If lstAvailableAttachments.listIndex >= 0 And Not txtDocNumber Is Nothing Then
 
         txtDocNumber.SetFocus
 
@@ -1931,7 +1923,7 @@ Private Sub btnAddAttachment_Click()
 
     
 
-    If lstAvailableAttachments Is Nothing Or lstAvailableAttachments.ListIndex < 0 Then
+    If lstAvailableAttachments Is Nothing Or lstAvailableAttachments.listIndex < 0 Then
 
         MsgBox t("form.letter_creator.msg.select_document_left", "Select a document in the left list."), vbExclamation
 
@@ -1944,7 +1936,7 @@ Private Sub btnAddAttachment_Click()
     Dim docArr As Variant
 
     docArr = CreateDocumentArrayWithSum( _
-        lstAvailableAttachments.List(lstAvailableAttachments.ListIndex), _
+        lstAvailableAttachments.List(lstAvailableAttachments.listIndex), _
         Trim(IIf(txtDocNumber Is Nothing, "", txtDocNumber.value)), _
         Trim(IIf(txtDocDate Is Nothing, "", txtDocDate.value)), _
         Trim(IIf(txtDocCopies Is Nothing, "", txtDocCopies.value)), _
@@ -1973,7 +1965,7 @@ Private Sub btnRemoveAttachment_Click()
 
     
 
-    If lstSelectedAttachments Is Nothing Or lstSelectedAttachments.ListIndex < 0 Then
+    If lstSelectedAttachments Is Nothing Or lstSelectedAttachments.listIndex < 0 Then
 
         MsgBox t("form.letter_creator.msg.select_document_right", "Select a document in the right list."), vbExclamation
 
@@ -1985,7 +1977,7 @@ Private Sub btnRemoveAttachment_Click()
 
     Dim selectedIndex As Integer
 
-    selectedIndex = lstSelectedAttachments.ListIndex
+    selectedIndex = lstSelectedAttachments.listIndex
 
     
 
@@ -2013,9 +2005,9 @@ End Sub
 
 Private Sub lstSelectedAttachments_MouseUp(ByVal Button As Integer, ByVal Shift As Integer, ByVal X As Single, ByVal Y As Single)
 
-    If Button = 2 And lstSelectedAttachments.ListIndex >= 0 Then
+    If Button = 2 And lstSelectedAttachments.listIndex >= 0 Then
 
-        contextMenuSelectedIndex = lstSelectedAttachments.ListIndex
+        contextMenuSelectedIndex = lstSelectedAttachments.listIndex
 
         ShowSimpleContextMenu
 
@@ -2189,7 +2181,7 @@ Public Sub MoveDocumentUp()
 
         RefreshDocumentsList
 
-        lstSelectedAttachments.ListIndex = contextMenuSelectedIndex - 1
+        lstSelectedAttachments.listIndex = contextMenuSelectedIndex - 1
 
     End If
 
@@ -2215,7 +2207,7 @@ Public Sub MoveDocumentDown()
 
         RefreshDocumentsList
 
-        lstSelectedAttachments.ListIndex = contextMenuSelectedIndex + 1
+        lstSelectedAttachments.listIndex = contextMenuSelectedIndex + 1
 
     End If
 
@@ -2577,7 +2569,7 @@ Private Sub SaveLetterToDatabase()
                           ResolveLetterDateOrToday(GetControlText("txtLetterDate")), documentsList, _
                           IIf(cmbExecutor Is Nothing, "", cmbExecutor.value), _
                           IIf(cmbDocumentType Is Nothing, "", _
-                              IIf(cmbDocumentType.ListIndex >= 0, ResolveDocumentTypeStorageValue(cmbDocumentType.value), ""))
+                              IIf(cmbDocumentType.listIndex >= 0, ResolveDocumentTypeStorageValue(cmbDocumentType.value), ""))
 
 End Sub
 
@@ -2679,7 +2671,7 @@ Private Sub ConfigureMultilineTextBoxes()
 
         If Not ctrl Is Nothing Then
 
-            ctrl.Multiline = True
+            ctrl.MultiLine = True
 
             ctrl.WordWrap = True
 

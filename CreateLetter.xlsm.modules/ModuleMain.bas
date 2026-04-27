@@ -10,7 +10,7 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.7.6 - 29.03.2026
+' Version: 1.8.0 - 26.04.2026
 
 ' ======================================================================
 
@@ -43,6 +43,14 @@ Private Const LegacyLetterTextsTableNameLocalized As String = "Текст"
 Public Const AddressesTableName As String = "tblAddresses"
 
 Public Const LettersTableName As String = "tblLetters"
+
+Public Const EnvelopeFormatsTableName As String = "tblEnvelopeFormats"
+
+Public Const SendersTableName As String = "tblSenders"
+
+Public Const DispatchItemsTableName As String = "tblDispatchItems"
+
+Public Const DispatchRegistryTableName As String = "tblDispatchRegistry"
 
 Private Const DocumentTypeKeyConfirmed As String = "confirmed_documents"
 
@@ -130,6 +138,14 @@ Public Enum LetterColumns
 
     LetterColumnDocumentType = 8
 
+    LetterColumnDispatchPackedFlag = 9
+
+    LetterColumnDispatchBatchId = 10
+
+    LetterColumnDispatchRegistryNumber = 11
+
+    LetterColumnDispatchRegistryDate = 12
+
 End Enum
 
 
@@ -141,6 +157,36 @@ Public Enum SettingsColumns
     SettingsColumnExecutorName = 3
 
     SettingsColumnExecutorPhone = 4
+
+End Enum
+
+Public Enum EnvelopeFormatColumns
+
+    EnvelopeFormatColumnKey = 1
+
+    EnvelopeFormatColumnDisplayName = 2
+
+    EnvelopeFormatColumnIsActive = 3
+
+    EnvelopeFormatColumnSortOrder = 4
+
+End Enum
+
+Public Enum SenderColumns
+
+    SenderColumnName = 1
+
+    SenderColumnAddressLine1 = 2
+
+    SenderColumnAddressLine2 = 3
+
+    SenderColumnAddressLine3 = 4
+
+    SenderColumnPostalCode = 5
+
+    SenderColumnPhone = 6
+
+    SenderColumnIsDefault = 7
 
 End Enum
 
@@ -232,6 +278,86 @@ Public Enum DocumentArrayIndexes
 
 End Enum
 
+Public Enum DispatchItemColumns
+
+    DispatchItemColumnId = 1
+
+    DispatchItemColumnLetterNumber = 2
+
+    DispatchItemColumnLetterDate = 3
+
+    DispatchItemColumnLetterRowNumber = 4
+
+    DispatchItemColumnAddressee = 5
+
+    DispatchItemColumnAddressLine = 6
+
+    DispatchItemColumnPostalCode = 7
+
+    DispatchItemColumnSenderName = 8
+
+    DispatchItemColumnEnvelopeFormatKey = 9
+
+    DispatchItemColumnMailType = 10
+
+    DispatchItemColumnMass = 11
+
+    DispatchItemColumnDeclaredValue = 12
+
+    DispatchItemColumnComment = 13
+
+    DispatchItemColumnPhone = 14
+
+    DispatchItemColumnBatchId = 15
+
+    DispatchItemColumnStatus = 16
+
+    DispatchItemColumnCreatedAt = 17
+
+    DispatchItemColumnRegistryNumber = 18
+
+    DispatchItemColumnRegistryDate = 19
+
+End Enum
+
+Public Enum DispatchRegistryColumns
+
+    DispatchRegistryColumnRegistryNumber = 1
+
+    DispatchRegistryColumnRegistryDate = 2
+
+    DispatchRegistryColumnBatchId = 3
+
+    DispatchRegistryColumnAddressee = 4
+
+    DispatchRegistryColumnAddressLine = 5
+
+    DispatchRegistryColumnEnvelopeFormatKey = 6
+
+    DispatchRegistryColumnMailType = 7
+
+    DispatchRegistryColumnMass = 8
+
+    DispatchRegistryColumnDeclaredValue = 9
+
+    DispatchRegistryColumnPayment = 10
+
+    DispatchRegistryColumnComment = 11
+
+    DispatchRegistryColumnPhone = 12
+
+    DispatchRegistryColumnIndexFrom = 13
+
+    DispatchRegistryColumnSenderName = 14
+
+    DispatchRegistryColumnOutgoingNumbers = 15
+
+    DispatchRegistryColumnCreatedAt = 16
+
+    DispatchRegistryColumnPostalCode = 17
+
+End Enum
+
 
 
 Public Enum LetterHistoryPartIndexes
@@ -276,7 +402,7 @@ Public Sub PopulateDocumentTypeOptions(targetControl As Object)
 
     targetControl.AddItem GetDocumentTypeDisplayLabel(DocumentTypeKeyOwnConfirmation)
 
-    targetControl.ListIndex = 0
+    targetControl.listIndex = 0
 
     On Error GoTo 0
 
@@ -294,7 +420,7 @@ Public Sub PopulateLetterTypeOptions(targetControl As Object)
 
     targetControl.AddItem GetLetterTypeDisplayLabel(LetterTypeKeyFOU)
 
-    targetControl.ListIndex = 0
+    targetControl.listIndex = 0
 
     On Error GoTo 0
 
@@ -1774,6 +1900,14 @@ Public Sub SaveLetterInfoWithSum(Addressee As String, letterNumber As String, le
 
     ws.Cells(newRow, LetterColumnDocumentType).value = ResolveDocumentTypeDisplayValue(documentType)
 
+    ws.Cells(newRow, LetterColumnDispatchPackedFlag).value = ""
+
+    ws.Cells(newRow, LetterColumnDispatchBatchId).value = ""
+
+    ws.Cells(newRow, LetterColumnDispatchRegistryNumber).value = ""
+
+    ws.Cells(newRow, LetterColumnDispatchRegistryDate).value = ""
+
     Debug.Print "=== AFTER writing remaining cells ==="
 
     
@@ -2937,6 +3071,77 @@ End Sub
 
 
 
+Public Sub OpenMailDispatch()
+
+    On Error GoTo OpenDispatchError
+
+    Load frmMailDispatch
+    frmMailDispatch.Show vbModal
+    Exit Sub
+
+OpenDispatchError:
+
+    MsgBox t("dispatch.form.open_error", "Не удалось открыть форму почтовых отправлений: ") & Err.description, vbCritical
+
+End Sub
+
+
+
+Public Function BuildDispatchRegistry() As Long
+
+    BuildDispatchRegistry = BuildDispatchRegistryFromDispatchItems()
+
+End Function
+
+
+Public Function BuildPostalRegistryPrint() As Long
+
+    BuildPostalRegistryPrint = BuildPostalRegistryPrintSheet()
+
+End Function
+
+
+
+Public Function PrepareDispatchEnvelopeLayouts() As Long
+
+    PrepareDispatchEnvelopeLayouts = PrepareEnvelopePrint()
+
+End Function
+
+
+
+Public Function SmokeTestMailDispatchUi() As String
+
+    On Error GoTo SmokeError
+
+    Load frmMailDispatch
+
+    If frmMailDispatch.Controls("lstDispatchPackage") Is Nothing Then
+        Err.Raise vbObjectError + 4701, "SmokeTestMailDispatchUi", "Runtime package list was not created."
+    End If
+
+    If frmMailDispatch.Controls("txtDispatchRegistryNumber") Is Nothing Then
+        Err.Raise vbObjectError + 4702, "SmokeTestMailDispatchUi", "Runtime registry number field was not created."
+    End If
+
+    If frmMailDispatch.Controls("txtDispatchRegistryDate") Is Nothing Then
+        Err.Raise vbObjectError + 4703, "SmokeTestMailDispatchUi", "Runtime registry date field was not created."
+    End If
+
+    SmokeTestMailDispatchUi = "runtime-controls-ok"
+
+    Unload frmMailDispatch
+    Exit Function
+
+SmokeError:
+    On Error Resume Next
+    Unload frmMailDispatch
+    SmokeTestMailDispatchUi = "runtime-error: " & Err.description
+
+End Function
+
+
+
 Public Function GetDocumentTypeText(documentType As String) As String
 
     If NormalizeDocumentTypeKey(documentType) = DocumentTypeKeyOwnConfirmation Then
@@ -3435,7 +3640,7 @@ Private Function GetAddressAuditRecipientByRow(rowNumber As Long) As String
 
 
 
-    GetAddressAuditRecipientByRow = Trim$(CStr(ws.Cells(rowNumber, AddressColumnAddressee).Value))
+    GetAddressAuditRecipientByRow = Trim$(CStr(ws.Cells(rowNumber, AddressColumnAddressee).value))
 
     Exit Function
 
@@ -3455,7 +3660,7 @@ Private Function BuildLetterAuditDetails(letterNumber As String, letterDate As D
 
     If Not documents Is Nothing Then
 
-        documentCount = documents.Count
+        documentCount = documents.count
 
     End If
 
@@ -3468,12 +3673,3 @@ Private Function BuildLetterAuditDetails(letterNumber As String, letterDate As D
                               "; documents=" & documentCount
 
 End Function
-
-
-
-
-
-
-
-
-
