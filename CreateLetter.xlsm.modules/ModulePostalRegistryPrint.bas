@@ -3,7 +3,7 @@ Attribute VB_Name = "ModulePostalRegistryPrint"
 ' Module: ModulePostalRegistryPrint
 ' Author: CreateLetter contributors
 ' Purpose: Build a printable postal registry sheet from the internal dispatch registry
-' Version: 1.1.0 - 27.04.2026
+' Version: 1.1.1 - 27.04.2026
 ' ======================================================================
 
 Option Explicit
@@ -73,6 +73,8 @@ Public Function ExportPostalRegistryPrintPdf() As String
     pdfPath = pdfFolder & "\" & BuildPostalRegistryPdfFileName(printSheet)
 
     printSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=pdfPath, Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=False
+
+    DispatchRepositoryMarkRegistryPrintedFromRegistryTable
 
     ExportPostalRegistryPrintPdf = pdfPath
     Exit Function

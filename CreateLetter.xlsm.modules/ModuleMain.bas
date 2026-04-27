@@ -10,7 +10,7 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.8.0 - 26.04.2026
+' Version: 1.8.1 - 27.04.2026
 
 ' ======================================================================
 
@@ -51,6 +51,14 @@ Public Const SendersTableName As String = "tblSenders"
 Public Const DispatchItemsTableName As String = "tblDispatchItems"
 
 Public Const DispatchRegistryTableName As String = "tblDispatchRegistry"
+
+Public Const DispatchStatusDraft As String = "draft"
+
+Public Const DispatchStatusPacked As String = "packed"
+
+Public Const DispatchStatusRegistered As String = "registered"
+
+Public Const DispatchStatusRegistryPrinted As String = "registry_printed"
 
 Private Const DocumentTypeKeyConfirmed As String = "confirmed_documents"
 

@@ -7,7 +7,7 @@ CreateLetter is an Excel VBA workbook used to prepare letters from templates usi
 Source-managed VBA standard modules, class modules, and forms are stored in `CreateLetter.xlsm.modules/`. Workbook and worksheet document modules are stored separately in `CreateLetter.xlsm.document-modules/` so manual `VbaModuleManager` workflows do not import hidden sheet/workbook code as ordinary class modules. Both directories are synchronized with the workbook artifact through Excel COM automation, with manual `VbaModuleManager` fallback only for edge cases.
 The `Addresses` worksheet now supports an optional `AddressGroup` field for scenarios where several named recipients share one postal address.
 The workbook also now contains a dedicated `Mail Dispatch` subdomain with envelope formats, sender dictionary, dispatch items, grouped package registry, a printable postal registry sheet with PDF export, a dedicated `frmMailDispatch` form, and hidden layout sheets for `C4`, `C5`, and `DL`.
-Dispatch packages are now grouped by addressee and may contain multiple outgoing letters that are later rendered as stacked outgoing numbers on the envelope print layout.
+Dispatch packages are now grouped by addressee and may contain multiple outgoing letters that are later rendered as stacked outgoing numbers on the envelope print layout. Dispatch lifecycle state is persisted in both `tblDispatchItems` and the tracking columns of `tblLetters`: package save marks letters as packed, registry build marks packages as registered, and PDF export marks registry packages as printed.
 
 ## Tech Stack
 - **Language:** VBA

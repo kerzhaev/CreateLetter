@@ -240,7 +240,7 @@ def migrate_dispatch_items_legacy_layout(ws) -> str:
         batch_candidate = normalize_text(row_values[14]).lower()
         letter_row_candidate = normalize_text(row_values[3])
         valid_envelopes = {"", "c4", "c5", "dl"}
-        valid_statuses = {"draft", "queued", "registered"}
+        valid_statuses = {"draft", "queued", "packed", "registered", "registry_printed"}
 
         return (
             envelope_candidate not in valid_envelopes

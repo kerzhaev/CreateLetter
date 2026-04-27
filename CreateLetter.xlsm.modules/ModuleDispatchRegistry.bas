@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleDispatchRegistry"
 ' Module: ModuleDispatchRegistry
 ' Author: CreateLetter contributors
 ' Purpose: Build and refresh the internal Excel dispatch registry from grouped dispatch packages
-' Version: 1.2.0 - 27.04.2026
+' Version: 1.2.1 - 27.04.2026
 ' ======================================================================
 
 Option Explicit
@@ -32,9 +32,11 @@ Public Function BuildDispatchRegistryFromDispatchItems() As Long
         Set batchItems = groupedBatches(batchKey)
         If Not batchItems Is Nothing Then
             If batchItems.count > 0 Then
+                Dim firstBatchItem As Variant
+                firstBatchItem = batchItems(1)
                 AppendDispatchRegistryRow registryTable, batchItems
                 UpdateLettersDispatchTracking batchItems
-                DispatchRepositoryUpdateBatchStatus CStr(batchKey), "registered"
+                DispatchRepositoryUpdateBatchRegistryState CStr(batchKey), CStr(firstBatchItem(DispatchItemColumnRegistryNumber)), CStr(firstBatchItem(DispatchItemColumnRegistryDate)), DispatchStatusRegistered
                 BuildDispatchRegistryFromDispatchItems = BuildDispatchRegistryFromDispatchItems + 1
             End If
         End If

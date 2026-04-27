@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleDispatchRepository"
 
 ' Purpose: Workbook repository helpers for envelope formats, senders, dispatch packages, and registry metadata
 
-' Version: 1.1.0 - 26.04.2026
+' Version: 1.2.0 - 27.04.2026
 
 ' ======================================================================
 
@@ -628,7 +628,7 @@ Public Function DispatchRepositoryCreatePackageFromHistoryRecords( _
 
             batchId, _
 
-            "queued", _
+            DispatchStatusPacked, _
 
             registryNumber, _
 
@@ -645,6 +645,8 @@ NextRecord:
     Next i
 
 
+
+    DispatchRepositoryUpdateBatchRegistryState batchId, registryNumber, registryDate, DispatchStatusPacked
 
     DispatchRepositoryCreatePackageFromHistoryRecords = batchId
 
@@ -757,6 +759,73 @@ Public Sub DispatchRepositoryUpdateBatchStatus(ByVal batchId As String, ByVal st
 UpdateError:
 
     Debug.Print "DispatchRepositoryUpdateBatchStatus error: " & Err.description
+
+End Sub
+
+Public Sub DispatchRepositoryUpdateBatchRegistryState(ByVal batchId As String, ByVal registryNumber As String, ByVal registryDate As String, ByVal status As String)
+
+    On Error GoTo UpdateError
+
+    If Len(Trim$(batchId)) = 0 Then Exit Sub
+
+    Dim dispatchTable As ListObject
+    Set dispatchTable = DispatchRepositoryGetTable("DispatchItems", DispatchItemsTableName)
+    If dispatchTable.DataBodyRange Is Nothing Then Exit Sub
+
+    Dim normalizedStatus As String
+    normalizedStatus = DispatchRepositoryResolveDispatchStatus(status)
+
+    Dim rowIndex As Long
+    For rowIndex = 1 To dispatchTable.DataBodyRange.Rows.count
+        If StrComp(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnBatchId).value), batchId, vbTextCompare) = 0 Then
+            Dim currentStatus As String
+            currentStatus = LCase$(Trim$(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnStatus).value)))
+
+            If Not (currentStatus = DispatchStatusRegistryPrinted And normalizedStatus = DispatchStatusRegistered) Then dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnStatus).value = normalizedStatus
+
+            If Len(Trim$(registryNumber)) > 0 Then dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryNumber).value = registryNumber
+            If Len(Trim$(registryDate)) > 0 Then dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryDate).value = registryDate
+
+            Dim resolvedRegistryNumber As String
+            resolvedRegistryNumber = CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryNumber).value)
+
+            Dim resolvedRegistryDate As String
+            resolvedRegistryDate = CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryDate).value)
+
+            Dim targetRowNumber As Long
+            targetRowNumber = CLng(Val(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnLetterRowNumber).value)))
+
+            If targetRowNumber < FIRST_DATA_ROW Then RepositoryTryResolveLetterRowNumber CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnAddressee).value), CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnLetterNumber).value), CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnLetterDate).value), targetRowNumber
+            If targetRowNumber >= FIRST_DATA_ROW Then RepositoryUpdateLetterDispatchTracking targetRowNumber, t("history.dispatch_status.packed", "Да"), batchId, resolvedRegistryNumber, resolvedRegistryDate
+        End If
+    Next rowIndex
+
+    Exit Sub
+
+UpdateError:
+
+    Debug.Print "DispatchRepositoryUpdateBatchRegistryState error: " & Err.description
+
+End Sub
+
+Public Sub DispatchRepositoryMarkRegistryPrintedFromRegistryTable()
+
+    On Error GoTo UpdateError
+
+    Dim registryTable As ListObject
+    Set registryTable = DispatchRepositoryGetTable("DispatchRegistry", DispatchRegistryTableName)
+    If registryTable.DataBodyRange Is Nothing Then Exit Sub
+
+    Dim rowIndex As Long
+    For rowIndex = 1 To registryTable.DataBodyRange.Rows.count
+        DispatchRepositoryUpdateBatchRegistryState CStr(registryTable.DataBodyRange.Cells(rowIndex, DispatchRegistryColumnBatchId).value), CStr(registryTable.DataBodyRange.Cells(rowIndex, DispatchRegistryColumnRegistryNumber).value), CStr(registryTable.DataBodyRange.Cells(rowIndex, DispatchRegistryColumnRegistryDate).value), DispatchStatusRegistryPrinted
+    Next rowIndex
+
+    Exit Sub
+
+UpdateError:
+
+    Debug.Print "DispatchRepositoryMarkRegistryPrintedFromRegistryTable error: " & Err.description
 
 End Sub
 
@@ -912,7 +981,7 @@ Private Function DispatchRepositoryResolveDispatchStatus(status As String) As St
 
     If Len(Trim$(status)) = 0 Then
 
-        DispatchRepositoryResolveDispatchStatus = "draft"
+        DispatchRepositoryResolveDispatchStatus = DispatchStatusDraft
 
     Else
 

@@ -544,7 +544,9 @@ try {
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadSenders()*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCreatePackageFromHistoryRecords(*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetQueuedLetterKeySet()*") -and
-                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadDispatchItems()*")
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadDispatchItems()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryUpdateBatchRegistryState(*") -and
+                                                 ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryMarkRegistryPrintedFromRegistryTable()*")
 
                 if ($hasDispatchRepositoryContract) {
                     Add-Result -Results $results -Name "DispatchRepositoryContract" -Status "PASS" -Details "Dispatch repository foundation functions are present."
