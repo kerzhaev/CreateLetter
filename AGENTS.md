@@ -6,7 +6,8 @@
 CreateLetter is an Excel VBA workbook used to prepare letters from templates using structured address/settings data and guided user forms.
 Source-managed VBA standard modules, class modules, and forms are stored in `CreateLetter.xlsm.modules/`. Workbook and worksheet document modules are stored separately in `CreateLetter.xlsm.document-modules/` so manual `VbaModuleManager` workflows do not import hidden sheet/workbook code as ordinary class modules. Both directories are synchronized with the workbook artifact through Excel COM automation, with manual `VbaModuleManager` fallback only for edge cases.
 The `Addresses` worksheet now supports an optional `AddressGroup` field for scenarios where several named recipients share one postal address.
-The workbook also now contains a dedicated `Mail Dispatch` subdomain with envelope formats, sender dictionary, dispatch items, internal registry, a dedicated `frmMailDispatch` form, and hidden layout sheets for `C4`, `C5`, and `DL`.
+The workbook also now contains a dedicated `Mail Dispatch` subdomain with envelope formats, sender dictionary, dispatch items, grouped package registry, a printable postal registry sheet, a dedicated `frmMailDispatch` form, and hidden layout sheets for `C4`, `C5`, and `DL`.
+Dispatch packages are now grouped by addressee and may contain multiple outgoing letters that are later rendered as stacked outgoing numbers on the envelope print layout.
 
 ## Tech Stack
 - **Language:** VBA
@@ -28,6 +29,7 @@ The workbook also now contains a dedicated `Mail Dispatch` subdomain with envelo
 │   ├── ModuleRepository.bas             # Workbook repository/search/export helpers, including structured address search
 │   ├── ModuleDispatchRepository.bas     # Envelope format, sender, and dispatch-item repository helpers
 │   ├── ModuleDispatchRegistry.bas       # Internal dispatch-registry builder from DispatchItems
+│   ├── ModulePostalRegistryPrint.bas    # Printable postal registry sheet builder
 │   ├── ModuleEnvelopeLayouts.bas        # Hidden C4/C5/DL layout preparation helpers
 │   ├── ModuleWordInterop.bas            # Explicit Word lifecycle and document generation helpers
 │   ├── ModuleCache.bas                  # Cache helpers
@@ -35,6 +37,7 @@ The workbook also now contains a dedicated `Mail Dispatch` subdomain with envelo
 │   ├── ModuleAuditLogger.bas            # Audit/logging helpers
 │   ├── VbaModuleManager.bas             # Legacy/manual import-export helper kept for fallback workflows
 │   ├── clsLetterHistoryRecord.cls       # Typed DTO for letter history rows
+│   ├── clsDispatchDynamicButtonHandler.cls # WithEvents bridge for runtime-created dispatch-form buttons
 │   ├── frmMailDispatch.frm              # Mail dispatch UI for creating dispatch items from existing letters
 │   └── MdlBackup1.bas                   # Legacy backup logic
 ├── CreateLetter.xlsm.document-modules/  # Workbook/sheet document-module exports

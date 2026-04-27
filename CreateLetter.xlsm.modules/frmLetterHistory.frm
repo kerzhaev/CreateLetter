@@ -18,6 +18,7 @@ Attribute VB_Exposed = False
 
 
 
+
 ' ======================================================================
 ' Form: frmLetterHistory v1.3.5 - Thin-shell history UI with typed history records
 ' Author: CreateLetter contributors
@@ -92,7 +93,7 @@ Private Sub ConfigureCompactSumField()
         With txtSumDocument
             .Font.Name = "Segoe UI"
             .Font.Size = 10
-            .Multiline = False              ' Single-line field
+            .MultiLine = False              ' Single-line field
             .WordWrap = False               ' No word wrap
             .ScrollBars = 0                 ' No scrollbars (0 = fmScrollBarsNone)
             ' REMOVED: .EnterKeyBehaviour = False (not supported)
@@ -257,10 +258,10 @@ Private Sub lstLetterHistory_Click()
     On Error GoTo SelectionError
 
     If lstLetterHistory Is Nothing Then Exit Sub
-    If lstLetterHistory.ListIndex < 0 Then Exit Sub
+    If lstLetterHistory.listIndex < 0 Then Exit Sub
     
     Dim selectedIndex As Integer
-    selectedIndex = lstLetterHistory.ListIndex + 1
+    selectedIndex = lstLetterHistory.listIndex + 1
     
     If selectedIndex <= filteredData.count Then
         Dim letterRecord As clsLetterHistoryRecord
@@ -294,13 +295,13 @@ Private Sub NavigateToSelectedRecord()
     On Error GoTo NavigateError
     
     If lstLetterHistory Is Nothing Then Exit Sub
-    If lstLetterHistory.ListIndex < 0 Then
+    If lstLetterHistory.listIndex < 0 Then
         MsgBox t("form.letter_history.msg.select_record", "Выберите письмо для перехода к записи."), vbExclamation, t("form.letter_history.caption.go_to_record", "Перейти к записи")
         Exit Sub
     End If
     
     Dim selectedIndex As Integer
-    selectedIndex = lstLetterHistory.ListIndex + 1
+    selectedIndex = lstLetterHistory.listIndex + 1
     
     If selectedIndex <= filteredData.count Then
         Dim letterRecord As clsLetterHistoryRecord
@@ -451,13 +452,13 @@ End Sub
 
 Private Sub btnUpdateStatus_Click()
     If lstLetterHistory Is Nothing Then Exit Sub
-    If lstLetterHistory.ListIndex < 0 Then
+    If lstLetterHistory.listIndex < 0 Then
         MsgBox t("form.letter_history.msg.select_status_update", "Выберите письмо для обновления статуса."), vbExclamation
         Exit Sub
     End If
     
     Dim selectedIndex As Integer
-    selectedIndex = lstLetterHistory.ListIndex + 1
+    selectedIndex = lstLetterHistory.listIndex + 1
     
     If selectedIndex <= filteredData.count Then
         Dim letterRecord As clsLetterHistoryRecord
@@ -482,10 +483,13 @@ Private Sub BindHistoryList(records As Collection)
     If lstLetterHistory Is Nothing Then Exit Sub
     
     lstLetterHistory.Clear
+    lstLetterHistory.ColumnCount = 2
+    lstLetterHistory.ColumnWidths = "530 pt;110 pt"
     
     Dim i As Long
     For i = 1 To records.count
         lstLetterHistory.AddItem FormatLetterHistoryDisplay(records(i))
+        lstLetterHistory.List(lstLetterHistory.ListCount - 1, 1) = RepositoryGetLetterHistoryPackedStatusDisplay(records(i))
     Next i
     
     UpdateSearchInfo BuildHistoryFoundCaption(records.count, allLettersData.count)
@@ -636,6 +640,8 @@ Private Sub ApplyElementStyles()
         With lstLetterHistory
             .Font.Name = "Segoe UI"
             .Font.Size = 9
+            .ColumnCount = 2
+            .ColumnWidths = "530 pt;110 pt"
             .backColor = RGB(255, 255, 255)
             .BorderStyle = 1
             .ControlTipText = t("form.letter_history.tip.double_click", "Дважды щелкните по письму, чтобы перейти к записи в таблице")

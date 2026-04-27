@@ -20,19 +20,23 @@ from win32com.client.dynamic import Dispatch
 
 
 TABLE_SPECS = (
-    ("Addresses", "tblAddresses", None),
-    ("Letters", "tblLetters", None),
+    ("Addresses", "tblAddresses", ("Наименование адресата", "Улица, дом, квартира", "Населенный пункт", "Район", "Область/край/республика", "Почтовый индекс", "Телефон", "AddressGroup")),
+    ("Letters", "tblLetters", ("Наименование адресата", "Исходящий номер", "Дата исходящего", "Наименование приложения", "Сумма документа", "Отметка о возврате", "Исполнитель", "Тип отправки", "Упаковано", "Пакет", "Номер реестра", "Дата реестра")),
     ("Settings", "tblLetterTexts", None),
     ("EnvelopeFormats", "tblEnvelopeFormats", ("FormatKey", "DisplayName", "IsActive", "SortOrder")),
     ("Senders", "tblSenders", ("SenderName", "AddressLine1", "AddressLine2", "AddressLine3", "PostalCode", "Phone", "IsDefault")),
-    ("DispatchItems", "tblDispatchItems", ("DispatchId", "LetterNumber", "LetterDate", "Addressee", "AddressLine", "PostalCode", "SenderName", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Comment", "Phone", "BatchId", "Status", "CreatedAt")),
-    ("DispatchRegistry", "tblDispatchRegistry", ("AddressLine", "Addressee", "MailType", "EnvelopeFormatKey", "Mass", "DeclaredValue", "Payment", "Comment", "Phone", "IndexFrom", "BatchId", "CreatedAt")),
+    ("DispatchItems", "tblDispatchItems", ("DispatchId", "LetterNumber", "LetterDate", "LetterRowNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Comment", "Phone", "BatchId", "Status", "CreatedAt", "RegistryNumber", "RegistryDate")),
+    ("DispatchRegistry", "tblDispatchRegistry", ("RegistryNumber", "RegistryDate", "BatchId", "Addressee", "AddressLine", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Payment", "Comment", "Phone", "IndexFrom", "SenderName", "OutgoingNumbers", "CreatedAt", "PostalCode")),
 )
 
 LAYOUT_SHEET_SPECS = (
-    ("DispatchLayout_C4", ("DispatchId", "LetterNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "IndexFrom", "MailType", "Mass", "DeclaredValue", "Comment", "PreparedAt")),
-    ("DispatchLayout_C5", ("DispatchId", "LetterNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "IndexFrom", "MailType", "Mass", "DeclaredValue", "Comment", "PreparedAt")),
-    ("DispatchLayout_DL", ("DispatchId", "LetterNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "IndexFrom", "MailType", "Mass", "DeclaredValue", "Comment", "PreparedAt")),
+    ("DispatchLayout_C4", ("BatchId", "RegistryNumber", "RegistryDate", "Addressee", "AddressLine", "PostalCode", "SenderName", "IndexFrom", "OutgoingNumbers", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Comment", "PreparedAt")),
+    ("DispatchLayout_C5", ("BatchId", "RegistryNumber", "RegistryDate", "Addressee", "AddressLine", "PostalCode", "SenderName", "IndexFrom", "OutgoingNumbers", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Comment", "PreparedAt")),
+    ("DispatchLayout_DL", ("BatchId", "RegistryNumber", "RegistryDate", "Addressee", "AddressLine", "PostalCode", "SenderName", "IndexFrom", "OutgoingNumbers", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Comment", "PreparedAt")),
+)
+
+PRINT_SHEET_NAMES = (
+    "PostalRegistryPrint",
 )
 
 ADDRESS_GROUP_COLUMN_NAME = "AddressGroup"
@@ -44,6 +48,13 @@ ENVELOPE_FORMAT_DEFAULT_ROWS = (
 
 XL_SRC_RANGE = 1
 XL_YES = 1
+
+
+def safe_set_com_property(com_object, property_name: str, value) -> None:
+    try:
+        setattr(com_object, property_name, value)
+    except Exception:
+        pass
 
 
 def reset_excel_gen_cache() -> None:
@@ -170,6 +181,107 @@ def ensure_address_group_column(ws) -> str:
     return "created"
 
 
+def ensure_table_columns(ws, table_name: str, headers: tuple[str, ...] | None) -> str:
+    if not headers:
+        return "skipped"
+
+    target_table = None
+    for index in range(1, ws.ListObjects.Count + 1):
+        if ws.ListObjects(index).Name == table_name:
+            target_table = ws.ListObjects(index)
+            break
+
+    if target_table is None:
+        return "skipped-no-table"
+
+    updated = False
+    for col_index, header in enumerate(headers, start=1):
+        if col_index <= target_table.ListColumns.Count:
+            if target_table.ListColumns(col_index).Name != header:
+                target_table.ListColumns(col_index).Name = header
+                updated = True
+        else:
+            target_table.ListColumns.Add()
+            target_table.ListColumns(target_table.ListColumns.Count).Name = header
+            updated = True
+
+    return "updated" if updated else "existing"
+
+
+def migrate_dispatch_items_legacy_layout(ws) -> str:
+    target_table = None
+    for index in range(1, ws.ListObjects.Count + 1):
+        if ws.ListObjects(index).Name == "tblDispatchItems":
+            target_table = ws.ListObjects(index)
+            break
+
+    if target_table is None:
+        return "skipped-no-table"
+
+    if target_table.DataBodyRange is None:
+        return "skipped-empty"
+
+    row_count = target_table.DataBodyRange.Rows.Count
+    col_count = target_table.DataBodyRange.Columns.Count
+    if row_count < 1 or col_count < 16:
+        return "skipped-insufficient-data"
+
+    raw_values = target_table.DataBodyRange.Value
+    if row_count == 1 and not isinstance(raw_values, tuple):
+        raw_values = (raw_values,)
+
+    def normalize_text(value) -> str:
+        if value is None:
+            return ""
+        return str(value).strip()
+
+    def looks_like_legacy_row(row_values) -> bool:
+        envelope_candidate = normalize_text(row_values[8]).lower()
+        batch_candidate = normalize_text(row_values[14]).lower()
+        letter_row_candidate = normalize_text(row_values[3])
+        valid_envelopes = {"", "c4", "c5", "dl"}
+        valid_statuses = {"draft", "queued", "registered"}
+
+        return (
+            envelope_candidate not in valid_envelopes
+            and batch_candidate in valid_statuses
+            and letter_row_candidate != ""
+            and not letter_row_candidate.isdigit()
+        )
+
+    if not any(looks_like_legacy_row(row_values) for row_values in raw_values):
+        return "existing"
+
+    migrated_rows: list[list[str]] = []
+    for row_values in raw_values:
+        migrated_rows.append([
+            row_values[0],   # DispatchId
+            row_values[1],   # LetterNumber
+            row_values[2],   # LetterDate
+            "",              # LetterRowNumber (was absent in legacy layout)
+            row_values[3],   # Addressee
+            row_values[4],   # AddressLine
+            row_values[5],   # PostalCode
+            row_values[6],   # SenderName
+            row_values[7],   # EnvelopeFormatKey
+            row_values[8],   # MailType
+            row_values[9],   # Mass
+            row_values[10],  # DeclaredValue
+            row_values[11],  # Comment
+            row_values[12],  # Phone
+            row_values[13],  # BatchId
+            row_values[14],  # Status
+            row_values[15],  # CreatedAt
+            "",              # RegistryNumber
+            "",              # RegistryDate
+        ])
+
+    target_table.DataBodyRange.ClearContents()
+    write_range = ws.Range(ws.Cells(2, 1), ws.Cells(1 + len(migrated_rows), 19))
+    write_range.Value = migrated_rows
+    return "migrated"
+
+
 def ensure_layout_sheet(workbook, sheet_name: str, headers: tuple[str, ...]) -> str:
     ws, sheet_created = get_or_create_sheet(workbook, sheet_name)
     header_status = ensure_sheet_headers(ws, headers)
@@ -179,6 +291,11 @@ def ensure_layout_sheet(workbook, sheet_name: str, headers: tuple[str, ...]) -> 
     if header_status == "updated":
         return "updated"
     return "existing"
+
+
+def ensure_print_sheet(workbook, sheet_name: str) -> str:
+    _, sheet_created = get_or_create_sheet(workbook, sheet_name)
+    return "created" if sheet_created else "existing"
 
 
 def main() -> int:
@@ -192,9 +309,13 @@ def main() -> int:
 
     pythoncom.CoInitialize()
     reset_excel_gen_cache()
-    excel = Dispatch("Excel.Application")
-    excel.Visible = args.visible
-    excel.DisplayAlerts = False
+    try:
+        excel = win32com.client.gencache.EnsureDispatch("Excel.Application")
+    except Exception:
+        excel = Dispatch("Excel.Application")
+
+    safe_set_com_property(excel, "Visible", args.visible)
+    safe_set_com_property(excel, "DisplayAlerts", False)
     workbook = None
 
     try:
@@ -206,6 +327,12 @@ def main() -> int:
                 print(f"{sheet_name}:headers:{header_status}")
             status = ensure_table(ws, table_name, headers=headers)
             print(f"{sheet_name}:{table_name}:{status}")
+            if headers is not None:
+                table_column_status = ensure_table_columns(ws, table_name, headers)
+                print(f"{sheet_name}:{table_name}:columns:{table_column_status}")
+                if table_name == "tblDispatchItems":
+                    dispatch_migration_status = migrate_dispatch_items_legacy_layout(ws)
+                    print(f"{sheet_name}:{table_name}:legacy-migration:{dispatch_migration_status}")
 
             if table_name == "tblEnvelopeFormats":
                 seed_status = ensure_envelope_formats_seed(ws)
@@ -214,6 +341,10 @@ def main() -> int:
         for sheet_name, headers in LAYOUT_SHEET_SPECS:
             layout_status = ensure_layout_sheet(workbook, sheet_name, headers)
             print(f"{sheet_name}:layout:{layout_status}")
+
+        for sheet_name in PRINT_SHEET_NAMES:
+            print_status = ensure_print_sheet(workbook, sheet_name)
+            print(f"{sheet_name}:print:{print_status}")
 
         address_group_status = ensure_address_group_column(workbook.Worksheets("Addresses"))
         print(f"Addresses:{ADDRESS_GROUP_COLUMN_NAME}:{address_group_status}")
@@ -229,7 +360,10 @@ def main() -> int:
                 workbook.Close(SaveChanges=True)
             except Exception:
                 pass
-        excel.Quit()
+        try:
+            excel.Quit()
+        except Exception:
+            pass
         pythoncom.CoUninitialize()
 
 

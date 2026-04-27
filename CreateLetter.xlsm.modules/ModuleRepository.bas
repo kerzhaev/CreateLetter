@@ -594,7 +594,7 @@ Public Function RepositoryLoadLetterHistoryData() As Collection
 
     Dim letterData As Variant
 
-    letterData = RepositoryReadWorksheetMatrix(ws, LetterColumnAddressee, LetterColumnDocumentType, LettersTableName)
+    letterData = RepositoryReadWorksheetMatrix(ws, LetterColumnAddressee, LetterColumnDispatchRegistryDate, LettersTableName)
 
     If IsEmpty(letterData) Then Exit Function
 
@@ -602,7 +602,7 @@ Public Function RepositoryLoadLetterHistoryData() As Collection
 
     Dim startRow As Long
 
-    startRow = RepositoryGetStructuredDataStartRow(ws, LetterColumnAddressee, LetterColumnDocumentType, LettersTableName)
+    startRow = RepositoryGetStructuredDataStartRow(ws, LetterColumnAddressee, LetterColumnDispatchRegistryDate, LettersTableName)
 
 
 
@@ -717,6 +717,73 @@ Public Function RepositoryFormatLetterHistoryDisplay(letterData As Variant) As S
                                            record.Executor & " | " & _
                                            GetDocumentTypeDisplayLabel(record.DocumentTypeKey)
 
+End Function
+
+Public Function RepositoryGetLetterHistoryPackedStatusDisplay(letterData As Variant) As String
+
+    Dim record As clsLetterHistoryRecord
+
+    If Not TryGetLetterHistoryRecord(letterData, record) Then Exit Function
+
+    If Len(Trim$(record.DispatchPackedFlag)) = 0 Then
+        RepositoryGetLetterHistoryPackedStatusDisplay = t("history.dispatch_status.not_packed", "Нет")
+        Exit Function
+    End If
+
+    If Len(Trim$(record.DispatchRegistryNumber)) > 0 Then
+        RepositoryGetLetterHistoryPackedStatusDisplay = t("history.dispatch_status.registry_prefix", "Реестр") & " " & record.DispatchRegistryNumber
+    Else
+        RepositoryGetLetterHistoryPackedStatusDisplay = t("history.dispatch_status.packed", "Да")
+    End If
+
+End Function
+
+Public Function RepositoryTryResolveLetterRowNumber( _
+    ByVal Addressee As String, _
+    ByVal OutgoingNumber As String, _
+    ByVal OutgoingDate As String, _
+    ByRef rowNumber As Long) As Boolean
+
+    RepositoryTryResolveLetterRowNumber = False
+    rowNumber = 0
+
+    On Error GoTo ResolveError
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("Letters")
+
+    Dim letterData As Variant
+    letterData = RepositoryReadWorksheetMatrix(ws, LetterColumnAddressee, LetterColumnDispatchRegistryDate, LettersTableName)
+    If IsEmpty(letterData) Then Exit Function
+
+    Dim startRow As Long
+    startRow = RepositoryGetStructuredDataStartRow(ws, LetterColumnAddressee, LetterColumnDispatchRegistryDate, LettersTableName)
+
+    Dim normalizedAddressee As String
+    normalizedAddressee = UCase$(Trim$(Addressee))
+
+    Dim normalizedOutgoingNumber As String
+    normalizedOutgoingNumber = UCase$(Trim$(OutgoingNumber))
+
+    Dim normalizedOutgoingDate As String
+    normalizedOutgoingDate = UCase$(Trim$(OutgoingDate))
+
+    Dim i As Long
+    For i = LBound(letterData, 1) To UBound(letterData, 1)
+        If UCase$(Trim$(RepositoryMatrixValueOrEmpty(letterData, i, LetterColumnAddressee))) = normalizedAddressee _
+           And UCase$(Trim$(RepositoryMatrixValueOrEmpty(letterData, i, LetterColumnOutgoingNumber))) = normalizedOutgoingNumber _
+           And UCase$(Trim$(RepositoryMatrixValueOrEmpty(letterData, i, LetterColumnOutgoingDate))) = normalizedOutgoingDate Then
+            rowNumber = startRow + i - 1
+            RepositoryTryResolveLetterRowNumber = (rowNumber >= FIRST_DATA_ROW)
+            Exit Function
+        End If
+    Next i
+
+    Exit Function
+
+ResolveError:
+    RepositoryTryResolveLetterRowNumber = False
+    rowNumber = 0
 End Function
 
 
@@ -908,6 +975,30 @@ UpdateError:
 
     Err.Raise Err.Number, "RepositoryUpdateLetterHistoryRow", Err.description
 
+End Sub
+
+Public Sub RepositoryUpdateLetterDispatchTracking( _
+    ByVal rowNumber As Long, _
+    ByVal packedFlag As String, _
+    ByVal batchId As String, _
+    ByVal registryNumber As String, _
+    ByVal registryDate As String)
+
+    On Error GoTo UpdateError
+
+    If rowNumber < FIRST_DATA_ROW Then Exit Sub
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("Letters")
+
+    ws.Cells(rowNumber, LetterColumnDispatchPackedFlag).value = packedFlag
+    ws.Cells(rowNumber, LetterColumnDispatchBatchId).value = batchId
+    ws.Cells(rowNumber, LetterColumnDispatchRegistryNumber).value = registryNumber
+    ws.Cells(rowNumber, LetterColumnDispatchRegistryDate).value = registryDate
+    Exit Sub
+
+UpdateError:
+    Err.Raise Err.Number, "RepositoryUpdateLetterDispatchTracking", Err.description
 End Sub
 
 
@@ -1184,6 +1275,14 @@ Private Function CreateLetterHistoryRecordFromMatrix(letterData As Variant, rowI
     record.Executor = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnExecutor)
 
     record.DocumentTypeKey = NormalizeDocumentTypeKey(RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnDocumentType))
+
+    record.DispatchPackedFlag = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnDispatchPackedFlag)
+
+    record.DispatchBatchId = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnDispatchBatchId)
+
+    record.DispatchRegistryNumber = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnDispatchRegistryNumber)
+
+    record.DispatchRegistryDate = RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnDispatchRegistryDate)
 
     record.rowNumber = worksheetRowNumber
 

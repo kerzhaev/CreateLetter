@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks and user-configurable folder settings
 
-' Version: 1.0.8 - 26.04.2026
+' Version: 1.0.9 - 27.04.2026
 
 ' ======================================================================
 
@@ -60,8 +60,7 @@ End Sub
 
 Public Sub RibbonOpenMailDispatch(control As IRibbonControl)
 
-    Load frmMailDispatch
-    frmMailDispatch.Show vbModeless
+    OpenMailDispatch
 
 End Sub
 
@@ -75,7 +74,11 @@ Public Sub RibbonBuildDispatchRegistry(control As IRibbonControl)
     builtCount = BuildDispatchRegistryFromDispatchItems()
 
     If builtCount > 0 Then
-        MsgBox t("dispatch.registry.msg.built", "Registry built from dispatch items.") & vbCrLf & builtCount, _
+        Dim printCount As Long
+        printCount = BuildPostalRegistryPrintSheet()
+
+        MsgBox t("dispatch.registry.msg.built", "Registry built from dispatch items.") & vbCrLf & builtCount & vbCrLf & _
+               t("dispatch.registry.msg.print_sheet", "Печатная форма: PostalRegistryPrint") & vbCrLf & printCount, _
                vbInformation, _
                t("dispatch.registry.title", "Dispatch registry")
     Else

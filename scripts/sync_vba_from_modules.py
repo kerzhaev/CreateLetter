@@ -106,12 +106,15 @@ def read_source_text(source_file: Path) -> str:
 
 def sanitize_module_source(source_text: str) -> str:
     sanitized_lines: list[str] = []
+    previous_line_continues = False
 
     for line in source_text.splitlines():
         # VB attributes belong to exported files, but AddFromString cannot
         # accept them inside the code pane of an existing component.
         stripped = line.strip()
-        if stripped.startswith("Attribute VB_"):
+        if previous_line_continues and not stripped:
+            continue
+        if stripped.startswith("Attribute "):
             continue
         if stripped == "VERSION 1.0 CLASS":
             continue
@@ -122,8 +125,27 @@ def sanitize_module_source(source_text: str) -> str:
         if stripped.startswith("MultiUse ="):
             continue
         sanitized_lines.append(line)
+        previous_line_continues = stripped.endswith("_")
 
     return "\r\n".join(sanitized_lines)
+
+
+def extract_existing_userform_code(source_text: str) -> str:
+    source_lines = source_text.splitlines()
+    last_attribute_index = -1
+
+    for index, line in enumerate(source_lines):
+        if line.strip().startswith("Attribute VB_"):
+            last_attribute_index = index
+
+    if last_attribute_index >= 0:
+        return sanitize_module_source("\n".join(source_lines[last_attribute_index + 1:]))
+
+    for index, line in enumerate(source_lines):
+        if line.strip().lower() == "option explicit":
+            return sanitize_module_source("\n".join(source_lines[index:]))
+
+    return sanitize_module_source(source_text)
 
 
 def sync_component(project, source_file: Path, is_document_module: bool) -> str:
@@ -145,6 +167,13 @@ def sync_component(project, source_file: Path, is_document_module: bool) -> str:
             if code_module.CountOfLines > 0:
                 code_module.DeleteLines(1, code_module.CountOfLines)
             code_module.AddFromString(sanitize_module_source(read_source_text(source_file)))
+            return existing_component.Name
+
+        if suffix == ".frm" and component_type == 3:
+            code_module = existing_component.CodeModule
+            if code_module.CountOfLines > 0:
+                code_module.DeleteLines(1, code_module.CountOfLines)
+            code_module.AddFromString(extract_existing_userform_code(read_source_text(source_file)))
             return existing_component.Name
 
         if is_document_module:
@@ -205,7 +234,10 @@ def sync_workbook(
     finally:
         if workbook is not None:
             workbook.Close(SaveChanges=True)
-        excel.Quit()
+        try:
+            excel.Quit()
+        except Exception:
+            pass
         pythoncom.CoUninitialize()
 
 

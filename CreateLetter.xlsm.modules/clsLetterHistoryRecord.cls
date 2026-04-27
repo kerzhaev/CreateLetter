@@ -25,6 +25,10 @@ Private pReturnStatus As String
 Private pExecutor As String
 Private pDocumentTypeKey As String
 Private pRowNumber As Long
+Private pDispatchPackedFlag As String
+Private pDispatchBatchId As String
+Private pDispatchRegistryNumber As String
+Private pDispatchRegistryDate As String
 
 Public Property Get Addressee() As String
     Addressee = pAddressee
@@ -96,6 +100,38 @@ End Property
 
 Public Property Let rowNumber(ByVal value As Long)
     pRowNumber = value
+End Property
+
+Public Property Get DispatchPackedFlag() As String
+    DispatchPackedFlag = pDispatchPackedFlag
+End Property
+
+Public Property Let DispatchPackedFlag(ByVal value As String)
+    pDispatchPackedFlag = value
+End Property
+
+Public Property Get DispatchBatchId() As String
+    DispatchBatchId = pDispatchBatchId
+End Property
+
+Public Property Let DispatchBatchId(ByVal value As String)
+    pDispatchBatchId = value
+End Property
+
+Public Property Get DispatchRegistryNumber() As String
+    DispatchRegistryNumber = pDispatchRegistryNumber
+End Property
+
+Public Property Let DispatchRegistryNumber(ByVal value As String)
+    pDispatchRegistryNumber = value
+End Property
+
+Public Property Get DispatchRegistryDate() As String
+    DispatchRegistryDate = pDispatchRegistryDate
+End Property
+
+Public Property Let DispatchRegistryDate(ByVal value As String)
+    pDispatchRegistryDate = value
 End Property
 
 Public Function ToPartsArray() As Variant

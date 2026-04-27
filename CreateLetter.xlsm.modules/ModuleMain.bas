@@ -138,6 +138,14 @@ Public Enum LetterColumns
 
     LetterColumnDocumentType = 8
 
+    LetterColumnDispatchPackedFlag = 9
+
+    LetterColumnDispatchBatchId = 10
+
+    LetterColumnDispatchRegistryNumber = 11
+
+    LetterColumnDispatchRegistryDate = 12
+
 End Enum
 
 
@@ -278,59 +286,75 @@ Public Enum DispatchItemColumns
 
     DispatchItemColumnLetterDate = 3
 
-    DispatchItemColumnAddressee = 4
+    DispatchItemColumnLetterRowNumber = 4
 
-    DispatchItemColumnAddressLine = 5
+    DispatchItemColumnAddressee = 5
 
-    DispatchItemColumnPostalCode = 6
+    DispatchItemColumnAddressLine = 6
 
-    DispatchItemColumnSenderName = 7
+    DispatchItemColumnPostalCode = 7
 
-    DispatchItemColumnEnvelopeFormatKey = 8
+    DispatchItemColumnSenderName = 8
 
-    DispatchItemColumnMailType = 9
+    DispatchItemColumnEnvelopeFormatKey = 9
 
-    DispatchItemColumnMass = 10
+    DispatchItemColumnMailType = 10
 
-    DispatchItemColumnDeclaredValue = 11
+    DispatchItemColumnMass = 11
 
-    DispatchItemColumnComment = 12
+    DispatchItemColumnDeclaredValue = 12
 
-    DispatchItemColumnPhone = 13
+    DispatchItemColumnComment = 13
 
-    DispatchItemColumnBatchId = 14
+    DispatchItemColumnPhone = 14
 
-    DispatchItemColumnStatus = 15
+    DispatchItemColumnBatchId = 15
 
-    DispatchItemColumnCreatedAt = 16
+    DispatchItemColumnStatus = 16
+
+    DispatchItemColumnCreatedAt = 17
+
+    DispatchItemColumnRegistryNumber = 18
+
+    DispatchItemColumnRegistryDate = 19
 
 End Enum
 
 Public Enum DispatchRegistryColumns
 
-    DispatchRegistryColumnAddressLine = 1
+    DispatchRegistryColumnRegistryNumber = 1
 
-    DispatchRegistryColumnAddressee = 2
+    DispatchRegistryColumnRegistryDate = 2
 
-    DispatchRegistryColumnMailType = 3
+    DispatchRegistryColumnBatchId = 3
 
-    DispatchRegistryColumnEnvelopeFormatKey = 4
+    DispatchRegistryColumnAddressee = 4
 
-    DispatchRegistryColumnMass = 5
+    DispatchRegistryColumnAddressLine = 5
 
-    DispatchRegistryColumnDeclaredValue = 6
+    DispatchRegistryColumnEnvelopeFormatKey = 6
 
-    DispatchRegistryColumnPayment = 7
+    DispatchRegistryColumnMailType = 7
 
-    DispatchRegistryColumnComment = 8
+    DispatchRegistryColumnMass = 8
 
-    DispatchRegistryColumnPhone = 9
+    DispatchRegistryColumnDeclaredValue = 9
 
-    DispatchRegistryColumnIndexFrom = 10
+    DispatchRegistryColumnPayment = 10
 
-    DispatchRegistryColumnBatchId = 11
+    DispatchRegistryColumnComment = 11
 
-    DispatchRegistryColumnCreatedAt = 12
+    DispatchRegistryColumnPhone = 12
+
+    DispatchRegistryColumnIndexFrom = 13
+
+    DispatchRegistryColumnSenderName = 14
+
+    DispatchRegistryColumnOutgoingNumbers = 15
+
+    DispatchRegistryColumnCreatedAt = 16
+
+    DispatchRegistryColumnPostalCode = 17
 
 End Enum
 
@@ -378,7 +402,7 @@ Public Sub PopulateDocumentTypeOptions(targetControl As Object)
 
     targetControl.AddItem GetDocumentTypeDisplayLabel(DocumentTypeKeyOwnConfirmation)
 
-    targetControl.ListIndex = 0
+    targetControl.listIndex = 0
 
     On Error GoTo 0
 
@@ -396,7 +420,7 @@ Public Sub PopulateLetterTypeOptions(targetControl As Object)
 
     targetControl.AddItem GetLetterTypeDisplayLabel(LetterTypeKeyFOU)
 
-    targetControl.ListIndex = 0
+    targetControl.listIndex = 0
 
     On Error GoTo 0
 
@@ -1876,6 +1900,14 @@ Public Sub SaveLetterInfoWithSum(Addressee As String, letterNumber As String, le
 
     ws.Cells(newRow, LetterColumnDocumentType).value = ResolveDocumentTypeDisplayValue(documentType)
 
+    ws.Cells(newRow, LetterColumnDispatchPackedFlag).value = ""
+
+    ws.Cells(newRow, LetterColumnDispatchBatchId).value = ""
+
+    ws.Cells(newRow, LetterColumnDispatchRegistryNumber).value = ""
+
+    ws.Cells(newRow, LetterColumnDispatchRegistryDate).value = ""
+
     Debug.Print "=== AFTER writing remaining cells ==="
 
     
@@ -3039,6 +3071,77 @@ End Sub
 
 
 
+Public Sub OpenMailDispatch()
+
+    On Error GoTo OpenDispatchError
+
+    Load frmMailDispatch
+    frmMailDispatch.Show vbModal
+    Exit Sub
+
+OpenDispatchError:
+
+    MsgBox t("dispatch.form.open_error", "Не удалось открыть форму почтовых отправлений: ") & Err.description, vbCritical
+
+End Sub
+
+
+
+Public Function BuildDispatchRegistry() As Long
+
+    BuildDispatchRegistry = BuildDispatchRegistryFromDispatchItems()
+
+End Function
+
+
+Public Function BuildPostalRegistryPrint() As Long
+
+    BuildPostalRegistryPrint = BuildPostalRegistryPrintSheet()
+
+End Function
+
+
+
+Public Function PrepareDispatchEnvelopeLayouts() As Long
+
+    PrepareDispatchEnvelopeLayouts = PrepareEnvelopePrint()
+
+End Function
+
+
+
+Public Function SmokeTestMailDispatchUi() As String
+
+    On Error GoTo SmokeError
+
+    Load frmMailDispatch
+
+    If frmMailDispatch.Controls("lstDispatchPackage") Is Nothing Then
+        Err.Raise vbObjectError + 4701, "SmokeTestMailDispatchUi", "Runtime package list was not created."
+    End If
+
+    If frmMailDispatch.Controls("txtDispatchRegistryNumber") Is Nothing Then
+        Err.Raise vbObjectError + 4702, "SmokeTestMailDispatchUi", "Runtime registry number field was not created."
+    End If
+
+    If frmMailDispatch.Controls("txtDispatchRegistryDate") Is Nothing Then
+        Err.Raise vbObjectError + 4703, "SmokeTestMailDispatchUi", "Runtime registry date field was not created."
+    End If
+
+    SmokeTestMailDispatchUi = "runtime-controls-ok"
+
+    Unload frmMailDispatch
+    Exit Function
+
+SmokeError:
+    On Error Resume Next
+    Unload frmMailDispatch
+    SmokeTestMailDispatchUi = "runtime-error: " & Err.description
+
+End Function
+
+
+
 Public Function GetDocumentTypeText(documentType As String) As String
 
     If NormalizeDocumentTypeKey(documentType) = DocumentTypeKeyOwnConfirmation Then
@@ -3537,7 +3640,7 @@ Private Function GetAddressAuditRecipientByRow(rowNumber As Long) As String
 
 
 
-    GetAddressAuditRecipientByRow = Trim$(CStr(ws.Cells(rowNumber, AddressColumnAddressee).Value))
+    GetAddressAuditRecipientByRow = Trim$(CStr(ws.Cells(rowNumber, AddressColumnAddressee).value))
 
     Exit Function
 
@@ -3557,7 +3660,7 @@ Private Function BuildLetterAuditDetails(letterNumber As String, letterDate As D
 
     If Not documents Is Nothing Then
 
-        documentCount = documents.Count
+        documentCount = documents.count
 
     End If
 
@@ -3570,11 +3673,3 @@ Private Function BuildLetterAuditDetails(letterNumber As String, letterDate As D
                               "; documents=" & documentCount
 
 End Function
-
-
-
-
-
-
-
-
