@@ -79,10 +79,10 @@ Public Sub PromptReturnDispatchPackageToWork()
     On Error GoTo PromptError
 
     Dim batchId As String
-    batchId = GetActiveDispatchJournalBatchId()
+    batchId = GetActiveDispatchPackageBatchId()
 
     If Len(Trim$(batchId)) = 0 Then
-        batchId = InputBox(t("dispatch.journal.prompt.batch_id", "Batch ID:"), t("dispatch.journal.return.title", "Return package to work"))
+        batchId = InputBox(t("dispatch.journal.prompt.batch_id", "Select a package row in DispatchJournal or DispatchRegistry, or enter BatchId manually:"), t("dispatch.journal.return.title", "Return package to work"))
     End If
 
     batchId = Trim$(batchId)
@@ -364,19 +364,26 @@ DeleteError:
     Debug.Print "DeleteDispatchRegistryBatch error: " & Err.description
 End Sub
 
-Private Function GetActiveDispatchJournalBatchId() As String
+Private Function GetActiveDispatchPackageBatchId() As String
     On Error GoTo ResolveError
 
     If ActiveSheet Is Nothing Then Exit Function
-    If StrComp(ActiveSheet.Name, DispatchJournalSheetName, vbTextCompare) <> 0 Then Exit Function
     If ActiveCell Is Nothing Then Exit Function
     If ActiveCell.Row < 2 Then Exit Function
 
-    GetActiveDispatchJournalBatchId = Trim$(CStr(ActiveSheet.Cells(ActiveCell.Row, 1).value))
+    Select Case LCase$(ActiveSheet.Name)
+    Case LCase$(DispatchJournalSheetName)
+        GetActiveDispatchPackageBatchId = Trim$(CStr(ActiveSheet.Cells(ActiveCell.Row, 1).value))
+    Case "dispatchregistry"
+        GetActiveDispatchPackageBatchId = Trim$(CStr(ActiveSheet.Cells(ActiveCell.Row, DispatchRegistryColumnBatchId).value))
+    Case "dispatchitems"
+        GetActiveDispatchPackageBatchId = Trim$(CStr(ActiveSheet.Cells(ActiveCell.Row, DispatchItemColumnBatchId).value))
+    End Select
+
     Exit Function
 
 ResolveError:
-    GetActiveDispatchJournalBatchId = ""
+    GetActiveDispatchPackageBatchId = ""
 End Function
 
 Private Function GetDispatchItemsTable() As ListObject
