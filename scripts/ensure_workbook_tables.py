@@ -27,6 +27,7 @@ TABLE_SPECS = (
     ("Senders", "tblSenders", ("SenderName", "AddressLine1", "AddressLine2", "AddressLine3", "PostalCode", "Phone", "IsDefault")),
     ("DispatchItems", "tblDispatchItems", ("DispatchId", "LetterNumber", "LetterDate", "LetterRowNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Comment", "Phone", "BatchId", "Status", "CreatedAt", "RegistryNumber", "RegistryDate")),
     ("DispatchRegistry", "tblDispatchRegistry", ("RegistryNumber", "RegistryDate", "BatchId", "Addressee", "AddressLine", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Payment", "Comment", "Phone", "IndexFrom", "SenderName", "OutgoingNumbers", "CreatedAt", "PostalCode")),
+    ("DispatchJournal", "tblDispatchJournal", ("BatchId", "Status", "RegistryNumber", "RegistryDate", "Addressee", "LetterCount", "OutgoingNumbers", "SenderName", "EnvelopeFormatKey", "MailType", "CreatedAt", "Comment")),
 )
 
 LAYOUT_SHEET_SPECS = (
@@ -240,7 +241,7 @@ def migrate_dispatch_items_legacy_layout(ws) -> str:
         batch_candidate = normalize_text(row_values[14]).lower()
         letter_row_candidate = normalize_text(row_values[3])
         valid_envelopes = {"", "c4", "c5", "dl"}
-        valid_statuses = {"draft", "queued", "registered"}
+        valid_statuses = {"draft", "queued", "packed", "registered", "registry_printed"}
 
         return (
             envelope_candidate not in valid_envelopes

@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks and user-configurable folder settings
 
-' Version: 1.0.9 - 27.04.2026
+' Version: 1.2.0 - 28.04.2026
 
 ' ======================================================================
 
@@ -66,6 +66,22 @@ End Sub
 
 
 
+Public Sub RibbonOpenDispatchJournal(control As IRibbonControl)
+
+    OpenDispatchJournal
+
+End Sub
+
+
+
+Public Sub RibbonReturnDispatchPackage(control As IRibbonControl)
+
+    PromptReturnDispatchPackageToWork
+
+End Sub
+
+
+
 Public Sub RibbonBuildDispatchRegistry(control As IRibbonControl)
 
     On Error GoTo RegistryError
@@ -93,6 +109,35 @@ RegistryError:
     MsgBox t("dispatch.registry.msg.error", "Failed to build the internal dispatch registry: ") & Err.description, _
            vbCritical, _
            t("dispatch.registry.title", "Dispatch registry")
+End Sub
+
+
+
+Public Sub RibbonConfigurePostalRegistry(control As IRibbonControl)
+
+    ConfigurePostalRegistryPrint
+
+End Sub
+
+
+
+Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)
+
+    On Error GoTo ExportError
+
+    Dim pdfPath As String
+    pdfPath = ExportPostalRegistryPrint()
+
+    If Len(Trim$(pdfPath)) > 0 Then
+        MsgBox t("postal.registry.pdf.msg.exported", "Postal registry PDF exported:") & vbCrLf & pdfPath, vbInformation, t("postal.registry.pdf.title", "Postal registry PDF")
+    Else
+        MsgBox t("postal.registry.pdf.msg.not_exported", "Postal registry PDF was not exported."), vbExclamation, t("postal.registry.pdf.title", "Postal registry PDF")
+    End If
+
+    Exit Sub
+
+ExportError:
+    MsgBox t("postal.registry.pdf.msg.error", "Failed to export postal registry PDF: ") & Err.description, vbCritical, t("postal.registry.pdf.title", "Postal registry PDF")
 End Sub
 
 

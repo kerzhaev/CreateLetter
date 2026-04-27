@@ -34,7 +34,7 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.2.0
+' Form: frmMailDispatch v1.2.1
 
 ' Author: CreateLetter contributors
 
@@ -482,7 +482,7 @@ Private Sub LoadLettersList()
 
 
 
-        If Not queuedKeys.Exists(BuildHistoryRecordKey(record)) Then
+        If IsDispatchRecordAvailable(record, queuedKeys) Then
 
             allAvailableLettersData.Add record
 
@@ -497,6 +497,29 @@ Private Sub LoadLettersList()
     RebindPackageLettersList
 
 End Sub
+
+Private Function IsDispatchRecordAvailable(record As clsLetterHistoryRecord, queuedKeys As Object) As Boolean
+
+    If record Is Nothing Then Exit Function
+
+    If Not queuedKeys Is Nothing Then
+        If queuedKeys.Exists(BuildHistoryRecordKey(record)) Then Exit Function
+    End If
+
+    Dim packedFlag As String
+    packedFlag = UCase$(Trim$(record.DispatchPackedFlag))
+
+    If Len(packedFlag) > 0 Then
+        If packedFlag <> UCase$(t("history.dispatch_status.not_packed", "Нет")) And packedFlag <> "NO" Then Exit Function
+    End If
+
+    If Len(Trim$(record.DispatchBatchId)) > 0 Then Exit Function
+    If Len(Trim$(record.DispatchRegistryNumber)) > 0 Then Exit Function
+    If Len(Trim$(record.DispatchRegistryDate)) > 0 Then Exit Function
+
+    IsDispatchRecordAvailable = True
+
+End Function
 
 
 
