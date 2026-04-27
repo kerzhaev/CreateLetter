@@ -1388,6 +1388,8 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "en", "postal.registry.print.footer.accepted_by_registry", "Accepted by this registry:"
     AddTranslation "ru", "postal.registry.print.footer.documents", "____ документов."
     AddTranslation "en", "postal.registry.print.footer.documents", "____ documents."
+    AddTranslation "ru", "postal.registry.print.footer.documents_blank", "____документов."
+    AddTranslation "en", "postal.registry.print.footer.documents_blank", "____documents."
     AddTranslation "ru", "postal.registry.print.footer.quote_open", "«"
     AddTranslation "en", "postal.registry.print.footer.quote_open", """"
     AddTranslation "ru", "postal.registry.print.footer.quote_close", "»"
