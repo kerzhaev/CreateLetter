@@ -547,6 +547,7 @@ try {
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCreatePackageFromHistoryRecords(*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetQueuedLetterKeySet()*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadDispatchItems()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetSenderAddressBlock(senderName As String)*") -and
                                                  ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryUpdateBatchRegistryState(*") -and
                                                  ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryMarkRegistryPrintedFromRegistryTable()*")
 
@@ -609,7 +610,9 @@ try {
             if (Test-Path -LiteralPath $envelopeLayoutsPath) {
                 $envelopeLayoutsText = Get-Content -Path $envelopeLayoutsPath -Raw
                 $hasEnvelopeLayoutContract = ($envelopeLayoutsText -like "*Public Function PrepareEnvelopePrint()*") -and
-                                             ($envelopeLayoutsText -like "*Public Function ResolveEnvelopeLayoutSheetName(envelopeFormatKey As String)*")
+                                             ($envelopeLayoutsText -like "*Public Function ResolveEnvelopeLayoutSheetName(envelopeFormatKey As String)*") -and
+                                             ($envelopeLayoutsText -like "*Private Sub RenderEnvelopeLayoutBlock(*") -and
+                                             ($envelopeLayoutsText -like "*Private Sub ConfigureEnvelopePageSettings(*")
 
                 if ($hasEnvelopeLayoutContract) {
                     Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "PASS" -Details "Envelope layout builder functions are present."

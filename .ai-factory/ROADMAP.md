@@ -98,5 +98,5 @@ The next bounded feature stages for code quality and maintainability are:
   Add a package journal, lifecycle status visibility, and safe return-to-work logic for packages that have not yet been exported as printed PDF registries.
 - [x] `pisces/feature-49-postal-registry-layout`
   Align the printable postal registry sheet closer to the provided Russian Post sample: compact centered header, six-column table, short registry date, stacked outgoing numbers, bold mail type, and signature/stamp footer.
-- [ ] `pisces/feature-50-envelope-print-finalization`
+- [x] `pisces/feature-50-envelope-print-finalization`
   Finalize C4/C5/DL envelope print layouts from dispatch packages, including stacked outgoing numbers for multi-letter packages.
