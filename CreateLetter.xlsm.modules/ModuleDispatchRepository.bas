@@ -200,6 +200,32 @@ LookupError:
 
 End Function
 
+Public Function DispatchRepositoryGetSenderAddressBlock(senderName As String) As String
+
+    On Error GoTo LookupError
+
+    Dim senderDescriptor As Variant
+
+    If DispatchRepositoryTryGetSenderDescriptor(senderName, senderDescriptor) Then
+
+        DispatchRepositoryGetSenderAddressBlock = AppendSenderAddressPart(DispatchRepositoryGetSenderAddressBlock, CStr(senderDescriptor(SenderColumnAddressLine1)))
+
+        DispatchRepositoryGetSenderAddressBlock = AppendSenderAddressPart(DispatchRepositoryGetSenderAddressBlock, CStr(senderDescriptor(SenderColumnAddressLine2)))
+
+        DispatchRepositoryGetSenderAddressBlock = AppendSenderAddressPart(DispatchRepositoryGetSenderAddressBlock, CStr(senderDescriptor(SenderColumnAddressLine3)))
+
+        DispatchRepositoryGetSenderAddressBlock = AppendSenderAddressPart(DispatchRepositoryGetSenderAddressBlock, CStr(senderDescriptor(SenderColumnPostalCode)))
+
+    End If
+
+    Exit Function
+
+LookupError:
+
+    DispatchRepositoryGetSenderAddressBlock = ""
+
+End Function
+
 
 
 Public Function DispatchRepositoryGetEnvelopeFormatDisplay(envelopeFormatKey As String) As String
@@ -1215,5 +1241,18 @@ LookupError:
 
 End Function
 
+Private Function AppendSenderAddressPart(existingText As String, nextPart As String) As String
+
+    AppendSenderAddressPart = Trim$(existingText)
+
+    nextPart = Trim$(nextPart)
+
+    If Len(nextPart) = 0 Then Exit Function
+
+    If Len(AppendSenderAddressPart) > 0 Then AppendSenderAddressPart = AppendSenderAddressPart & ", "
+
+    AppendSenderAddressPart = AppendSenderAddressPart & nextPart
+
+End Function
 
 
