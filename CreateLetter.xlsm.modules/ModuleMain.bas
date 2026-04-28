@@ -3095,6 +3095,21 @@ End Sub
 
 
 
+Public Sub RunMailDispatchDeferredDoubleClick()
+
+    On Error GoTo DeferredError
+
+    frmMailDispatch.RunDeferredDoubleClickAction
+    Exit Sub
+
+DeferredError:
+
+    Debug.Print "RunMailDispatchDeferredDoubleClick error: " & Err.description
+
+End Sub
+
+
+
 Public Function BuildDispatchRegistry() As Long
 
     BuildDispatchRegistry = BuildDispatchRegistryFromDispatchItems()

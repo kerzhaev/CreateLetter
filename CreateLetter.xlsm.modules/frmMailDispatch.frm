@@ -34,11 +34,11 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.2.1
+' Form: frmMailDispatch v1.2.2
 
 ' Author: CreateLetter contributors
 
-' Date: 27.04.2026
+' Date: 28.04.2026
 
 ' Purpose: Thin-shell UI for preparing grouped dispatch packages from existing letters
 
@@ -80,6 +80,12 @@ Private lblDispatchRegistryDate As MSForms.Label
 
 Private txtDispatchRegistryDate As MSForms.TextBox
 
+Private pendingDoubleClickAction As String
+
+Private pendingDoubleClickIndex As Long
+
+Private doubleClickActionScheduled As Boolean
+
 
 
 Private Sub UserForm_Initialize()
@@ -95,6 +101,8 @@ Private Sub UserForm_Initialize()
     Set senderItems = New Collection
 
     Set dynamicButtonHandlers = New Collection
+
+    pendingDoubleClickIndex = -1
 
 
 
@@ -122,7 +130,7 @@ Private Sub ApplyFormSettings()
 
     With Me
 
-        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.0"
+        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.2"
 
         .backColor = RGB(248, 248, 248)
 
@@ -635,9 +643,7 @@ Private Sub lstDispatchLetters_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
 
     Cancel = True
 
-    SelectSingleListIndex lstDispatchLetters, lstDispatchLetters.listIndex
-
-    TransferCurrentLetterToPackage
+    QueueMailDispatchDoubleClick "available", lstDispatchLetters.listIndex
 
 End Sub
 
@@ -1642,11 +1648,60 @@ Public Sub HandleDynamicListDoubleClick(controlName As String)
 
     Case "lstDispatchPackage"
 
-        SelectSingleListIndex lstDispatchPackage, lstDispatchPackage.listIndex
-
-        RemoveCurrentLetterFromPackage
+        QueueMailDispatchDoubleClick "package", lstDispatchPackage.listIndex
 
     End Select
+
+End Sub
+
+
+
+Private Sub QueueMailDispatchDoubleClick(actionName As String, ByVal listIndex As Long)
+
+    If listIndex < 0 Then Exit Sub
+
+    pendingDoubleClickAction = actionName
+    pendingDoubleClickIndex = listIndex
+
+    If doubleClickActionScheduled Then Exit Sub
+
+    doubleClickActionScheduled = True
+    Application.OnTime Now, "RunMailDispatchDeferredDoubleClick"
+
+End Sub
+
+
+
+Public Sub RunDeferredDoubleClickAction()
+
+    On Error GoTo DeferredError
+
+    doubleClickActionScheduled = False
+
+    Select Case pendingDoubleClickAction
+
+    Case "available"
+
+        SelectSingleListIndex lstDispatchLetters, pendingDoubleClickIndex
+        TransferSelectedLettersToPackage
+
+    Case "package"
+
+        SelectSingleListIndex lstDispatchPackage, pendingDoubleClickIndex
+        RemoveSelectedLettersFromPackage
+
+    End Select
+
+    pendingDoubleClickAction = ""
+    pendingDoubleClickIndex = -1
+    Exit Sub
+
+DeferredError:
+
+    doubleClickActionScheduled = False
+    pendingDoubleClickAction = ""
+    pendingDoubleClickIndex = -1
+    MsgBox t("form.mail_dispatch.error.transfer_failed", "Не удалось переместить выбранные письма в пакет."), vbExclamation
 
 End Sub
 
