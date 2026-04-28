@@ -664,7 +664,10 @@ try {
                                              ($mailDispatchFormText -like "*lstDispatchPackage*") -and
                                              ($mailDispatchFormText -like "*txtDispatchRegistryNumber*") -and
                                              ($mailDispatchFormText -like "*txtDispatchRegistryDate*") -and
-                                             ($mailDispatchFormText -like "*HandleDynamicButtonClick*")
+                                             ($mailDispatchFormText -like "*HandleDynamicButtonClick*") -and
+                                             ($mailDispatchFormText -like "*QueueMailDispatchDoubleClick*") -and
+                                             ($mailDispatchFormText -like "*Public Sub RunDeferredDoubleClickAction()*") -and
+                                             ($moduleMainText -like "*Public Sub RunMailDispatchDeferredDoubleClick()*")
 
                 if ($hasMailDispatchUiContract) {
                     Add-Result -Results $results -Name "MailDispatchUiContract" -Status "PASS" -Details "Dispatch form source and core UI handlers are present."
@@ -675,7 +678,7 @@ try {
                 }
 
                 $hasUnsafeDispatchListMultiSelect = $mailDispatchFormText -like "*fmMultiSelectExtended*"
-                $hasDoubleClickSelectionGuard = $mailDispatchFormText -like "*SelectSingleListIndex*"
+                $hasDoubleClickSelectionGuard = $mailDispatchFormText -like "*QueueMailDispatchDoubleClick*"
 
                 if ((-not $hasUnsafeDispatchListMultiSelect) -and $hasDoubleClickSelectionGuard) {
                     Add-Result -Results $results -Name "MailDispatchListSelectionMode" -Status "PASS" -Details "Dispatch double-click lists avoid Extended range selection."
