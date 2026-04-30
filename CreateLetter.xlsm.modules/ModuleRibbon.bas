@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks and user-configurable folder settings
 
-' Version: 1.2.0 - 28.04.2026
+' Version: 1.2.1 - 30.04.2026
 
 ' ======================================================================
 
@@ -77,6 +77,37 @@ End Sub
 Public Sub RibbonReturnDispatchPackage(control As IRibbonControl)
 
     PromptReturnDispatchPackageToWork
+
+End Sub
+
+
+
+Public Sub RibbonCleanupDispatchLegacy(control As IRibbonControl)
+
+    On Error GoTo CleanupError
+
+    Dim legacyCount As Long
+    legacyCount = DispatchRepositoryCountLegacyDispatchItems()
+
+    If legacyCount = 0 Then
+        MsgBox t("dispatch.cleanup.msg.no_legacy", "Старые строки почтовых отправлений не найдены."), vbInformation, t("dispatch.cleanup.title", "Диагностика отправлений")
+        Exit Sub
+    End If
+
+    Dim promptText As String
+    promptText = t("dispatch.cleanup.confirm", "Найдены старые строки отправлений без статуса и реестра. Удалить их и вернуть связанные письма в работу?") & vbCrLf & CStr(legacyCount)
+
+    If MsgBox(promptText, vbQuestion + vbYesNo, t("dispatch.cleanup.title", "Диагностика отправлений")) <> vbYes Then Exit Sub
+
+    Dim cleanedCount As Long
+    cleanedCount = DispatchRepositoryCleanupLegacyDispatchItems()
+
+    MsgBox t("dispatch.cleanup.msg.done", "Очищено старых строк отправлений:") & vbCrLf & CStr(cleanedCount), vbInformation, t("dispatch.cleanup.title", "Диагностика отправлений")
+    Exit Sub
+
+CleanupError:
+
+    MsgBox t("dispatch.cleanup.msg.error", "Не удалось очистить старые строки отправлений: ") & Err.description, vbCritical, t("dispatch.cleanup.title", "Диагностика отправлений")
 
 End Sub
 

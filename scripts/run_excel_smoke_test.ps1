@@ -549,7 +549,9 @@ try {
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadDispatchItems()*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetSenderAddressBlock(senderName As String)*") -and
                                                  ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryUpdateBatchRegistryState(*") -and
-                                                 ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryMarkRegistryPrintedFromRegistryTable()*")
+                                                 ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryMarkRegistryPrintedFromRegistryTable()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCountLegacyDispatchItems()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCleanupLegacyDispatchItems()*")
 
                 if ($hasDispatchRepositoryContract) {
                     Add-Result -Results $results -Name "DispatchRepositoryContract" -Status "PASS" -Details "Dispatch repository foundation functions are present."
@@ -722,6 +724,7 @@ try {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonOpenMailDispatch(control As IRibbonControl)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonOpenDispatchJournal(control As IRibbonControl)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonReturnDispatchPackage(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonCleanupDispatchLegacy(control As IRibbonControl)*")
         }
 
         if ($RequireDispatchRegistryTable) {

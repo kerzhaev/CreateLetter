@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleDispatchRepository"
 
 ' Purpose: Workbook repository helpers for envelope formats, senders, dispatch packages, and registry metadata
 
-' Version: 1.2.0 - 27.04.2026
+' Version: 1.2.1 - 30.04.2026
 
 ' ======================================================================
 
@@ -852,6 +852,90 @@ Public Sub DispatchRepositoryMarkRegistryPrintedFromRegistryTable()
 UpdateError:
 
     Debug.Print "DispatchRepositoryMarkRegistryPrintedFromRegistryTable error: " & Err.description
+
+End Sub
+
+
+
+Public Function DispatchRepositoryCountLegacyDispatchItems() As Long
+
+    On Error GoTo CountError
+
+    Dim dispatchTable As ListObject
+    Set dispatchTable = DispatchRepositoryGetTable("DispatchItems", DispatchItemsTableName)
+    If dispatchTable.DataBodyRange Is Nothing Then Exit Function
+
+    Dim rowIndex As Long
+    For rowIndex = 1 To dispatchTable.DataBodyRange.Rows.count
+        If DispatchRepositoryIsLegacyDispatchItemRow(dispatchTable, rowIndex) Then DispatchRepositoryCountLegacyDispatchItems = DispatchRepositoryCountLegacyDispatchItems + 1
+    Next rowIndex
+
+    Exit Function
+
+CountError:
+
+    Debug.Print "DispatchRepositoryCountLegacyDispatchItems error: " & Err.description
+    DispatchRepositoryCountLegacyDispatchItems = 0
+
+End Function
+
+
+
+Public Function DispatchRepositoryCleanupLegacyDispatchItems() As Long
+
+    On Error GoTo CleanupError
+
+    Dim dispatchTable As ListObject
+    Set dispatchTable = DispatchRepositoryGetTable("DispatchItems", DispatchItemsTableName)
+    If dispatchTable.DataBodyRange Is Nothing Then Exit Function
+
+    Dim rowIndex As Long
+    For rowIndex = dispatchTable.DataBodyRange.Rows.count To 1 Step -1
+        If DispatchRepositoryIsLegacyDispatchItemRow(dispatchTable, rowIndex) Then
+            DispatchRepositoryClearDispatchItemLetterTracking dispatchTable, rowIndex
+            dispatchTable.DataBodyRange.Rows(rowIndex).Delete
+            DispatchRepositoryCleanupLegacyDispatchItems = DispatchRepositoryCleanupLegacyDispatchItems + 1
+        End If
+    Next rowIndex
+
+    Exit Function
+
+CleanupError:
+
+    Debug.Print "DispatchRepositoryCleanupLegacyDispatchItems error: " & Err.description
+    DispatchRepositoryCleanupLegacyDispatchItems = 0
+
+End Function
+
+
+
+Private Function DispatchRepositoryIsLegacyDispatchItemRow(dispatchTable As ListObject, ByVal rowIndex As Long) As Boolean
+
+    Dim statusText As String
+    statusText = LCase$(Trim$(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnStatus).value)))
+
+    Dim registryNumber As String
+    registryNumber = Trim$(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryNumber).value))
+
+    Dim registryDate As String
+    registryDate = Trim$(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryDate).value))
+
+    DispatchRepositoryIsLegacyDispatchItemRow = Len(statusText) = 0 And Len(registryNumber) = 0 And Len(registryDate) = 0
+
+End Function
+
+
+
+Private Sub DispatchRepositoryClearDispatchItemLetterTracking(dispatchTable As ListObject, ByVal rowIndex As Long)
+
+    Dim targetRowNumber As Long
+    targetRowNumber = CLng(Val(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnLetterRowNumber).value)))
+
+    If targetRowNumber < FIRST_DATA_ROW Then
+        RepositoryTryResolveLetterRowNumber CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnAddressee).value), CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnLetterNumber).value), CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnLetterDate).value), targetRowNumber
+    End If
+
+    If targetRowNumber >= FIRST_DATA_ROW Then RepositoryUpdateLetterDispatchTracking targetRowNumber, "", "", "", ""
 
 End Sub
 
