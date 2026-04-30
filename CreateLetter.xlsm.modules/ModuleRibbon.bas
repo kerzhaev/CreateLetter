@@ -6,9 +6,9 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Author: CreateLetter contributors
 
-' Purpose: Excel Ribbon callbacks and user-configurable folder settings
+' Purpose: Excel Ribbon callbacks, dispatch actions, and user-configurable folder settings
 
-' Version: 1.2.1 - 30.04.2026
+' Version: 1.3.0 - 01.05.2026
 
 ' ======================================================================
 
@@ -196,6 +196,25 @@ PrepareError:
     MsgBox t("dispatch.layouts.msg.error", "Failed to prepare envelope layouts: ") & Err.description, _
            vbCritical, _
            t("dispatch.layouts.title", "Envelope layouts")
+End Sub
+
+Public Sub RibbonPrepareEnvelopePreviewGrid(control As IRibbonControl)
+
+    On Error GoTo PreviewError
+
+    Dim preparedCount As Long
+    preparedCount = PrepareEnvelopePreviewGrid()
+
+    If preparedCount > 0 Then
+        MsgBox t("dispatch.layouts.preview.msg.prepared", "Envelope preview grid prepared.") & vbCrLf & preparedCount, vbInformation, t("dispatch.layouts.preview.title", "Envelope preview grid")
+    Else
+        MsgBox t("dispatch.layouts.msg.no_items", "There are no dispatch items to prepare for envelope layouts."), vbExclamation, t("dispatch.layouts.preview.title", "Envelope preview grid")
+    End If
+
+    Exit Sub
+
+PreviewError:
+    MsgBox t("dispatch.layouts.preview.msg.error", "Failed to prepare envelope preview grid: ") & Err.description, vbCritical, t("dispatch.layouts.preview.title", "Envelope preview grid")
 End Sub
 
 

@@ -2,8 +2,8 @@ Attribute VB_Name = "ModuleEnvelopeLayouts"
 ' ======================================================================
 ' Module: ModuleEnvelopeLayouts
 ' Author: CreateLetter contributors
-' Purpose: Prepare printable workbook layout sheets for grouped C4, C5, and DL envelope batches
-' Version: 1.2.1 - 30.04.2026
+' Purpose: Prepare printable workbook layout sheets and preview grids for grouped C4, C5, and DL envelope batches
+' Version: 1.3.0 - 01.05.2026
 ' ======================================================================
 
 Option Explicit
@@ -13,8 +13,17 @@ Private Const EnvelopeLayoutSheetC5 As String = "DispatchLayout_C5"
 Private Const EnvelopeLayoutSheetDL As String = "DispatchLayout_DL"
 Private Const EnvelopeLayoutFirstColumn As Long = 1
 Private Const EnvelopeLayoutLastColumn As Long = 6
+Private Const EnvelopePreviewShapePrefix As String = "EnvelopePreviewGrid_"
 
 Public Function PrepareEnvelopePrint() As Long
+    PrepareEnvelopePrint = PrepareEnvelopeLayouts(False)
+End Function
+
+Public Function PrepareEnvelopePreviewGrid() As Long
+    PrepareEnvelopePreviewGrid = PrepareEnvelopeLayouts(True)
+End Function
+
+Private Function PrepareEnvelopeLayouts(showPreviewGrid As Boolean) As Long
     On Error GoTo PrepareError
 
     EnsureEnvelopeLayoutSheets
@@ -44,8 +53,8 @@ Public Function PrepareEnvelopePrint() As Long
         Set batchItems = groupedBatches.item(batchKey)
         If Not batchItems Is Nothing Then
             If batchItems.count > 0 Then
-                If AppendEnvelopeLayoutPage(batchItems, firstVisibleSheet) Then
-                    PrepareEnvelopePrint = PrepareEnvelopePrint + 1
+                If AppendEnvelopeLayoutPage(batchItems, firstVisibleSheet, showPreviewGrid) Then
+                    PrepareEnvelopeLayouts = PrepareEnvelopeLayouts + 1
                 End If
             End If
         End If
@@ -59,8 +68,8 @@ Public Function PrepareEnvelopePrint() As Long
     Exit Function
 
 PrepareError:
-    Debug.Print "PrepareEnvelopePrint error: " & Err.description
-    PrepareEnvelopePrint = 0
+    Debug.Print "PrepareEnvelopeLayouts error: " & Err.description
+    PrepareEnvelopeLayouts = 0
 End Function
 
 Private Function GetCurrentRegistryBatchIdSet() As Object
@@ -166,6 +175,7 @@ Private Sub ClearEnvelopeLayoutSheetData(sheetName As String)
     Set ws = ThisWorkbook.Worksheets(sheetName)
 
     ws.Visible = xlSheetVisible
+    ClearEnvelopePreviewShapes ws
     ws.Cells.Clear
     ws.ResetAllPageBreaks
     ws.Cells.Font.Name = "Times New Roman"
@@ -177,6 +187,20 @@ Private Sub ClearEnvelopeLayoutSheetData(sheetName As String)
 
 ClearError:
     Debug.Print "ClearEnvelopeLayoutSheetData error: " & Err.description
+End Sub
+
+Private Sub ClearEnvelopePreviewShapes(ws As Worksheet)
+    On Error GoTo ClearShapesError
+
+    Dim shapeIndex As Long
+    For shapeIndex = ws.Shapes.count To 1 Step -1
+        If Left$(ws.Shapes.item(shapeIndex).Name, Len(EnvelopePreviewShapePrefix)) = EnvelopePreviewShapePrefix Then ws.Shapes.item(shapeIndex).Delete
+    Next shapeIndex
+
+    Exit Sub
+
+ClearShapesError:
+    Debug.Print "ClearEnvelopePreviewShapes error: " & Err.description
 End Sub
 
 Private Function GroupDispatchItemsByBatch(dispatchItems As Collection) As Object
@@ -203,7 +227,7 @@ Private Function GroupDispatchItemsByBatch(dispatchItems As Collection) As Objec
     Set GroupDispatchItemsByBatch = groupedBatches
 End Function
 
-Private Function AppendEnvelopeLayoutPage(batchItems As Collection, ByRef firstVisibleSheet As Worksheet) As Boolean
+Private Function AppendEnvelopeLayoutPage(batchItems As Collection, ByRef firstVisibleSheet As Worksheet, showPreviewGrid As Boolean) As Boolean
     Dim firstItem As Variant
     firstItem = batchItems(1)
 
@@ -227,6 +251,7 @@ Private Function AppendEnvelopeLayoutPage(batchItems As Collection, ByRef firstV
 
     ConfigureEnvelopeLayoutGrid ws, envelopeFormatKey
     RenderEnvelopeLayoutBlock ws, topRow, envelopeFormatKey, batchItems
+    If showPreviewGrid Then RenderEnvelopePreviewGrid ws, topRow, envelopeFormatKey
     ConfigureEnvelopePageSettings ws, envelopeFormatKey
 
     If firstVisibleSheet Is Nothing Then Set firstVisibleSheet = ws
@@ -238,6 +263,88 @@ AppendError:
     Debug.Print "AppendEnvelopeLayoutPage error: " & Err.description
     AppendEnvelopeLayoutPage = False
 End Function
+
+Private Sub RenderEnvelopePreviewGrid(ws As Worksheet, topRow As Long, envelopeFormatKey As String)
+    On Error GoTo GridError
+
+    Dim rowsPerPage As Long
+    rowsPerPage = GetEnvelopeRowsPerPage(envelopeFormatKey)
+
+    Dim pageRange As Range
+    Set pageRange = ws.Range(ws.Cells(topRow, EnvelopeLayoutFirstColumn), ws.Cells(topRow + rowsPerPage - 1, EnvelopeLayoutLastColumn))
+    ApplyPreviewBorder pageRange, RGB(120, 120, 120), xlContinuous, xlThin
+    AddPreviewLabel ws, pageRange, t("dispatch.layouts.preview.page", "Envelope page boundary")
+
+    Dim senderRange As Range
+    Set senderRange = ws.Range(ws.Cells(topRow + 1, 1), ws.Cells(topRow + 3, 3))
+    AddPreviewZone ws, senderRange, t("dispatch.layouts.preview.sender", "Sender zone"), RGB(47, 117, 181)
+
+    Dim outgoingRange As Range
+    Set outgoingRange = ws.Range(ws.Cells(topRow + 4, 1), ws.Cells(topRow + 6, 3))
+    AddPreviewZone ws, outgoingRange, t("dispatch.layouts.preview.outgoing", "Outgoing numbers zone"), RGB(112, 48, 160)
+
+    Dim recipientTopOffset As Long
+    recipientTopOffset = GetRecipientTopOffset(envelopeFormatKey)
+
+    Dim recipientRange As Range
+    Set recipientRange = ws.Range(ws.Cells(topRow + recipientTopOffset, 4), ws.Cells(topRow + recipientTopOffset + GetRecipientBlockHeight(envelopeFormatKey), 6))
+    AddPreviewZone ws, recipientRange, t("dispatch.layouts.preview.recipient", "Recipient zone"), RGB(0, 128, 0)
+
+    Dim postalRange As Range
+    Set postalRange = ws.Range(ws.Cells(topRow + GetPostalCodeTopOffset(envelopeFormatKey), 4), ws.Cells(topRow + GetPostalCodeTopOffset(envelopeFormatKey), 6))
+    AddPreviewZone ws, postalRange, t("dispatch.layouts.preview.postal_code", "Postal code zone"), RGB(192, 0, 0)
+
+    Exit Sub
+
+GridError:
+    Debug.Print "RenderEnvelopePreviewGrid error: " & Err.description
+End Sub
+
+Private Sub AddPreviewZone(ws As Worksheet, targetRange As Range, labelText As String, borderColor As Long)
+    ApplyPreviewBorder targetRange, borderColor, xlContinuous, xlMedium
+    AddPreviewLabel ws, targetRange, labelText
+End Sub
+
+Private Sub ApplyPreviewBorder(targetRange As Range, borderColor As Long, lineStyle As Long, lineWeight As Long)
+    With targetRange.Borders(xlEdgeLeft)
+        .LineStyle = lineStyle
+        .Weight = lineWeight
+        .Color = borderColor
+    End With
+
+    With targetRange.Borders(xlEdgeTop)
+        .LineStyle = lineStyle
+        .Weight = lineWeight
+        .Color = borderColor
+    End With
+
+    With targetRange.Borders(xlEdgeRight)
+        .LineStyle = lineStyle
+        .Weight = lineWeight
+        .Color = borderColor
+    End With
+
+    With targetRange.Borders(xlEdgeBottom)
+        .LineStyle = lineStyle
+        .Weight = lineWeight
+        .Color = borderColor
+    End With
+End Sub
+
+Private Sub AddPreviewLabel(ws As Worksheet, targetRange As Range, labelText As String)
+    Dim labelShape As Shape
+    Set labelShape = ws.Shapes.AddTextbox(msoTextOrientationHorizontal, targetRange.Left + 2, targetRange.Top + 2, 150, 14)
+    labelShape.Name = EnvelopePreviewShapePrefix & CStr(ws.Shapes.count)
+    labelShape.TextFrame.Characters.Text = labelText
+    labelShape.TextFrame.Characters.Font.Size = 7
+    labelShape.TextFrame.Characters.Font.Bold = True
+    labelShape.TextFrame.Characters.Font.Color = RGB(80, 80, 80)
+    labelShape.Line.Visible = msoFalse
+    labelShape.Fill.Visible = msoTrue
+    labelShape.Fill.ForeColor.RGB = RGB(255, 255, 204)
+    labelShape.Fill.Transparency = 0.2
+    labelShape.Placement = xlMoveAndSize
+End Sub
 
 Private Function GetNextEnvelopeTopRow(ws As Worksheet, envelopeFormatKey As String) As Long
     If Application.WorksheetFunction.CountA(ws.Cells) = 0 Then

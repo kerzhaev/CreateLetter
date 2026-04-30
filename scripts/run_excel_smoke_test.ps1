@@ -615,17 +615,19 @@ try {
             if (Test-Path -LiteralPath $envelopeLayoutsPath) {
                 $envelopeLayoutsText = Get-Content -Path $envelopeLayoutsPath -Raw
                 $hasEnvelopeLayoutContract = ($envelopeLayoutsText -like "*Public Function PrepareEnvelopePrint()*") -and
+                                             ($envelopeLayoutsText -like "*Public Function PrepareEnvelopePreviewGrid()*") -and
                                              ($envelopeLayoutsText -like "*Public Function ResolveEnvelopeLayoutSheetName(envelopeFormatKey As String)*") -and
                                              ($envelopeLayoutsText -like "*Private Function GetCurrentRegistryBatchIdSet()*") -and
                                              ($envelopeLayoutsText -like "*Private Function FilterDispatchItemsByBatchIdSet(dispatchItems As Collection, registryBatchIds As Object)*") -and
                                              ($envelopeLayoutsText -like "*Private Sub RenderEnvelopeLayoutBlock(*") -and
+                                             ($envelopeLayoutsText -like "*Private Sub RenderEnvelopePreviewGrid(*") -and
                                              ($envelopeLayoutsText -like "*Private Sub ConfigureEnvelopePageSettings(*")
 
                 if ($hasEnvelopeLayoutContract) {
-                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "PASS" -Details "Envelope layout builder functions and current-registry scoping helpers are present."
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "PASS" -Details "Envelope layout builder, preview-grid, and current-registry scoping helpers are present."
                 }
                 else {
-                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts is missing expected layout preparation or current-registry scoping functions."
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts is missing expected layout preparation, preview-grid, or current-registry scoping functions."
                     $failed = $true
                 }
             }
@@ -715,8 +717,23 @@ try {
         $archive = [System.IO.Compression.ZipFile]::OpenRead($tempRibbonCopy)
         $customUiEntry = $archive.GetEntry("customUI/customUI.xml")
         $rootRelsEntry = $archive.GetEntry("_rels/.rels")
+        $customUiText = ""
         $moduleRibbon = $workbook.VBProject.VBComponents.Item("ModuleRibbon").CodeModule
         $moduleRibbonText = [string]$moduleRibbon.Lines(1, $moduleRibbon.CountOfLines)
+
+        if ($null -ne $customUiEntry) {
+            $customUiStream = $null
+            $customUiReader = $null
+            try {
+                $customUiStream = $customUiEntry.Open()
+                $customUiReader = New-Object System.IO.StreamReader($customUiStream)
+                $customUiText = $customUiReader.ReadToEnd()
+            }
+            finally {
+                if ($null -ne $customUiReader) { $customUiReader.Dispose() }
+                elseif ($null -ne $customUiStream) { $customUiStream.Dispose() }
+            }
+        }
 
         $hasRibbonModule = ($moduleRibbonText -like "*Public Sub RibbonOpenLetterForm(control As IRibbonControl)*") -and
                            ($moduleRibbonText -like "*Public Function GetConfiguredTemplateFolderPath()*") -and
@@ -740,6 +757,8 @@ try {
 
         if ($RequireEnvelopeLayoutSheets) {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonPrepareEnvelopePrint(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonPrepareEnvelopePreviewGrid(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*btnRibbonPrepareEnvelopePreviewGrid*")
         }
 
         $hasCustomUiPart = $null -ne $customUiEntry
