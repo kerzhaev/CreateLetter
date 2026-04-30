@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleDispatchRegistry"
 ' Module: ModuleDispatchRegistry
 ' Author: CreateLetter contributors
 ' Purpose: Build and refresh the internal Excel dispatch registry from grouped dispatch packages
-' Version: 1.2.1 - 27.04.2026
+' Version: 1.2.2 - 30.04.2026
 ' ======================================================================
 
 Option Explicit
@@ -14,12 +14,16 @@ Public Function BuildDispatchRegistryFromDispatchItems() As Long
     Dim dispatchItems As Collection
     Set dispatchItems = DispatchRepositoryLoadDispatchItems()
 
-    ClearDispatchRegistry
-
     If dispatchItems Is Nothing Or dispatchItems.count = 0 Then Exit Function
 
+    Dim registryScopeItems As Collection
+    Set registryScopeItems = FilterDispatchItemsForNextRegistry(dispatchItems)
+    If registryScopeItems Is Nothing Or registryScopeItems.count = 0 Then Exit Function
+
+    ClearDispatchRegistry
+
     Dim groupedBatches As Object
-    Set groupedBatches = GroupDispatchItemsByBatch(dispatchItems)
+    Set groupedBatches = GroupDispatchItemsByBatch(registryScopeItems)
     If groupedBatches Is Nothing Then Exit Function
     If groupedBatches.count = 0 Then Exit Function
 
@@ -47,6 +51,70 @@ Public Function BuildDispatchRegistryFromDispatchItems() As Long
 BuildError:
     Debug.Print "BuildDispatchRegistryFromDispatchItems error: " & Err.description
     BuildDispatchRegistryFromDispatchItems = 0
+End Function
+
+Private Function FilterDispatchItemsForNextRegistry(dispatchItems As Collection) As Collection
+    Set FilterDispatchItemsForNextRegistry = New Collection
+
+    Dim targetRegistryKeys As Object
+    Set targetRegistryKeys = CreateObject("Scripting.Dictionary")
+    targetRegistryKeys.CompareMode = vbTextCompare
+
+    Dim i As Long
+    For i = 1 To dispatchItems.count
+        Dim candidateItem As Variant
+        candidateItem = dispatchItems(i)
+
+        If IsDispatchItemReadyForRegistryBuild(candidateItem) Then
+            Dim targetKey As String
+            targetKey = BuildDispatchItemRegistryKey(candidateItem)
+
+            If Len(targetKey) > 0 Then
+                If Not targetRegistryKeys.Exists(targetKey) Then targetRegistryKeys.Add targetKey, True
+            End If
+        End If
+    Next i
+
+    If targetRegistryKeys.count = 0 Then Exit Function
+
+    For i = 1 To dispatchItems.count
+        Dim dispatchItem As Variant
+        dispatchItem = dispatchItems(i)
+
+        If DispatchItemBelongsToRegistryBuildScope(dispatchItem, targetRegistryKeys) Then
+            FilterDispatchItemsForNextRegistry.Add dispatchItem
+        End If
+    Next i
+End Function
+
+Private Function IsDispatchItemReadyForRegistryBuild(dispatchItem As Variant) As Boolean
+    IsDispatchItemReadyForRegistryBuild = LCase$(Trim$(CStr(dispatchItem(DispatchItemColumnStatus)))) = DispatchStatusPacked
+End Function
+
+Private Function DispatchItemBelongsToRegistryBuildScope(dispatchItem As Variant, targetRegistryKeys As Object) As Boolean
+    Dim registryKey As String
+    registryKey = BuildDispatchItemRegistryKey(dispatchItem)
+
+    If Len(registryKey) = 0 Then Exit Function
+    If Not targetRegistryKeys.Exists(registryKey) Then Exit Function
+
+    Dim currentStatus As String
+    currentStatus = LCase$(Trim$(CStr(dispatchItem(DispatchItemColumnStatus))))
+
+    DispatchItemBelongsToRegistryBuildScope = currentStatus = DispatchStatusPacked Or currentStatus = DispatchStatusRegistered
+End Function
+
+Private Function BuildDispatchItemRegistryKey(dispatchItem As Variant) As String
+    Dim registryNumber As String
+    registryNumber = Trim$(CStr(dispatchItem(DispatchItemColumnRegistryNumber)))
+
+    Dim registryDate As String
+    registryDate = Trim$(CStr(dispatchItem(DispatchItemColumnRegistryDate)))
+
+    If Len(registryNumber) = 0 Then Exit Function
+    If Len(registryDate) = 0 Then Exit Function
+
+    BuildDispatchItemRegistryKey = registryNumber & "|" & registryDate
 End Function
 
 Public Sub ClearDispatchRegistry()

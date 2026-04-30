@@ -588,7 +588,10 @@ try {
             if (Test-Path -LiteralPath $dispatchRegistryPath) {
                 $dispatchRegistryText = Get-Content -Path $dispatchRegistryPath -Raw
                 $hasDispatchRegistryContract = ($dispatchRegistryText -like "*Public Function BuildDispatchRegistryFromDispatchItems()*") -and
-                                               ($dispatchRegistryText -like "*Public Sub ClearDispatchRegistry()*")
+                                              ($dispatchRegistryText -like "*Public Sub ClearDispatchRegistry()*") -and
+                                              ($dispatchRegistryText -like "*FilterDispatchItemsForNextRegistry*") -and
+                                              ($dispatchRegistryText -like "*DispatchStatusPacked*") -and
+                                              ($dispatchRegistryText -like "*DispatchStatusRegistered*")
 
                 if ($hasDispatchRegistryContract) {
                     Add-Result -Results $results -Name "DispatchRegistryContract" -Status "PASS" -Details "Dispatch registry builder functions are present."
