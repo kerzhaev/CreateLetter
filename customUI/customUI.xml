@@ -74,6 +74,13 @@
                   onAction="RibbonPrepareEnvelopePrint"
                   screentip="Подготовить конверты"
                   supertip="Заполняет скрытые layout-листы C4, C5 и DL данными для печати конвертов." />
+          <button id="btnRibbonPrepareEnvelopePreviewGrid"
+                  label="Проба конвертов"
+                  size="large"
+                  imageMso="PrintPreviewFullScreen"
+                  onAction="RibbonPrepareEnvelopePreviewGrid"
+                  screentip="Проба конвертов"
+                  supertip="Готовит конверты с контрольными рамками зон для проверки PDF-макета без физического принтера." />
           <button id="btnRibbonTemplateFolder"
                   label="Папка шаблонов"
                   size="large"

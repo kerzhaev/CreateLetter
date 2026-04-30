@@ -10,7 +10,7 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.8.1 - 27.04.2026
+' Version: 1.8.2 - 01.05.2026
 
 ' ======================================================================
 
@@ -3144,6 +3144,12 @@ End Sub
 Public Function PrepareDispatchEnvelopeLayouts() As Long
 
     PrepareDispatchEnvelopeLayouts = PrepareEnvelopePrint()
+
+End Function
+
+Public Function PrepareDispatchEnvelopePreviewGrid() As Long
+
+    PrepareDispatchEnvelopePreviewGrid = PrepareEnvelopePreviewGrid()
 
 End Function
 

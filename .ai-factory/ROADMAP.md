@@ -100,3 +100,5 @@ The next bounded feature stages for code quality and maintainability are:
   Align the printable postal registry sheet closer to the provided Russian Post sample: compact centered header, six-column table, short registry date, stacked outgoing numbers, bold mail type, and signature/stamp footer.
 - [x] `pisces/feature-50-envelope-print-finalization`
   Finalize C4/C5/DL envelope print layouts from dispatch packages, including stacked outgoing numbers for multi-letter packages.
+- [x] `pisces/feature-51-envelope-preview-grid`
+  Add printerless envelope verification mode that prepares the current-registry C4/C5/DL layout pages with control frames and zone labels for PDF review.

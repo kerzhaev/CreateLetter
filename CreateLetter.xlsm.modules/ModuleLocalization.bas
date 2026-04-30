@@ -6,7 +6,7 @@ Attribute VB_Name = "ModuleLocalization"
 
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
 
-' Version: 1.4.6 - 26.04.2026
+' Version: 1.4.7 - 01.05.2026
 
 ' Notes:
 
@@ -1355,6 +1355,38 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "dispatch.layouts.msg.error", "Не удалось подготовить layout-листы конвертов: "
 
     AddTranslation "en", "dispatch.layouts.msg.error", "Failed to prepare envelope layouts: "
+
+    AddTranslation "ru", "dispatch.layouts.preview.title", "Пробная печать конвертов"
+
+    AddTranslation "en", "dispatch.layouts.preview.title", "Envelope preview grid"
+
+    AddTranslation "ru", "dispatch.layouts.preview.msg.prepared", "Конверты подготовлены с контрольными рамками зон."
+
+    AddTranslation "en", "dispatch.layouts.preview.msg.prepared", "Envelope preview grid prepared."
+
+    AddTranslation "ru", "dispatch.layouts.preview.msg.error", "Не удалось подготовить пробную печать конвертов: "
+
+    AddTranslation "en", "dispatch.layouts.preview.msg.error", "Failed to prepare envelope preview grid: "
+
+    AddTranslation "ru", "dispatch.layouts.preview.page", "Граница страницы конверта"
+
+    AddTranslation "en", "dispatch.layouts.preview.page", "Envelope page boundary"
+
+    AddTranslation "ru", "dispatch.layouts.preview.sender", "Зона отправителя"
+
+    AddTranslation "en", "dispatch.layouts.preview.sender", "Sender zone"
+
+    AddTranslation "ru", "dispatch.layouts.preview.outgoing", "Зона исходящих номеров"
+
+    AddTranslation "en", "dispatch.layouts.preview.outgoing", "Outgoing numbers zone"
+
+    AddTranslation "ru", "dispatch.layouts.preview.recipient", "Зона получателя"
+
+    AddTranslation "en", "dispatch.layouts.preview.recipient", "Recipient zone"
+
+    AddTranslation "ru", "dispatch.layouts.preview.postal_code", "Зона индекса"
+
+    AddTranslation "en", "dispatch.layouts.preview.postal_code", "Postal code zone"
 
     AddTranslation "ru", "postal.registry.print.default_post_office", "почтовое отделение"
     AddTranslation "en", "postal.registry.print.default_post_office", "post office"
