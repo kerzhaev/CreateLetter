@@ -666,6 +666,7 @@ try {
                                              ($mailDispatchFormText -like "*txtDispatchRegistryDate*") -and
                                              ($mailDispatchFormText -like "*HandleDynamicButtonClick*") -and
                                              ($mailDispatchFormText -like "*QueueMailDispatchDoubleClick*") -and
+                                             ($mailDispatchFormText -like "*CancelPendingDoubleClickSchedule*") -and
                                              ($mailDispatchFormText -like "*Public Sub RunDeferredDoubleClickAction()*") -and
                                              ($moduleMainText -like "*Public Sub RunMailDispatchDeferredDoubleClick()*")
 
@@ -678,7 +679,7 @@ try {
                 }
 
                 $hasUnsafeDispatchListMultiSelect = $mailDispatchFormText -like "*fmMultiSelectExtended*"
-                $hasDoubleClickSelectionGuard = $mailDispatchFormText -like "*QueueMailDispatchDoubleClick*"
+                $hasDoubleClickSelectionGuard = ($mailDispatchFormText -like "*QueueMailDispatchDoubleClick*") -and ($mailDispatchFormText -notlike "*Application.OnTime Now,*")
 
                 if ((-not $hasUnsafeDispatchListMultiSelect) -and $hasDoubleClickSelectionGuard) {
                     Add-Result -Results $results -Name "MailDispatchListSelectionMode" -Status "PASS" -Details "Dispatch double-click lists avoid Extended range selection."
