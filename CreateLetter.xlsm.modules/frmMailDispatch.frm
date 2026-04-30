@@ -34,7 +34,7 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.2.2
+' Form: frmMailDispatch v1.2.3
 
 ' Author: CreateLetter contributors
 
@@ -86,6 +86,8 @@ Private pendingDoubleClickIndex As Long
 
 Private doubleClickActionScheduled As Boolean
 
+Private pendingDoubleClickRunAt As Date
+
 
 
 Private Sub UserForm_Initialize()
@@ -103,6 +105,7 @@ Private Sub UserForm_Initialize()
     Set dynamicButtonHandlers = New Collection
 
     pendingDoubleClickIndex = -1
+    pendingDoubleClickRunAt = 0
 
 
 
@@ -126,11 +129,19 @@ End Sub
 
 
 
+Private Sub UserForm_Terminate()
+
+    CancelPendingDoubleClickSchedule
+
+End Sub
+
+
+
 Private Sub ApplyFormSettings()
 
     With Me
 
-        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.2"
+        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.3"
 
         .backColor = RGB(248, 248, 248)
 
@@ -1658,6 +1669,8 @@ End Sub
 
 Private Sub QueueMailDispatchDoubleClick(actionName As String, ByVal listIndex As Long)
 
+    On Error GoTo QueueError
+
     If listIndex < 0 Then Exit Sub
 
     pendingDoubleClickAction = actionName
@@ -1666,7 +1679,14 @@ Private Sub QueueMailDispatchDoubleClick(actionName As String, ByVal listIndex A
     If doubleClickActionScheduled Then Exit Sub
 
     doubleClickActionScheduled = True
-    Application.OnTime Now, "RunMailDispatchDeferredDoubleClick"
+    pendingDoubleClickRunAt = Now + TimeValue("00:00:01")
+    Application.OnTime pendingDoubleClickRunAt, "RunMailDispatchDeferredDoubleClick"
+    Exit Sub
+
+QueueError:
+
+    ClearPendingDoubleClickState
+    MsgBox t("form.mail_dispatch.error.transfer_failed", "Не удалось переместить выбранные письма в пакет."), vbExclamation
 
 End Sub
 
@@ -1677,6 +1697,7 @@ Public Sub RunDeferredDoubleClickAction()
     On Error GoTo DeferredError
 
     doubleClickActionScheduled = False
+    pendingDoubleClickRunAt = 0
 
     Select Case pendingDoubleClickAction
 
@@ -1692,16 +1713,41 @@ Public Sub RunDeferredDoubleClickAction()
 
     End Select
 
-    pendingDoubleClickAction = ""
-    pendingDoubleClickIndex = -1
+    ClearPendingDoubleClickState
     Exit Sub
 
 DeferredError:
 
+    ClearPendingDoubleClickState
+    MsgBox t("form.mail_dispatch.error.transfer_failed", "Не удалось переместить выбранные письма в пакет."), vbExclamation
+
+End Sub
+
+
+
+Private Sub CancelPendingDoubleClickSchedule()
+
+    On Error Resume Next
+
+    If doubleClickActionScheduled Then
+        If pendingDoubleClickRunAt <> 0 Then
+            Application.OnTime EarliestTime:=pendingDoubleClickRunAt, Procedure:="RunMailDispatchDeferredDoubleClick", Schedule:=False
+        End If
+    End If
+
+    On Error GoTo 0
+    ClearPendingDoubleClickState
+
+End Sub
+
+
+
+Private Sub ClearPendingDoubleClickState()
+
     doubleClickActionScheduled = False
     pendingDoubleClickAction = ""
     pendingDoubleClickIndex = -1
-    MsgBox t("form.mail_dispatch.error.transfer_failed", "Не удалось переместить выбранные письма в пакет."), vbExclamation
+    pendingDoubleClickRunAt = 0
 
 End Sub
 
