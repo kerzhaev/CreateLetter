@@ -39,6 +39,13 @@
                   onAction="RibbonReturnDispatchPackage"
                   screentip="Вернуть пакет"
                   supertip="Возвращает ошибочно упакованный пакет в работу, если он ещё не был напечатан в PDF-реестре." />
+          <button id="btnRibbonCleanupDispatchLegacy"
+                  label="Диагностика"
+                  size="large"
+                  imageMso="Info"
+                  onAction="RibbonCleanupDispatchLegacy"
+                  screentip="Диагностика отправлений"
+                  supertip="Находит старые строки почтовых отправлений без статуса и реестра, затем по подтверждению возвращает связанные письма в работу." />
           <button id="btnRibbonBuildDispatchRegistry"
                   label="Сформировать реестр"
                   size="large"
