@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleEnvelopeLayouts"
 ' Module: ModuleEnvelopeLayouts
 ' Author: CreateLetter contributors
 ' Purpose: Prepare printable workbook layout sheets for grouped C4, C5, and DL envelope batches
-' Version: 1.2.0 - 28.04.2026
+' Version: 1.2.1 - 30.04.2026
 ' ======================================================================
 
 Option Explicit
@@ -24,8 +24,17 @@ Public Function PrepareEnvelopePrint() As Long
     Set dispatchItems = DispatchRepositoryLoadDispatchItems()
     If dispatchItems Is Nothing Or dispatchItems.count = 0 Then Exit Function
 
+    Dim registryBatchIds As Object
+    Set registryBatchIds = GetCurrentRegistryBatchIdSet()
+    If registryBatchIds Is Nothing Then Exit Function
+    If registryBatchIds.count = 0 Then Exit Function
+
+    Dim scopedDispatchItems As Collection
+    Set scopedDispatchItems = FilterDispatchItemsByBatchIdSet(dispatchItems, registryBatchIds)
+    If scopedDispatchItems Is Nothing Or scopedDispatchItems.count = 0 Then Exit Function
+
     Dim groupedBatches As Object
-    Set groupedBatches = GroupDispatchItemsByBatch(dispatchItems)
+    Set groupedBatches = GroupDispatchItemsByBatch(scopedDispatchItems)
     If groupedBatches Is Nothing Then Exit Function
 
     Dim firstVisibleSheet As Worksheet
@@ -52,6 +61,68 @@ Public Function PrepareEnvelopePrint() As Long
 PrepareError:
     Debug.Print "PrepareEnvelopePrint error: " & Err.description
     PrepareEnvelopePrint = 0
+End Function
+
+Private Function GetCurrentRegistryBatchIdSet() As Object
+    On Error GoTo RegistryError
+
+    Dim result As Object
+    Set result = CreateObject("Scripting.Dictionary")
+    result.CompareMode = vbTextCompare
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("DispatchRegistry")
+
+    Dim registryTable As ListObject
+    Set registryTable = ws.ListObjects.item(DispatchRegistryTableName)
+    If registryTable.DataBodyRange Is Nothing Then
+        Set GetCurrentRegistryBatchIdSet = result
+        Exit Function
+    End If
+
+    Dim rowIndex As Long
+    For rowIndex = 1 To registryTable.DataBodyRange.Rows.count
+        Dim batchId As String
+        batchId = Trim$(CStr(registryTable.DataBodyRange.Cells(rowIndex, DispatchRegistryColumnBatchId).value))
+        If Len(batchId) > 0 Then result.item(batchId) = True
+    Next rowIndex
+
+    Set GetCurrentRegistryBatchIdSet = result
+    Exit Function
+
+RegistryError:
+    Debug.Print "GetCurrentRegistryBatchIdSet error: " & Err.description
+    Set GetCurrentRegistryBatchIdSet = Nothing
+End Function
+
+Private Function FilterDispatchItemsByBatchIdSet(dispatchItems As Collection, registryBatchIds As Object) As Collection
+    Dim result As Collection
+    Set result = New Collection
+
+    If dispatchItems Is Nothing Then
+        Set FilterDispatchItemsByBatchIdSet = result
+        Exit Function
+    End If
+
+    If registryBatchIds Is Nothing Then
+        Set FilterDispatchItemsByBatchIdSet = result
+        Exit Function
+    End If
+
+    Dim itemIndex As Long
+    For itemIndex = 1 To dispatchItems.count
+        Dim dispatchItem As Variant
+        dispatchItem = dispatchItems(itemIndex)
+
+        Dim batchId As String
+        batchId = Trim$(CStr(dispatchItem(DispatchItemColumnBatchId)))
+
+        If Len(batchId) > 0 Then
+            If registryBatchIds.Exists(batchId) Then result.Add dispatchItem
+        End If
+    Next itemIndex
+
+    Set FilterDispatchItemsByBatchIdSet = result
 End Function
 
 Public Function ResolveEnvelopeLayoutSheetName(envelopeFormatKey As String) As String
@@ -277,6 +348,8 @@ Private Sub RenderEnvelopeLayoutBlock(ws As Worksheet, topRow As Long, envelopeF
 End Sub
 
 Private Sub ConfigureEnvelopePageSettings(ws As Worksheet, envelopeFormatKey As String)
+    On Error GoTo PageSetupError
+
     Dim lastRow As Long
     lastRow = ws.UsedRange.Row + ws.UsedRange.Rows.count - 1
     If lastRow < 1 Then lastRow = 1
@@ -296,6 +369,11 @@ Private Sub ConfigureEnvelopePageSettings(ws As Worksheet, envelopeFormatKey As 
         .CenterHorizontally = True
         .CenterVertically = True
     End With
+
+    Exit Sub
+
+PageSetupError:
+    Debug.Print "ConfigureEnvelopePageSettings error: " & Err.description
 End Sub
 
 Private Sub FinalizeEnvelopeLayoutSheet(sheetName As String)

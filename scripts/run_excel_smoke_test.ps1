@@ -616,14 +616,16 @@ try {
                 $envelopeLayoutsText = Get-Content -Path $envelopeLayoutsPath -Raw
                 $hasEnvelopeLayoutContract = ($envelopeLayoutsText -like "*Public Function PrepareEnvelopePrint()*") -and
                                              ($envelopeLayoutsText -like "*Public Function ResolveEnvelopeLayoutSheetName(envelopeFormatKey As String)*") -and
+                                             ($envelopeLayoutsText -like "*Private Function GetCurrentRegistryBatchIdSet()*") -and
+                                             ($envelopeLayoutsText -like "*Private Function FilterDispatchItemsByBatchIdSet(dispatchItems As Collection, registryBatchIds As Object)*") -and
                                              ($envelopeLayoutsText -like "*Private Sub RenderEnvelopeLayoutBlock(*") -and
                                              ($envelopeLayoutsText -like "*Private Sub ConfigureEnvelopePageSettings(*")
 
                 if ($hasEnvelopeLayoutContract) {
-                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "PASS" -Details "Envelope layout builder functions are present."
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "PASS" -Details "Envelope layout builder functions and current-registry scoping helpers are present."
                 }
                 else {
-                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts is missing expected layout preparation functions."
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts is missing expected layout preparation or current-registry scoping functions."
                     $failed = $true
                 }
             }
