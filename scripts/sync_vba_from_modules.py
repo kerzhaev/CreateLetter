@@ -20,6 +20,8 @@ import pythoncom
 import win32com.client.gencache
 from win32com.client.dynamic import Dispatch
 
+from repair_workbook_package import remove_invalid_print_area_aliases
+
 
 SUPPORTED_EXTENSIONS = (".bas", ".cls", ".frm")
 SOURCE_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "cp1251", "cp866", "mbcs")
@@ -210,6 +212,7 @@ def sync_workbook(
     resolved_document_modules_dir = derive_document_modules_dir(workbook_path, document_modules_dir)
     validate_paths(workbook_path, modules_dir, resolved_document_modules_dir)
     source_files = iter_source_files(modules_dir, resolved_document_modules_dir)
+    remove_invalid_print_area_aliases(workbook_path)
 
     pythoncom.CoInitialize()
     reset_excel_gen_cache()
@@ -239,6 +242,10 @@ def sync_workbook(
         except Exception:
             pass
         pythoncom.CoUninitialize()
+        try:
+            remove_invalid_print_area_aliases(workbook_path)
+        except Exception as exc:  # noqa: BLE001 - repair should not hide the original sync outcome
+            print(f"POST-SYNC PACKAGE REPAIR WARNING: {exc}", file=sys.stderr)
 
 
 def main() -> int:

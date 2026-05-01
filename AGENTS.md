@@ -7,7 +7,9 @@ CreateLetter is an Excel VBA workbook used to prepare letters from templates usi
 Source-managed VBA standard modules, class modules, and forms are stored in `CreateLetter.xlsm.modules/`. Workbook and worksheet document modules are stored separately in `CreateLetter.xlsm.document-modules/` so manual `VbaModuleManager` workflows do not import hidden sheet/workbook code as ordinary class modules. Both directories are synchronized with the workbook artifact through Excel COM automation, with manual `VbaModuleManager` fallback only for edge cases.
 The `Addresses` worksheet now supports an optional `AddressGroup` field for scenarios where several named recipients share one postal address.
 The workbook also now contains a dedicated `Mail Dispatch` subdomain with envelope formats, sender dictionary, dispatch items, grouped package registry, dispatch package journal, a printable postal registry sheet with PDF export, a dedicated `frmMailDispatch` form, and hidden layout sheets for `C4`, `C5`, and `DL`.
-Dispatch packages are now grouped by addressee and may contain multiple outgoing letters that are rendered as stacked outgoing numbers on printable C4/C5/DL envelope layout sheets. Each package is prepared as its own printable page with sender, outgoing numbers, recipient, and postal code. Envelope preparation is scoped to the current `tblDispatchRegistry` batch set, not every historical dispatch item. A preview-grid mode can render the same envelope pages with control frames and zone labels for printerless PDF verification. Dispatch lifecycle state is persisted in both `tblDispatchItems` and the tracking columns of `tblLetters`: package save marks letters as packed, registry build marks packages as registered, and PDF export marks registry packages as printed.
+Dispatch packages are now grouped by addressee and may contain multiple outgoing letters that are rendered as stacked outgoing numbers on printable C4/C5/DL envelope layout sheets. Each package is prepared as its own printable page with sender, outgoing numbers, recipient, and postal code. Recipient index guide digits and outgoing-number lists are dynamic printable shapes so they are not clipped by template cells. Envelope geometry is template-based: hidden layout sheets are refreshed from `PismaPrimer/ПачкаПисем1.91.xlsm` by `scripts/import_envelope_template_layouts.py`, while VBA only writes runtime values into predefined cells/shapes. Envelope preparation is scoped to the current `tblDispatchRegistry` batch set, not every historical dispatch item. A preview-grid mode can render the same envelope pages with control frames and zone labels for printerless PDF verification. Dispatch lifecycle state is persisted in both `tblDispatchItems` and the tracking columns of `tblLetters`: package save marks letters as packed, registry build marks packages as registered, and PDF export marks registry packages as printed.
+Envelope mail-type marks are printed from `DispatchItems.MailType`: empty/registered values print `ЗАКАЗНОЕ`, simple/ordinary values print no mark, notice/value variants print the corresponding Russian postal marks. The old end-user Ribbon command for preview-grid envelope probing is intentionally removed; debug preview remains an internal helper only.
+The dispatch form uses a working-registry pipeline: on open it detects the latest non-printed registry number/date from `tblDispatchItems` and asks whether to continue it or start a new registry; after `Сохранить пакет` it immediately rebuilds `tblDispatchRegistry` for the current registry scope, prepares the C4/C5/DL envelope layout only for the just-saved package, and offers Excel print preview for that package. End users should not need to manually rebuild the registry before seeing the prepared envelope for the package they just created.
 
 ## Tech Stack
 - **Language:** VBA
@@ -60,8 +62,14 @@ Dispatch packages are now grouped by addressee and may contain multiple outgoing
 │   └── apply_custom_ui.py               # Injects source-managed Ribbon XML into the workbook package
 │   └── ensure_workbook_tables.py        # Excel COM workbook schema helper for tblAddresses/tblLetters
 │   └── ensure_localization_sheet.py     # Excel COM workbook localization sheet bootstrap helper
+│   └── import_envelope_template_layouts.py # Imports C4/C5/DL geometry from the reference workbook into hidden layout sheets
+│   └── repair_workbook_package.py       # Removes invalid workbook package names that block unattended COM opens
 ├── customUI/
 │   └── customUI.xml                     # Source-managed Excel Ribbon markup
+├── graphify-out/                        # Project knowledge graph for architecture queries
+│   ├── graph.json
+│   ├── graph.html
+│   └── GRAPH_REPORT.md
 ├── .ai-factory/                         # AI Factory context artifacts
 │   ├── DESCRIPTION.md
 │   ├── ARCHITECTURE.md
@@ -90,6 +98,7 @@ Dispatch packages are now grouped by addressee and may contain multiple outgoing
 | Template placeholders | docs/template-placeholders.md | Preferred and legacy Word placeholder names |
 | Excel COM playbook | docs/excel-vba-com-playbook.md | Reusable automation and smoke-test pattern for future VBA projects |
 | Excel VBA starter kit | starter-kit/excel-vba-com/README.md | Copy-ready baseline for the next workbook project |
+| Graphify report | graphify-out/GRAPH_REPORT.md | Generated code graph summary for architecture navigation |
 
 ## AI Context Files
 | File | Purpose |

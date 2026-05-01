@@ -6,7 +6,7 @@ Attribute VB_Name = "ModuleLocalization"
 
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
 
-' Version: 1.4.7 - 01.05.2026
+' Version: 1.5.0 - 01.05.2026
 
 ' Notes:
 
@@ -1308,6 +1308,22 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.msg.letters_in_package", "Letters in package: "
 
+    AddTranslation "ru", "form.mail_dispatch.msg.registry_rows", "Строк в текущем реестре: "
+
+    AddTranslation "en", "form.mail_dispatch.msg.registry_rows", "Rows in current registry: "
+
+    AddTranslation "ru", "form.mail_dispatch.msg.envelopes_prepared", "Подготовлено конвертов: "
+
+    AddTranslation "en", "form.mail_dispatch.msg.envelopes_prepared", "Prepared envelopes: "
+
+    AddTranslation "ru", "form.mail_dispatch.prompt.open_registry", "Есть незакрытый рабочий реестр. Нажмите 'Да', чтобы продолжить его заполнение. Нажмите 'Нет', чтобы начать новый реестр."
+
+    AddTranslation "en", "form.mail_dispatch.prompt.open_registry", "There is an open working registry. Click Yes to continue it. Click No to start a new registry."
+
+    AddTranslation "ru", "form.mail_dispatch.prompt.preview_envelope", "Открыть предпросмотр печати подготовленного конверта?"
+
+    AddTranslation "en", "form.mail_dispatch.prompt.preview_envelope", "Open envelope print preview now?"
+
     AddTranslation "ru", "form.mail_dispatch.preview.outgoing_numbers", "Исходящие номера:"
 
     AddTranslation "en", "form.mail_dispatch.preview.outgoing_numbers", "Outgoing numbers:"
@@ -1331,6 +1347,10 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "dispatch.registry.msg.print_sheet", "Печатная форма сформирована на листе PostalRegistryPrint."
 
     AddTranslation "en", "dispatch.registry.msg.print_sheet", "Printable registry sheet built on PostalRegistryPrint."
+
+    AddTranslation "ru", "dispatch.registry.msg.already_current", "Новых отправлений нет. Текущий реестр уже заполнен, печатная форма обновлена."
+
+    AddTranslation "en", "dispatch.registry.msg.already_current", "There are no new dispatch items. The current registry is already populated and the printable sheet was refreshed."
 
     AddTranslation "ru", "dispatch.registry.msg.no_items", "Нет почтовых отправлений для включения в реестр."
 
@@ -1387,6 +1407,30 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "dispatch.layouts.preview.postal_code", "Зона индекса"
 
     AddTranslation "en", "dispatch.layouts.preview.postal_code", "Postal code zone"
+
+    AddTranslation "ru", "dispatch.layouts.print.sender_name_label", "От кого"
+
+    AddTranslation "en", "dispatch.layouts.print.sender_name_label", "From"
+
+    AddTranslation "ru", "dispatch.layouts.print.sender_address_label", "Откуда"
+
+    AddTranslation "en", "dispatch.layouts.print.sender_address_label", "Sender address"
+
+    AddTranslation "ru", "dispatch.layouts.print.sender_index_label", "Индекс места отправления"
+
+    AddTranslation "en", "dispatch.layouts.print.sender_index_label", "Sender postal code"
+
+    AddTranslation "ru", "dispatch.layouts.print.recipient_name_label", "Кому"
+
+    AddTranslation "en", "dispatch.layouts.print.recipient_name_label", "To"
+
+    AddTranslation "ru", "dispatch.layouts.print.recipient_address_label", "Куда"
+
+    AddTranslation "en", "dispatch.layouts.print.recipient_address_label", "Recipient address"
+
+    AddTranslation "ru", "dispatch.layouts.print.recipient_index_label", "Индекс места назначения"
+
+    AddTranslation "en", "dispatch.layouts.print.recipient_index_label", "Recipient postal code"
 
     AddTranslation "ru", "postal.registry.print.default_post_office", "почтовое отделение"
     AddTranslation "en", "postal.registry.print.default_post_office", "post office"

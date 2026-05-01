@@ -738,6 +738,70 @@ LoadError:
 
 End Function
 
+Public Function DispatchRepositoryGetCurrentWorkingRegistryNumber() As String
+    On Error GoTo LookupError
+
+    Dim dispatchTable As ListObject
+    Set dispatchTable = DispatchRepositoryGetTable("DispatchItems", DispatchItemsTableName)
+
+    If dispatchTable.DataBodyRange Is Nothing Then Exit Function
+
+    Dim rowIndex As Long
+    For rowIndex = dispatchTable.DataBodyRange.Rows.count To 1 Step -1
+        If DispatchRepositoryIsWorkingRegistryRow(dispatchTable, rowIndex) Then
+            DispatchRepositoryGetCurrentWorkingRegistryNumber = Trim$(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryNumber).value))
+            Exit Function
+        End If
+    Next rowIndex
+
+    Exit Function
+
+LookupError:
+
+    Debug.Print "DispatchRepositoryGetCurrentWorkingRegistryNumber error: " & Err.description
+
+End Function
+
+Public Function DispatchRepositoryGetCurrentWorkingRegistryDate() As String
+    On Error GoTo LookupError
+
+    Dim dispatchTable As ListObject
+    Set dispatchTable = DispatchRepositoryGetTable("DispatchItems", DispatchItemsTableName)
+
+    If dispatchTable.DataBodyRange Is Nothing Then Exit Function
+
+    Dim rowIndex As Long
+    For rowIndex = dispatchTable.DataBodyRange.Rows.count To 1 Step -1
+        If DispatchRepositoryIsWorkingRegistryRow(dispatchTable, rowIndex) Then
+            DispatchRepositoryGetCurrentWorkingRegistryDate = Trim$(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryDate).value))
+            Exit Function
+        End If
+    Next rowIndex
+
+    Exit Function
+
+LookupError:
+
+    Debug.Print "DispatchRepositoryGetCurrentWorkingRegistryDate error: " & Err.description
+
+End Function
+
+Private Function DispatchRepositoryIsWorkingRegistryRow(dispatchTable As ListObject, rowIndex As Long) As Boolean
+    Dim registryNumber As String
+    registryNumber = Trim$(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryNumber).value))
+
+    Dim registryDate As String
+    registryDate = Trim$(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnRegistryDate).value))
+
+    If Len(registryNumber) = 0 Then Exit Function
+    If Len(registryDate) = 0 Then Exit Function
+
+    Dim statusText As String
+    statusText = LCase$(Trim$(CStr(dispatchTable.DataBodyRange.Cells(rowIndex, DispatchItemColumnStatus).value)))
+
+    DispatchRepositoryIsWorkingRegistryRow = statusText = DispatchStatusPacked Or statusText = DispatchStatusRegistered
+End Function
+
 
 
 Public Sub DispatchRepositoryUpdateBatchStatus(ByVal batchId As String, ByVal status As String)

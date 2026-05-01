@@ -137,6 +137,7 @@ $resolvedWorkbookPath = Resolve-Path $WorkbookPath
 $workbookDirectory = Split-Path -Parent $resolvedWorkbookPath.Path
 $modulesDirectory = Join-Path (Split-Path -Parent $resolvedWorkbookPath.Path) ([System.IO.Path]::GetFileName($resolvedWorkbookPath.Path) + ".modules")
 $documentModulesDirectory = Join-Path (Split-Path -Parent $resolvedWorkbookPath.Path) ([System.IO.Path]::GetFileName($resolvedWorkbookPath.Path) + ".document-modules")
+$scriptsDirectory = Join-Path $workbookDirectory "scripts"
 $results = New-Object 'System.Collections.Generic.List[object]'
 $excel = $null
 $workbook = $null
@@ -547,6 +548,8 @@ try {
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCreatePackageFromHistoryRecords(*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetQueuedLetterKeySet()*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryLoadDispatchItems()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetCurrentWorkingRegistryNumber()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetCurrentWorkingRegistryDate()*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetSenderAddressBlock(senderName As String)*") -and
                                                  ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryUpdateBatchRegistryState(*") -and
                                                  ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryMarkRegistryPrintedFromRegistryTable()*") -and
@@ -591,6 +594,7 @@ try {
                 $dispatchRegistryText = Get-Content -Path $dispatchRegistryPath -Raw
                 $hasDispatchRegistryContract = ($dispatchRegistryText -like "*Public Function BuildDispatchRegistryFromDispatchItems()*") -and
                                               ($dispatchRegistryText -like "*Public Sub ClearDispatchRegistry()*") -and
+                                              ($dispatchRegistryText -like "*Public Function CountDispatchRegistryRows()*") -and
                                               ($dispatchRegistryText -like "*FilterDispatchItemsForNextRegistry*") -and
                                               ($dispatchRegistryText -like "*DispatchStatusPacked*") -and
                                               ($dispatchRegistryText -like "*DispatchStatusRegistered*")
@@ -614,20 +618,29 @@ try {
 
             if (Test-Path -LiteralPath $envelopeLayoutsPath) {
                 $envelopeLayoutsText = Get-Content -Path $envelopeLayoutsPath -Raw
+                $envelopeTemplateImporterPath = Join-Path $scriptsDirectory "import_envelope_template_layouts.py"
                 $hasEnvelopeLayoutContract = ($envelopeLayoutsText -like "*Public Function PrepareEnvelopePrint()*") -and
+                                             ($envelopeLayoutsText -like "*Public Function PrepareEnvelopePrintForBatch(batchId As String)*") -and
+                                             ($envelopeLayoutsText -like "*Public Sub PreviewPreparedEnvelopeForBatch(batchId As String)*") -and
                                              ($envelopeLayoutsText -like "*Public Function PrepareEnvelopePreviewGrid()*") -and
                                              ($envelopeLayoutsText -like "*Public Function ResolveEnvelopeLayoutSheetName(envelopeFormatKey As String)*") -and
                                              ($envelopeLayoutsText -like "*Private Function GetCurrentRegistryBatchIdSet()*") -and
                                              ($envelopeLayoutsText -like "*Private Function FilterDispatchItemsByBatchIdSet(dispatchItems As Collection, registryBatchIds As Object)*") -and
+                                             ($envelopeLayoutsText -like "*Private Sub RenderLeftPostalIndexGuide(*") -and
+                                             ($envelopeLayoutsText -like "*Private Sub SetEnvelopeOutgoingNumbers(*") -and
                                              ($envelopeLayoutsText -like "*Private Sub RenderEnvelopeLayoutBlock(*") -and
+                                             ($envelopeLayoutsText -like "*Private Sub RenderEnvelopeLayoutBlockC4(*") -and
+                                             ($envelopeLayoutsText -like "*Private Sub RenderEnvelopeTemplateBlock(*") -and
                                              ($envelopeLayoutsText -like "*Private Sub RenderEnvelopePreviewGrid(*") -and
-                                             ($envelopeLayoutsText -like "*Private Sub ConfigureEnvelopePageSettings(*")
+                                             ($envelopeLayoutsText -like "*Private Function GetEnvelopeLastColumn(*") -and
+                                             ($envelopeLayoutsText -like "*Private Sub ConfigureEnvelopePageSettings(*") -and
+                                             (Test-Path -LiteralPath $envelopeTemplateImporterPath)
 
                 if ($hasEnvelopeLayoutContract) {
-                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "PASS" -Details "Envelope layout builder, preview-grid, and current-registry scoping helpers are present."
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "PASS" -Details "Envelope layout builder, template importer, preview-grid, and current-registry scoping helpers are present."
                 }
                 else {
-                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts is missing expected layout preparation, preview-grid, or current-registry scoping functions."
+                    Add-Result -Results $results -Name "EnvelopeLayoutsContract" -Status "FAIL" -Details "ModuleEnvelopeLayouts or import_envelope_template_layouts.py is missing expected template-based layout preparation functions."
                     $failed = $true
                 }
             }
@@ -673,6 +686,11 @@ try {
                                              ($mailDispatchFormText -like "*lstDispatchPackage*") -and
                                              ($mailDispatchFormText -like "*txtDispatchRegistryNumber*") -and
                                              ($mailDispatchFormText -like "*txtDispatchRegistryDate*") -and
+                                             ($mailDispatchFormText -like "*ApplyWorkingRegistryDefaults*") -and
+                                             ($mailDispatchFormText -like "*registryRows = BuildDispatchRegistry()*") -and
+                                             ($mailDispatchFormText -like "*preparedEnvelopes = PrepareEnvelopePrintForBatch(batchId)*") -and
+                                             ($mailDispatchFormText -like "*ShouldOpenPreparedEnvelopePreview*") -and
+                                             ($mailDispatchFormText -like "*PreviewPreparedEnvelopeForBatch batchId*") -and
                                              ($mailDispatchFormText -like "*HandleDynamicButtonClick*") -and
                                              ($mailDispatchFormText -like "*QueueMailDispatchDoubleClick*") -and
                                              ($mailDispatchFormText -like "*CancelPendingDoubleClickSchedule*") -and
@@ -757,8 +775,8 @@ try {
 
         if ($RequireEnvelopeLayoutSheets) {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonPrepareEnvelopePrint(control As IRibbonControl)*")
-            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonPrepareEnvelopePreviewGrid(control As IRibbonControl)*")
-            $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*btnRibbonPrepareEnvelopePreviewGrid*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*btnRibbonPrepareEnvelopePrint*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -notlike "*btnRibbonPrepareEnvelopePreviewGrid*")
         }
 
         $hasCustomUiPart = $null -ne $customUiEntry

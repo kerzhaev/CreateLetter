@@ -20,6 +20,8 @@ import pythoncom
 import win32com.client.gencache
 from win32com.client.dynamic import Dispatch
 
+from repair_workbook_package import remove_invalid_print_area_aliases
+
 
 LOCALIZATION_SHEET_NAME = "Localization"
 HEADER_ROW = ("key", "ru", "en")
@@ -102,6 +104,12 @@ def main() -> int:
         return 1
 
     try:
+        remove_invalid_print_area_aliases(workbook_path)
+    except Exception as exc:  # noqa: BLE001 - developer tooling script
+        print(f"WORKBOOK PRE-REPAIR ERROR: {exc}", file=sys.stderr)
+        return 1
+
+    try:
         translations = parse_translations(module_path)
     except Exception as exc:  # noqa: BLE001 - developer tooling script
         print(f"LOCALIZATION PARSE ERROR: {exc}", file=sys.stderr)
@@ -129,6 +137,10 @@ def main() -> int:
             workbook.Close(SaveChanges=True)
         excel.Quit()
         pythoncom.CoUninitialize()
+        try:
+            remove_invalid_print_area_aliases(workbook_path)
+        except Exception as exc:  # noqa: BLE001 - repair should not hide localization outcome
+            print(f"WORKBOOK POST-REPAIR WARNING: {exc}", file=sys.stderr)
 
 
 if __name__ == "__main__":

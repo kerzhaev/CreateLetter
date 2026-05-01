@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks, dispatch actions, and user-configurable folder settings
 
-' Version: 1.3.0 - 01.05.2026
+' Version: 1.3.1 - 01.05.2026
 
 ' ======================================================================
 
@@ -120,26 +120,33 @@ Public Sub RibbonBuildDispatchRegistry(control As IRibbonControl)
     Dim builtCount As Long
     builtCount = BuildDispatchRegistryFromDispatchItems()
 
-    If builtCount > 0 Then
+    Dim existingRegistryRows As Long
+    existingRegistryRows = CountDispatchRegistryRows()
+
+    If builtCount > 0 Or existingRegistryRows > 0 Then
         Dim printCount As Long
         printCount = BuildPostalRegistryPrintSheet()
 
-        MsgBox t("dispatch.registry.msg.built", "Registry built from dispatch items.") & vbCrLf & builtCount & vbCrLf & _
-               t("dispatch.registry.msg.print_sheet", "Печатная форма: PostalRegistryPrint") & vbCrLf & printCount, _
-               vbInformation, _
-               t("dispatch.registry.title", "Dispatch registry")
+        Dim resultMessage As String
+        If builtCount > 0 Then
+            resultMessage = t("dispatch.registry.msg.built", "Internal registry built from dispatch items.")
+            resultMessage = resultMessage & vbCrLf & builtCount
+        Else
+            resultMessage = t("dispatch.registry.msg.already_current", "There are no new dispatch items. The current registry is already populated and the printable sheet was refreshed.")
+            resultMessage = resultMessage & vbCrLf & existingRegistryRows
+        End If
+        resultMessage = resultMessage & vbCrLf & t("dispatch.registry.msg.print_sheet", "Printable registry sheet built on PostalRegistryPrint.")
+        resultMessage = resultMessage & vbCrLf & printCount
+
+        MsgBox resultMessage, vbInformation, t("dispatch.registry.title", "Dispatch registry")
     Else
-        MsgBox t("dispatch.registry.msg.no_items", "There are no dispatch items to include in the registry."), _
-               vbExclamation, _
-               t("dispatch.registry.title", "Dispatch registry")
+        MsgBox t("dispatch.registry.msg.no_items", "There are no dispatch items to include in the registry."), vbExclamation, t("dispatch.registry.title", "Dispatch registry")
     End If
 
     Exit Sub
 
 RegistryError:
-    MsgBox t("dispatch.registry.msg.error", "Failed to build the internal dispatch registry: ") & Err.description, _
-           vbCritical, _
-           t("dispatch.registry.title", "Dispatch registry")
+    MsgBox t("dispatch.registry.msg.error", "Failed to build the internal dispatch registry: ") & Err.description, vbCritical, t("dispatch.registry.title", "Dispatch registry")
 End Sub
 
 

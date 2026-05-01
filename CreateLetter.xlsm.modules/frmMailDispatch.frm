@@ -34,11 +34,11 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.2.3
+' Form: frmMailDispatch v1.2.5
 
 ' Author: CreateLetter contributors
 
-' Date: 28.04.2026
+' Date: 01.05.2026
 
 ' Purpose: Thin-shell UI for preparing grouped dispatch packages from existing letters
 
@@ -88,6 +88,8 @@ Private doubleClickActionScheduled As Boolean
 
 Private pendingDoubleClickRunAt As Date
 
+Private workingRegistryPromptShown As Boolean
+
 
 
 Private Sub UserForm_Initialize()
@@ -106,6 +108,7 @@ Private Sub UserForm_Initialize()
 
     pendingDoubleClickIndex = -1
     pendingDoubleClickRunAt = 0
+    workingRegistryPromptShown = False
 
 
 
@@ -141,7 +144,7 @@ Private Sub ApplyFormSettings()
 
     With Me
 
-        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.3"
+        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.5"
 
         .backColor = RGB(248, 248, 248)
 
@@ -614,6 +617,8 @@ Private Sub SelectDefaultValues()
 
     End If
 
+    ApplyWorkingRegistryDefaults
+
 
 
     If Len(Trim$(txtDispatchRegistryDate.Text)) = 0 Then
@@ -626,6 +631,42 @@ Private Sub SelectDefaultValues()
 
     ApplyInitialSearchFocus
 
+End Sub
+
+Private Sub ApplyWorkingRegistryDefaults()
+    Dim workingRegistryNumber As String
+    workingRegistryNumber = DispatchRepositoryGetCurrentWorkingRegistryNumber()
+
+    Dim workingRegistryDate As String
+    workingRegistryDate = DispatchRepositoryGetCurrentWorkingRegistryDate()
+
+    If Len(workingRegistryNumber) > 0 Or Len(workingRegistryDate) > 0 Then
+        If Len(Trim$(txtDispatchRegistryNumber.Text)) = 0 And Len(Trim$(txtDispatchRegistryDate.Text)) = 0 Then
+            If Not workingRegistryPromptShown Then
+                workingRegistryPromptShown = True
+
+                Dim promptText As String
+                promptText = t("form.mail_dispatch.prompt.open_registry", "There is an open working registry. Click Yes to continue it. Click No to start a new registry.")
+
+                Dim promptResult As VbMsgBoxResult
+                promptResult = MsgBox(promptText, vbQuestion + vbYesNo, t("form.mail_dispatch.title", "Mail dispatch"))
+
+                If promptResult = vbNo Then
+                    txtDispatchRegistryNumber.Text = ""
+                    txtDispatchRegistryDate.Text = Format$(Date, "dd.mm.yyyy")
+                    Exit Sub
+                End If
+            End If
+        End If
+    End If
+
+    If Len(Trim$(txtDispatchRegistryNumber.Text)) = 0 Then
+        If Len(workingRegistryNumber) > 0 Then txtDispatchRegistryNumber.Text = workingRegistryNumber
+    End If
+
+    If Len(Trim$(txtDispatchRegistryDate.Text)) = 0 Then
+        If Len(workingRegistryDate) > 0 Then txtDispatchRegistryDate.Text = workingRegistryDate
+    End If
 End Sub
 
 
@@ -750,27 +791,23 @@ Private Sub btnDispatchCreate_Click()
 
 
 
+    Dim selectedSenderName As String
+    selectedSenderName = cmbDispatchSender.Text
+
+    Dim selectedRegistryNumber As String
+    selectedRegistryNumber = txtDispatchRegistryNumber.Text
+
+    Dim selectedRegistryDate As String
+    selectedRegistryDate = txtDispatchRegistryDate.Text
+
+    Dim selectedMailType As String
+    selectedMailType = txtDispatchMailType.Text
+
+    Dim selectedComment As String
+    selectedComment = txtDispatchComment.Text
+
     Dim batchId As String
-
-    batchId = DispatchRepositoryCreatePackageFromHistoryRecords( _
-
-        packageLettersData, _
-
-        cmbDispatchSender.Text, _
-
-        envelopeFormatKey, _
-
-        txtDispatchRegistryNumber.Text, _
-
-        txtDispatchRegistryDate.Text, _
-
-        txtDispatchMailType.Text, _
-
-        "", _
-
-        "", _
-
-        txtDispatchComment.Text)
+    batchId = DispatchRepositoryCreatePackageFromHistoryRecords(packageLettersData, selectedSenderName, envelopeFormatKey, selectedRegistryNumber, selectedRegistryDate, selectedMailType, "", "", selectedComment)
 
 
 
@@ -784,11 +821,24 @@ Private Sub btnDispatchCreate_Click()
 
 
 
-    MsgBox t("form.mail_dispatch.msg.package_created", "Пакет отправлений сохранен в рабочую таблицу.") & vbCrLf & _
+    Dim registryRows As Long
+    registryRows = BuildDispatchRegistry()
 
-           batchId & vbCrLf & _
+    Dim preparedEnvelopes As Long
+    If registryRows > 0 Then preparedEnvelopes = PrepareEnvelopePrintForBatch(batchId)
 
-           t("form.mail_dispatch.msg.letters_in_package", "Писем в пакете: ") & packageLettersData.count, vbInformation
+    Dim resultMessage As String
+    resultMessage = t("form.mail_dispatch.msg.package_created", "Пакет отправлений сохранен в рабочую таблицу.") & vbCrLf
+    resultMessage = resultMessage & batchId & vbCrLf
+    resultMessage = resultMessage & t("form.mail_dispatch.msg.letters_in_package", "Писем в пакете: ") & packageLettersData.count & vbCrLf
+    resultMessage = resultMessage & t("form.mail_dispatch.msg.registry_rows", "Rows in current registry: ") & registryRows & vbCrLf
+    resultMessage = resultMessage & t("form.mail_dispatch.msg.envelopes_prepared", "Prepared envelopes: ") & preparedEnvelopes
+
+    MsgBox resultMessage, vbInformation
+
+    If preparedEnvelopes > 0 Then
+        If ShouldOpenPreparedEnvelopePreview() Then PreviewPreparedEnvelopeForBatch batchId
+    End If
 
     btnDispatchRefresh_Click
 
@@ -801,6 +851,10 @@ CreateError:
     MsgBox t("form.mail_dispatch.error.runtime", "Ошибка подготовки почтового отправления: ") & Err.description, vbCritical
 
 End Sub
+
+Private Function ShouldOpenPreparedEnvelopePreview() As Boolean
+    ShouldOpenPreparedEnvelopePreview = MsgBox(t("form.mail_dispatch.prompt.preview_envelope", "Open envelope print preview now?"), vbQuestion + vbYesNo, t("form.mail_dispatch.title", "Mail dispatch")) = vbYes
+End Function
 
 
 

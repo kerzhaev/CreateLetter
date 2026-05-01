@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleDispatchRegistry"
 ' Module: ModuleDispatchRegistry
 ' Author: CreateLetter contributors
 ' Purpose: Build and refresh the internal Excel dispatch registry from grouped dispatch packages
-' Version: 1.2.2 - 30.04.2026
+' Version: 1.2.3 - 01.05.2026
 ' ======================================================================
 
 Option Explicit
@@ -132,6 +132,22 @@ Public Sub ClearDispatchRegistry()
 ClearError:
     Debug.Print "ClearDispatchRegistry error: " & Err.description
 End Sub
+
+Public Function CountDispatchRegistryRows() As Long
+    On Error GoTo CountError
+
+    Dim registryTable As ListObject
+    Set registryTable = GetDispatchRegistryTable()
+
+    If registryTable.DataBodyRange Is Nothing Then Exit Function
+
+    CountDispatchRegistryRows = registryTable.DataBodyRange.Rows.count
+    Exit Function
+
+CountError:
+    Debug.Print "CountDispatchRegistryRows error: " & Err.description
+    CountDispatchRegistryRows = 0
+End Function
 
 Private Function GetDispatchRegistryTable() As ListObject
     Dim ws As Worksheet
