@@ -139,6 +139,25 @@ Recommended checks:
 - architecture/refactor contracts;
 - Ribbon customization presence.
 
+### Domain-specific runtime smoke scripts
+
+For workflows that must mutate workbook data to prove behavior, prefer a separate temp-workbook smoke script instead of making the baseline read-only smoke destructive.
+
+Example from CreateLetter:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_dispatch_envelope_smoke.ps1 -WorkbookPath .\CreateLetter.xlsm
+```
+
+Pattern:
+
+- copy the workbook into a local temp/restore area;
+- repair package-level workbook quirks before opening if needed;
+- seed only the minimum tables required for the scenario;
+- call public VBA entry points through Excel COM;
+- assert business output and printable artifacts;
+- delete the temp workbook by default.
+
 ### `create_restore_point.ps1`
 
 Responsibilities:

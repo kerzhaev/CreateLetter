@@ -169,6 +169,14 @@ Use `-RequireRibbonCustomization` after source-managed Ribbon changes or package
 Use `-RequireAddressGroupColumn` after address-schema stages that depend on the optional `AddressGroup` column in `tblAddresses`.
 The smoke harness also verifies that source files exist for all workbook and worksheet document modules in `CreateLetter.xlsm.document-modules/`.
 
+For mail-dispatch envelope changes, run the dedicated temp-workbook COM smoke:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_dispatch_envelope_smoke.ps1 -WorkbookPath .\CreateLetter.xlsm
+```
+
+This script copies the workbook into `filesarchive/temp-com-tests/`, seeds C4/C5/DL test packages, rebuilds the dispatch registry, prepares envelope layouts, and verifies printable dynamic postal-index bars plus outgoing-number text without mutating the live workbook.
+
 ## Reusable COM Pattern
 
 This repository now includes a reusable Excel/VBA automation playbook:

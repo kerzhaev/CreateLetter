@@ -81,7 +81,7 @@
       "source_file": "scripts\\create_restore_point.ps1",
       "source_location": "L1",
       "id": "scripts_create_restore_point_ps1",
-      "community": 7,
+      "community": 8,
       "norm_label": "create_restore_point.ps1"
     },
     {
@@ -90,7 +90,7 @@
       "source_file": "scripts\\ensure_localization_sheet.py",
       "source_location": "L1",
       "id": "scripts_ensure_localization_sheet_py",
-      "community": 5,
+      "community": 3,
       "norm_label": "ensure_localization_sheet.py"
     },
     {
@@ -99,7 +99,7 @@
       "source_file": "scripts\\ensure_localization_sheet.py",
       "source_location": "L34",
       "id": "ensure_localization_sheet_reset_excel_gen_cache",
-      "community": 5,
+      "community": 3,
       "norm_label": "reset_excel_gen_cache()"
     },
     {
@@ -108,7 +108,7 @@
       "source_file": "scripts\\ensure_localization_sheet.py",
       "source_location": "L43",
       "id": "ensure_localization_sheet_build_parser",
-      "community": 5,
+      "community": 3,
       "norm_label": "build_parser()"
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "scripts\\ensure_localization_sheet.py",
       "source_location": "L55",
       "id": "ensure_localization_sheet_parse_translations",
-      "community": 5,
+      "community": 3,
       "norm_label": "parse_translations()"
     },
     {
@@ -126,7 +126,7 @@
       "source_file": "scripts\\ensure_localization_sheet.py",
       "source_location": "L69",
       "id": "ensure_localization_sheet_get_or_create_sheet",
-      "community": 5,
+      "community": 3,
       "norm_label": "get_or_create_sheet()"
     },
     {
@@ -135,7 +135,7 @@
       "source_file": "scripts\\ensure_localization_sheet.py",
       "source_location": "L80",
       "id": "ensure_localization_sheet_write_localization_sheet",
-      "community": 5,
+      "community": 3,
       "norm_label": "write_localization_sheet()"
     },
     {
@@ -144,7 +144,7 @@
       "source_file": "scripts\\ensure_localization_sheet.py",
       "source_location": "L95",
       "id": "ensure_localization_sheet_main",
-      "community": 5,
+      "community": 3,
       "norm_label": "main()"
     },
     {
@@ -279,7 +279,7 @@
       "source_file": "scripts\\export_and_smoke.ps1",
       "source_location": "L1",
       "id": "scripts_export_and_smoke_ps1",
-      "community": 8,
+      "community": 9,
       "norm_label": "export_and_smoke.ps1"
     },
     {
@@ -396,7 +396,7 @@
       "source_file": "scripts\\import_envelope_template_layouts.py",
       "source_location": "L1",
       "id": "scripts_import_envelope_template_layouts_py",
-      "community": 3,
+      "community": 6,
       "norm_label": "import_envelope_template_layouts.py"
     },
     {
@@ -405,7 +405,7 @@
       "source_file": "scripts\\import_envelope_template_layouts.py",
       "source_location": "L56",
       "id": "import_envelope_template_layouts_reset_excel_gen_cache",
-      "community": 3,
+      "community": 6,
       "norm_label": "reset_excel_gen_cache()"
     },
     {
@@ -414,7 +414,7 @@
       "source_file": "scripts\\import_envelope_template_layouts.py",
       "source_location": "L66",
       "id": "import_envelope_template_layouts_clear_shapes",
-      "community": 3,
+      "community": 6,
       "norm_label": "clear_shapes()"
     },
     {
@@ -423,7 +423,7 @@
       "source_file": "scripts\\import_envelope_template_layouts.py",
       "source_location": "L71",
       "id": "import_envelope_template_layouts_clear_dynamic_content",
-      "community": 3,
+      "community": 6,
       "norm_label": "clear_dynamic_content()"
     },
     {
@@ -432,7 +432,7 @@
       "source_file": "scripts\\import_envelope_template_layouts.py",
       "source_location": "L80",
       "id": "import_envelope_template_layouts_import_template",
-      "community": 3,
+      "community": 6,
       "norm_label": "import_template()"
     },
     {
@@ -441,7 +441,7 @@
       "source_file": "scripts\\import_envelope_template_layouts.py",
       "source_location": "L139",
       "id": "import_envelope_template_layouts_build_parser",
-      "community": 3,
+      "community": 6,
       "norm_label": "build_parser()"
     },
     {
@@ -450,7 +450,7 @@
       "source_file": "scripts\\import_envelope_template_layouts.py",
       "source_location": "L146",
       "id": "import_envelope_template_layouts_main",
-      "community": 3,
+      "community": 6,
       "norm_label": "main()"
     },
     {
@@ -459,7 +459,7 @@
       "source_file": "scripts\\repair_workbook.ps1",
       "source_location": "L1",
       "id": "scripts_repair_workbook_ps1",
-      "community": 9,
+      "community": 10,
       "norm_label": "repair_workbook.ps1"
     },
     {
@@ -499,12 +499,93 @@
       "norm_label": "main()"
     },
     {
+      "label": "run_dispatch_envelope_smoke.ps1",
+      "file_type": "code",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L1",
+      "id": "scripts_run_dispatch_envelope_smoke_ps1",
+      "community": 5,
+      "norm_label": "run_dispatch_envelope_smoke.ps1"
+    },
+    {
+      "label": "Add-SmokeResult()",
+      "file_type": "code",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L11",
+      "id": "run_dispatch_envelope_smoke_add_smokeresult",
+      "community": 5,
+      "norm_label": "add-smokeresult()"
+    },
+    {
+      "label": "Get-Table()",
+      "file_type": "code",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L26",
+      "id": "run_dispatch_envelope_smoke_get_table",
+      "community": 5,
+      "norm_label": "get-table()"
+    },
+    {
+      "label": "Clear-TableRows()",
+      "file_type": "code",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L37",
+      "id": "run_dispatch_envelope_smoke_clear_tablerows",
+      "community": 5,
+      "norm_label": "clear-tablerows()"
+    },
+    {
+      "label": "Set-TableRowValues()",
+      "file_type": "code",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L47",
+      "id": "run_dispatch_envelope_smoke_set_tablerowvalues",
+      "community": 5,
+      "norm_label": "set-tablerowvalues()"
+    },
+    {
+      "label": "Add-TableRow()",
+      "file_type": "code",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L59",
+      "id": "run_dispatch_envelope_smoke_add_tablerow",
+      "community": 5,
+      "norm_label": "add-tablerow()"
+    },
+    {
+      "label": "Get-ShapeText()",
+      "file_type": "code",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L69",
+      "id": "run_dispatch_envelope_smoke_get_shapetext",
+      "community": 5,
+      "norm_label": "get-shapetext()"
+    },
+    {
+      "label": "Test-EnvelopeSheet()",
+      "file_type": "code",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L82",
+      "id": "run_dispatch_envelope_smoke_test_envelopesheet",
+      "community": 5,
+      "norm_label": "test-envelopesheet()"
+    },
+    {
+      "label": "Invoke-WorkbookRepair()",
+      "file_type": "code",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L122",
+      "id": "run_dispatch_envelope_smoke_invoke_workbookrepair",
+      "community": 5,
+      "norm_label": "invoke-workbookrepair()"
+    },
+    {
       "label": "run_excel_smoke_test.ps1",
       "file_type": "code",
       "source_file": "scripts\\run_excel_smoke_test.ps1",
       "source_location": "L1",
       "id": "scripts_run_excel_smoke_test_ps1",
-      "community": 6,
+      "community": 7,
       "norm_label": "run_excel_smoke_test.ps1"
     },
     {
@@ -513,7 +594,7 @@
       "source_file": "starter-kit\\excel-vba-com\\scripts\\run_excel_smoke_test.ps1",
       "source_location": "L17",
       "id": "run_excel_smoke_test_add_result",
-      "community": 6,
+      "community": 7,
       "norm_label": "add-result()"
     },
     {
@@ -522,7 +603,7 @@
       "source_file": "scripts\\run_excel_smoke_test.ps1",
       "source_location": "L65",
       "id": "run_excel_smoke_test_test_worksheetvariants",
-      "community": 6,
+      "community": 7,
       "norm_label": "test-worksheetvariants()"
     },
     {
@@ -531,7 +612,7 @@
       "source_file": "scripts\\run_excel_smoke_test.ps1",
       "source_location": "L85",
       "id": "run_excel_smoke_test_get_worksheettablenames",
-      "community": 6,
+      "community": 7,
       "norm_label": "get-worksheettablenames()"
     },
     {
@@ -540,7 +621,7 @@
       "source_file": "scripts\\run_excel_smoke_test.ps1",
       "source_location": "L99",
       "id": "run_excel_smoke_test_get_tablecolumnnames",
-      "community": 6,
+      "community": 7,
       "norm_label": "get-tablecolumnnames()"
     },
     {
@@ -549,7 +630,7 @@
       "source_file": "scripts\\run_excel_smoke_test.ps1",
       "source_location": "L113",
       "id": "run_excel_smoke_test_test_documentmodulesourcecoverage",
-      "community": 6,
+      "community": 7,
       "norm_label": "test-documentmodulesourcecoverage()"
     },
     {
@@ -558,7 +639,7 @@
       "source_file": "scripts\\sync_and_smoke.ps1",
       "source_location": "L1",
       "id": "scripts_sync_and_smoke_ps1",
-      "community": 10,
+      "community": 11,
       "norm_label": "sync_and_smoke.ps1"
     },
     {
@@ -693,7 +774,7 @@
       "source_file": "starter-kit\\excel-vba-com\\scripts\\create_restore_point.ps1",
       "source_location": "L1",
       "id": "starter_kit_excel_vba_com_scripts_create_restore_point_ps1",
-      "community": 11,
+      "community": 12,
       "norm_label": "create_restore_point.ps1"
     },
     {
@@ -702,7 +783,7 @@
       "source_file": "starter-kit\\excel-vba-com\\scripts\\export_and_smoke.ps1",
       "source_location": "L1",
       "id": "starter_kit_excel_vba_com_scripts_export_and_smoke_ps1",
-      "community": 12,
+      "community": 13,
       "norm_label": "export_and_smoke.ps1"
     },
     {
@@ -720,7 +801,7 @@
       "source_file": "starter-kit\\excel-vba-com\\scripts\\repair_workbook.ps1",
       "source_location": "L1",
       "id": "starter_kit_excel_vba_com_scripts_repair_workbook_ps1",
-      "community": 13,
+      "community": 14,
       "norm_label": "repair_workbook.ps1"
     },
     {
@@ -729,7 +810,7 @@
       "source_file": "starter-kit\\excel-vba-com\\scripts\\run_excel_smoke_test.ps1",
       "source_location": "L1",
       "id": "starter_kit_excel_vba_com_scripts_run_excel_smoke_test_ps1",
-      "community": 6,
+      "community": 7,
       "norm_label": "run_excel_smoke_test.ps1"
     },
     {
@@ -738,7 +819,7 @@
       "source_file": "starter-kit\\excel-vba-com\\scripts\\sync_and_smoke.ps1",
       "source_location": "L1",
       "id": "starter_kit_excel_vba_com_scripts_sync_and_smoke_ps1",
-      "community": 14,
+      "community": 15,
       "norm_label": "sync_and_smoke.ps1"
     },
     {
@@ -2034,6 +2115,126 @@
       "_tgt": "repair_workbook_package_build_parser",
       "source": "repair_workbook_package_build_parser",
       "target": "repair_workbook_package_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_src": "scripts_run_dispatch_envelope_smoke_ps1",
+      "_tgt": "run_dispatch_envelope_smoke_add_smokeresult",
+      "source": "scripts_run_dispatch_envelope_smoke_ps1",
+      "target": "run_dispatch_envelope_smoke_add_smokeresult",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_src": "scripts_run_dispatch_envelope_smoke_ps1",
+      "_tgt": "run_dispatch_envelope_smoke_get_table",
+      "source": "scripts_run_dispatch_envelope_smoke_ps1",
+      "target": "run_dispatch_envelope_smoke_get_table",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_src": "scripts_run_dispatch_envelope_smoke_ps1",
+      "_tgt": "run_dispatch_envelope_smoke_clear_tablerows",
+      "source": "scripts_run_dispatch_envelope_smoke_ps1",
+      "target": "run_dispatch_envelope_smoke_clear_tablerows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_src": "scripts_run_dispatch_envelope_smoke_ps1",
+      "_tgt": "run_dispatch_envelope_smoke_set_tablerowvalues",
+      "source": "scripts_run_dispatch_envelope_smoke_ps1",
+      "target": "run_dispatch_envelope_smoke_set_tablerowvalues",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_src": "scripts_run_dispatch_envelope_smoke_ps1",
+      "_tgt": "run_dispatch_envelope_smoke_add_tablerow",
+      "source": "scripts_run_dispatch_envelope_smoke_ps1",
+      "target": "run_dispatch_envelope_smoke_add_tablerow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L69",
+      "weight": 1.0,
+      "_src": "scripts_run_dispatch_envelope_smoke_ps1",
+      "_tgt": "run_dispatch_envelope_smoke_get_shapetext",
+      "source": "scripts_run_dispatch_envelope_smoke_ps1",
+      "target": "run_dispatch_envelope_smoke_get_shapetext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_src": "scripts_run_dispatch_envelope_smoke_ps1",
+      "_tgt": "run_dispatch_envelope_smoke_test_envelopesheet",
+      "source": "scripts_run_dispatch_envelope_smoke_ps1",
+      "target": "run_dispatch_envelope_smoke_test_envelopesheet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L122",
+      "weight": 1.0,
+      "_src": "scripts_run_dispatch_envelope_smoke_ps1",
+      "_tgt": "run_dispatch_envelope_smoke_invoke_workbookrepair",
+      "source": "scripts_run_dispatch_envelope_smoke_ps1",
+      "target": "run_dispatch_envelope_smoke_invoke_workbookrepair",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L66",
+      "weight": 1.0,
+      "_src": "run_dispatch_envelope_smoke_add_tablerow",
+      "_tgt": "run_dispatch_envelope_smoke_set_tablerowvalues",
+      "source": "run_dispatch_envelope_smoke_set_tablerowvalues",
+      "target": "run_dispatch_envelope_smoke_add_tablerow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\run_dispatch_envelope_smoke.ps1",
+      "source_location": "L105",
+      "weight": 1.0,
+      "_src": "run_dispatch_envelope_smoke_test_envelopesheet",
+      "_tgt": "run_dispatch_envelope_smoke_get_shapetext",
+      "source": "run_dispatch_envelope_smoke_get_shapetext",
+      "target": "run_dispatch_envelope_smoke_test_envelopesheet",
       "confidence_score": 1.0
     },
     {

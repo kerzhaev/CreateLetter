@@ -57,6 +57,7 @@ The dispatch form uses a working-registry pipeline: on open it detects the lates
 ├── scripts/
 │   └── create_restore_point.ps1         # Creates workbook + modules restore points
 │   └── run_excel_smoke_test.ps1         # Excel COM smoke-test helper
+│   └── run_dispatch_envelope_smoke.ps1  # Temp-workbook COM smoke for C4/C5/DL envelope rendering
 │   └── sync_vba_from_modules.py         # Excel COM VBA sync helper for modules/forms
 │   └── export_vba_to_modules.py         # Excel COM VBA export helper for modules/forms/document modules
 │   └── apply_custom_ui.py               # Injects source-managed Ribbon XML into the workbook package
