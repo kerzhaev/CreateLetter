@@ -10,13 +10,15 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.8.2 - 01.05.2026
+' Version: 1.8.3 - 01.05.2026
 
 ' ======================================================================
 
 
 
 Option Explicit
+
+Private activeMailDispatchForm As Object
 
 
 
@@ -3083,13 +3085,40 @@ Public Sub OpenMailDispatch()
 
     On Error GoTo OpenDispatchError
 
-    Load frmMailDispatch
-    frmMailDispatch.Show vbModal
+    Dim dispatchForm As frmMailDispatch
+    Set dispatchForm = New frmMailDispatch
+    RegisterActiveMailDispatchForm dispatchForm
+    dispatchForm.Show vbModal
+    UnregisterActiveMailDispatchForm dispatchForm
     Exit Sub
 
 OpenDispatchError:
 
+    UnregisterActiveMailDispatchForm Nothing
     MsgBox t("dispatch.form.open_error", "Не удалось открыть форму почтовых отправлений: ") & Err.description, vbCritical
+
+End Sub
+
+
+
+Public Sub RegisterActiveMailDispatchForm(formInstance As Object)
+
+    Set activeMailDispatchForm = formInstance
+
+End Sub
+
+
+
+Public Sub UnregisterActiveMailDispatchForm(formInstance As Object)
+
+    If formInstance Is Nothing Then
+        Set activeMailDispatchForm = Nothing
+        Exit Sub
+    End If
+
+    If activeMailDispatchForm Is Nothing Then Exit Sub
+
+    If activeMailDispatchForm Is formInstance Then Set activeMailDispatchForm = Nothing
 
 End Sub
 
@@ -3099,7 +3128,9 @@ Public Sub RunMailDispatchDeferredDoubleClick()
 
     On Error GoTo DeferredError
 
-    frmMailDispatch.RunDeferredDoubleClickAction
+    If activeMailDispatchForm Is Nothing Then Exit Sub
+
+    activeMailDispatchForm.RunDeferredDoubleClickAction
     Exit Sub
 
 DeferredError:

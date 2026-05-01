@@ -34,7 +34,7 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.2.5
+' Form: frmMailDispatch v1.2.6
 
 ' Author: CreateLetter contributors
 
@@ -109,6 +109,7 @@ Private Sub UserForm_Initialize()
     pendingDoubleClickIndex = -1
     pendingDoubleClickRunAt = 0
     workingRegistryPromptShown = False
+    RegisterActiveMailDispatchForm Me
 
 
 
@@ -135,6 +136,7 @@ End Sub
 Private Sub UserForm_Terminate()
 
     CancelPendingDoubleClickSchedule
+    UnregisterActiveMailDispatchForm Me
 
 End Sub
 
@@ -144,7 +146,7 @@ Private Sub ApplyFormSettings()
 
     With Me
 
-        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.5"
+        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.6"
 
         .backColor = RGB(248, 248, 248)
 
@@ -837,7 +839,10 @@ Private Sub btnDispatchCreate_Click()
     MsgBox resultMessage, vbInformation
 
     If preparedEnvelopes > 0 Then
-        If ShouldOpenPreparedEnvelopePreview() Then PreviewPreparedEnvelopeForBatch batchId
+        If ShouldOpenPreparedEnvelopePreview() Then
+            OpenPreparedEnvelopePreviewAndClose batchId
+            Exit Sub
+        End If
     End If
 
     btnDispatchRefresh_Click
@@ -855,6 +860,25 @@ End Sub
 Private Function ShouldOpenPreparedEnvelopePreview() As Boolean
     ShouldOpenPreparedEnvelopePreview = MsgBox(t("form.mail_dispatch.prompt.preview_envelope", "Open envelope print preview now?"), vbQuestion + vbYesNo, t("form.mail_dispatch.title", "Mail dispatch")) = vbYes
 End Function
+
+
+
+Private Sub OpenPreparedEnvelopePreviewAndClose(batchId As String)
+
+    On Error GoTo PreviewError
+
+    Me.Hide
+    DoEvents
+    PreviewPreparedEnvelopeForBatch batchId
+    Unload Me
+    Exit Sub
+
+PreviewError:
+
+    MsgBox t("form.mail_dispatch.error.preview_failed", "Не удалось открыть предпросмотр конверта: ") & Err.description, vbExclamation
+    Unload Me
+
+End Sub
 
 
 

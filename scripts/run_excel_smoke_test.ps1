@@ -690,12 +690,15 @@ try {
                                              ($mailDispatchFormText -like "*registryRows = BuildDispatchRegistry()*") -and
                                              ($mailDispatchFormText -like "*preparedEnvelopes = PrepareEnvelopePrintForBatch(batchId)*") -and
                                              ($mailDispatchFormText -like "*ShouldOpenPreparedEnvelopePreview*") -and
-                                             ($mailDispatchFormText -like "*PreviewPreparedEnvelopeForBatch batchId*") -and
+                                             ($mailDispatchFormText -like "*OpenPreparedEnvelopePreviewAndClose batchId*") -and
+                                             ($mailDispatchFormText -like "*Me.Hide*") -and
                                              ($mailDispatchFormText -like "*HandleDynamicButtonClick*") -and
                                              ($mailDispatchFormText -like "*QueueMailDispatchDoubleClick*") -and
                                              ($mailDispatchFormText -like "*CancelPendingDoubleClickSchedule*") -and
                                              ($mailDispatchFormText -like "*Public Sub RunDeferredDoubleClickAction()*") -and
-                                             ($moduleMainText -like "*Public Sub RunMailDispatchDeferredDoubleClick()*")
+                                             ($moduleMainText -like "*Public Sub RunMailDispatchDeferredDoubleClick()*") -and
+                                             ($moduleMainText -like "*Public Sub RegisterActiveMailDispatchForm(formInstance As Object)*") -and
+                                             ($moduleMainText -like "*activeMailDispatchForm.RunDeferredDoubleClickAction*")
 
                 if ($hasMailDispatchUiContract) {
                     Add-Result -Results $results -Name "MailDispatchUiContract" -Status "PASS" -Details "Dispatch form source and core UI handlers are present."
