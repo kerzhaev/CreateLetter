@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleEnvelopeLayouts"
 ' Module: ModuleEnvelopeLayouts
 ' Author: CreateLetter contributors
 ' Purpose: Prepare printable workbook layout sheets for grouped C4, C5, and DL envelope batches
-' Version: 1.5.3 - 01.05.2026
+' Version: 1.5.4 - 01.05.2026
 ' ======================================================================
 
 Option Explicit
@@ -854,6 +854,9 @@ Private Sub RenderLeftPostalIndexGuide(ws As Worksheet, topRow As Long, envelope
     Dim digitWidth As Double
     digitWidth = 23
 
+    Dim digitStep As Double
+    digitStep = 22
+
     Dim digitHeight As Double
     digitHeight = 29
 
@@ -865,12 +868,14 @@ Private Sub RenderLeftPostalIndexGuide(ws As Worksheet, topRow As Long, envelope
         startLeft = targetRange.Left + 11
         startTop = targetRange.Top - 24
         digitWidth = 28
+        digitStep = 26
         digitHeight = 34
         strokeWidth = 2.5
     Case "dl"
         startLeft = targetRange.Left + 7
         startTop = targetRange.Top + 4
         digitWidth = 18
+        digitStep = 18
         digitHeight = 24
         strokeWidth = 1.8
     End Select
@@ -880,13 +885,13 @@ Private Sub RenderLeftPostalIndexGuide(ws As Worksheet, topRow As Long, envelope
 
     For digitIndex = 1 To Len(normalizedPostalCode)
         Dim digitLeft As Double
-        digitLeft = startLeft + (digitIndex * digitWidth)
+        digitLeft = startLeft + (digitIndex * digitStep)
 
         AddPostalGuideDigit ws, envelopeFormatKey, Mid$(normalizedPostalCode, digitIndex, 1), digitLeft, startTop + 8, digitWidth, digitHeight, strokeWidth, digitIndex, topRow
     Next digitIndex
 
     For digitIndex = 1 To 7
-        AddPostalGuideBar ws, envelopeFormatKey, startLeft + ((digitIndex - 1) * digitWidth), startTop, digitIndex, topRow
+        AddPostalGuideBar ws, envelopeFormatKey, startLeft + ((digitIndex - 1) * digitStep), startTop, digitIndex, topRow
     Next digitIndex
 
     Exit Sub
@@ -933,6 +938,11 @@ Private Sub AddPostalGuideDigit(ws As Worksheet, envelopeFormatKey As String, di
 End Sub
 
 Private Sub AddPostalDigitSegments(ws As Worksheet, envelopeFormatKey As String, digitText As String, leftPosition As Double, topPosition As Double, digitWidth As Double, digitHeight As Double, strokeWidth As Double, digitIndex As Long, topRow As Long)
+    If digitText = "1" Then
+        AddPostalDigitOneSegments ws, envelopeFormatKey, leftPosition, topPosition, digitWidth, digitHeight, strokeWidth, digitIndex, topRow
+        Exit Sub
+    End If
+
     AddPostalDigitSegmentIfNeeded ws, envelopeFormatKey, ShouldPostalDigitDrawSegment(digitText, "A"), leftPosition + strokeWidth, topPosition, digitWidth - (strokeWidth * 2), strokeWidth, "A", digitIndex, topRow
     AddPostalDigitSegmentIfNeeded ws, envelopeFormatKey, ShouldPostalDigitDrawSegment(digitText, "B"), leftPosition + digitWidth - strokeWidth, topPosition + strokeWidth, strokeWidth, (digitHeight / 2) - strokeWidth, "B", digitIndex, topRow
     AddPostalDigitSegmentIfNeeded ws, envelopeFormatKey, ShouldPostalDigitDrawSegment(digitText, "C"), leftPosition + digitWidth - strokeWidth, topPosition + (digitHeight / 2), strokeWidth, (digitHeight / 2) - strokeWidth, "C", digitIndex, topRow
@@ -940,6 +950,30 @@ Private Sub AddPostalDigitSegments(ws As Worksheet, envelopeFormatKey As String,
     AddPostalDigitSegmentIfNeeded ws, envelopeFormatKey, ShouldPostalDigitDrawSegment(digitText, "E"), leftPosition, topPosition + (digitHeight / 2), strokeWidth, (digitHeight / 2) - strokeWidth, "E", digitIndex, topRow
     AddPostalDigitSegmentIfNeeded ws, envelopeFormatKey, ShouldPostalDigitDrawSegment(digitText, "F"), leftPosition, topPosition + strokeWidth, strokeWidth, (digitHeight / 2) - strokeWidth, "F", digitIndex, topRow
     AddPostalDigitSegmentIfNeeded ws, envelopeFormatKey, ShouldPostalDigitDrawSegment(digitText, "G"), leftPosition + strokeWidth, topPosition + (digitHeight / 2) - (strokeWidth / 2), digitWidth - (strokeWidth * 2), strokeWidth, "G", digitIndex, topRow
+End Sub
+
+Private Sub AddPostalDigitOneSegments(ws As Worksheet, envelopeFormatKey As String, leftPosition As Double, topPosition As Double, digitWidth As Double, digitHeight As Double, strokeWidth As Double, digitIndex As Long, topRow As Long)
+    Dim verticalLeft As Double
+    verticalLeft = leftPosition + digitWidth - strokeWidth
+
+    Dim verticalTop As Double
+    verticalTop = topPosition + strokeWidth
+
+    Dim verticalHeight As Double
+    verticalHeight = digitHeight - strokeWidth
+
+    AddPostalDigitSegmentIfNeeded ws, envelopeFormatKey, True, verticalLeft, verticalTop, strokeWidth, verticalHeight, "C", digitIndex, topRow
+    AddPostalDigitDiagonalSegment ws, envelopeFormatKey, leftPosition + (digitWidth * 0.45), topPosition + (digitHeight * 0.28), verticalLeft + (strokeWidth / 2), verticalTop, strokeWidth, digitIndex, topRow
+End Sub
+
+Private Sub AddPostalDigitDiagonalSegment(ws As Worksheet, envelopeFormatKey As String, startLeft As Double, startTop As Double, endLeft As Double, endTop As Double, strokeWidth As Double, digitIndex As Long, topRow As Long)
+    Dim segmentShape As Shape
+    Set segmentShape = ws.Shapes.AddLine(startLeft, startTop, endLeft, endTop)
+    segmentShape.Name = EnvelopeDynamicShapePrefix & "PostalDigit_" & envelopeFormatKey & "_" & CStr(topRow) & "_" & CStr(digitIndex) & "_SLANT"
+    segmentShape.Line.Visible = msoTrue
+    segmentShape.Line.ForeColor.RGB = RGB(0, 0, 0)
+    segmentShape.Line.Weight = strokeWidth
+    segmentShape.Placement = xlMoveAndSize
 End Sub
 
 Private Sub AddPostalDigitSegmentIfNeeded(ws As Worksheet, envelopeFormatKey As String, shouldDraw As Boolean, leftPosition As Double, topPosition As Double, segmentWidth As Double, segmentHeight As Double, segmentCode As String, digitIndex As Long, topRow As Long)

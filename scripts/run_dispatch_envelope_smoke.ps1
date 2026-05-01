@@ -92,6 +92,7 @@ function Test-EnvelopeSheet {
     $outgoingPrefix = "EnvelopeDynamic_Outgoing_" + $FormatKey.ToLowerInvariant() + "_"
     $postalBarCount = 0
     $hasOutgoingText = $false
+    $hasDigitOneSlant = $false
 
     for ($shapeIndex = 1; $shapeIndex -le $sheet.Shapes.Count; $shapeIndex++) {
         $shape = $sheet.Shapes.Item($shapeIndex)
@@ -107,6 +108,10 @@ function Test-EnvelopeSheet {
                 $hasOutgoingText = $true
             }
         }
+
+        if ($shapeName.Contains("_SLANT")) {
+            $hasDigitOneSlant = $true
+        }
     }
 
     $printArea = [string]$sheet.PageSetup.PrintArea
@@ -114,6 +119,7 @@ function Test-EnvelopeSheet {
         SheetName = $sheetName
         PostalBarCount = $postalBarCount
         HasOutgoingText = $hasOutgoingText
+        HasDigitOneSlant = $hasDigitOneSlant
         PrintArea = $printArea
         Visible = [int]$sheet.Visible
     }
@@ -185,8 +191,8 @@ try {
             LetterDate = "01.05.2026"
             LetterRowNumber = "101"
             Addressee = "AIF Addressee " + $formatKey.ToUpperInvariant()
-            AddressLine = "Recipient street, Recipient city, 344068"
-            PostalCode = "344068"
+            AddressLine = "Recipient street, Recipient city, 355017"
+            PostalCode = "355017"
             SenderName = "AIF Sender"
             EnvelopeFormatKey = $formatKey
             MailType = "registered"
@@ -206,8 +212,8 @@ try {
             LetterDate = "01.05.2026"
             LetterRowNumber = "102"
             Addressee = "AIF Addressee " + $formatKey.ToUpperInvariant()
-            AddressLine = "Recipient street, Recipient city, 344068"
-            PostalCode = "344068"
+            AddressLine = "Recipient street, Recipient city, 355017"
+            PostalCode = "355017"
             SenderName = "AIF Sender"
             EnvelopeFormatKey = $formatKey
             MailType = "registered"
@@ -244,11 +250,11 @@ try {
 
     foreach ($formatKey in $formats) {
         $sheetCheck = Test-EnvelopeSheet -Workbook $workbook -FormatKey $formatKey -ExpectedOutgoing "7/102"
-        if ($sheetCheck.PostalBarCount -ge 7 -and $sheetCheck.HasOutgoingText -and -not [string]::IsNullOrWhiteSpace($sheetCheck.PrintArea)) {
-            Add-SmokeResult -Results $results -Name ("EnvelopeSheet:" + $formatKey) -Status "PASS" -Details ("bars=" + $sheetCheck.PostalBarCount + "; printArea=" + $sheetCheck.PrintArea)
+        if ($sheetCheck.PostalBarCount -ge 7 -and $sheetCheck.HasOutgoingText -and $sheetCheck.HasDigitOneSlant -and -not [string]::IsNullOrWhiteSpace($sheetCheck.PrintArea)) {
+            Add-SmokeResult -Results $results -Name ("EnvelopeSheet:" + $formatKey) -Status "PASS" -Details ("bars=" + $sheetCheck.PostalBarCount + "; slantOne=" + $sheetCheck.HasDigitOneSlant + "; printArea=" + $sheetCheck.PrintArea)
         }
         else {
-            Add-SmokeResult -Results $results -Name ("EnvelopeSheet:" + $formatKey) -Status "FAIL" -Details ("bars=" + $sheetCheck.PostalBarCount + "; outgoing=" + $sheetCheck.HasOutgoingText + "; printArea=" + $sheetCheck.PrintArea)
+            Add-SmokeResult -Results $results -Name ("EnvelopeSheet:" + $formatKey) -Status "FAIL" -Details ("bars=" + $sheetCheck.PostalBarCount + "; outgoing=" + $sheetCheck.HasOutgoingText + "; slantOne=" + $sheetCheck.HasDigitOneSlant + "; printArea=" + $sheetCheck.PrintArea)
             $failed = $true
         }
     }
