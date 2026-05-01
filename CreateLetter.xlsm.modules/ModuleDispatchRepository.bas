@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleDispatchRepository"
 
 ' Purpose: Workbook repository helpers for envelope formats, senders, dispatch packages, and registry metadata
 
-' Version: 1.2.2 - 01.05.2026
+' Version: 1.3.0 - 01.05.2026
 
 ' ======================================================================
 
@@ -254,6 +254,69 @@ Public Function DispatchRepositoryGetEnvelopeFormatDisplay(envelopeFormatKey As 
 
 End Function
 
+Public Sub DispatchRepositoryPopulateMailTypeOptions(targetControl As Object)
+    On Error GoTo PopulateError
+
+    targetControl.Clear
+    targetControl.AddItem DispatchRepositoryGetMailTypeDisplay("registered")
+    targetControl.AddItem DispatchRepositoryGetMailTypeDisplay("simple")
+    targetControl.AddItem DispatchRepositoryGetMailTypeDisplay("registered_notice")
+    targetControl.AddItem DispatchRepositoryGetMailTypeDisplay("declared_value")
+    targetControl.AddItem DispatchRepositoryGetMailTypeDisplay("declared_value_notice")
+    Exit Sub
+
+PopulateError:
+
+    Debug.Print "DispatchRepositoryPopulateMailTypeOptions error: " & Err.description
+End Sub
+
+Public Function DispatchRepositoryGetMailTypeDisplay(ByVal mailType As String) As String
+    Select Case DispatchRepositoryNormalizeMailTypeKey(mailType)
+    Case "simple"
+        DispatchRepositoryGetMailTypeDisplay = t("dispatch.mail_type.simple", "Simple")
+    Case "registered_notice"
+        DispatchRepositoryGetMailTypeDisplay = t("dispatch.mail_type.registered_notice", "Registered with notice")
+    Case "declared_value"
+        DispatchRepositoryGetMailTypeDisplay = t("dispatch.mail_type.declared_value", "Declared value")
+    Case "declared_value_notice"
+        DispatchRepositoryGetMailTypeDisplay = t("dispatch.mail_type.declared_value_notice", "Declared value with notice")
+    Case Else
+        DispatchRepositoryGetMailTypeDisplay = t("dispatch.mail_type.registered", "Registered")
+    End Select
+End Function
+
+Public Function DispatchRepositoryNormalizeMailTypeKey(ByVal mailType As String) As String
+    Dim normalizedText As String
+    normalizedText = UCase$(Trim$(mailType))
+
+    If Len(normalizedText) = 0 Then
+        DispatchRepositoryNormalizeMailTypeKey = "registered"
+        Exit Function
+    End If
+
+    If normalizedText = "SIMPLE" Or normalizedText = UCase$(t("dispatch.mail_type.simple", "Simple")) Then
+        DispatchRepositoryNormalizeMailTypeKey = "simple"
+        Exit Function
+    End If
+
+    If normalizedText = "REGISTERED_NOTICE" Or normalizedText = "REGISTERED_WITH_NOTICE" Or normalizedText = UCase$(t("dispatch.mail_type.registered_notice", "Registered with notice")) Then
+        DispatchRepositoryNormalizeMailTypeKey = "registered_notice"
+        Exit Function
+    End If
+
+    If normalizedText = "DECLARED_VALUE" Or normalizedText = "VALUE" Or normalizedText = UCase$(t("dispatch.mail_type.declared_value", "Declared value")) Then
+        DispatchRepositoryNormalizeMailTypeKey = "declared_value"
+        Exit Function
+    End If
+
+    If normalizedText = "DECLARED_VALUE_NOTICE" Or normalizedText = "VALUE_NOTICE" Or normalizedText = UCase$(t("dispatch.mail_type.declared_value_notice", "Declared value with notice")) Then
+        DispatchRepositoryNormalizeMailTypeKey = "declared_value_notice"
+        Exit Function
+    End If
+
+    DispatchRepositoryNormalizeMailTypeKey = "registered"
+End Function
+
 
 
 Public Function DispatchRepositoryBuildRecipientPreviewByAddressee(ByVal Addressee As String) As String
@@ -464,7 +527,7 @@ Public Function DispatchRepositoryCreateItemFromLetterFields( _
 
         .Cells(1, DispatchItemColumnEnvelopeFormatKey).value = LCase$(Trim$(envelopeFormatKey))
 
-        .Cells(1, DispatchItemColumnMailType).value = mailType
+        .Cells(1, DispatchItemColumnMailType).value = DispatchRepositoryNormalizeMailTypeKey(mailType)
 
         .Cells(1, DispatchItemColumnMass).value = mass
 

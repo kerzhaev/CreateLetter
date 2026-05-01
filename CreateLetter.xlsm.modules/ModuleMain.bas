@@ -10,7 +10,7 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.8.4 - 01.05.2026
+' Version: 1.8.5 - 01.05.2026
 
 ' ======================================================================
 
@@ -3199,6 +3199,10 @@ Public Function SmokeTestMailDispatchUi() As String
 
     If frmMailDispatch.Controls("txtDispatchRegistryDate") Is Nothing Then
         Err.Raise vbObjectError + 4703, "SmokeTestMailDispatchUi", "Runtime registry date field was not created."
+    End If
+
+    If frmMailDispatch.Controls("cmbDispatchMailType") Is Nothing Then
+        Err.Raise vbObjectError + 4704, "SmokeTestMailDispatchUi", "Runtime mail type selector was not created."
     End If
 
     SmokeTestMailDispatchUi = "runtime-controls-ok"

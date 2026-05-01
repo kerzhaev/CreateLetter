@@ -34,7 +34,7 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.2.7
+' Form: frmMailDispatch v1.3.0
 
 ' Author: CreateLetter contributors
 
@@ -79,6 +79,8 @@ Private txtDispatchRegistryNumber As MSForms.TextBox
 Private lblDispatchRegistryDate As MSForms.Label
 
 Private txtDispatchRegistryDate As MSForms.TextBox
+
+Private cmbDispatchMailType As MSForms.ComboBox
 
 Private pendingDoubleClickAction As String
 
@@ -149,7 +151,7 @@ Private Sub ApplyFormSettings()
 
     With Me
 
-        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.7"
+        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.3.0"
 
         .backColor = RGB(248, 248, 248)
 
@@ -313,11 +315,13 @@ Private Sub ApplyResponsiveLayout()
 
     lblDispatchMailType.Top = METADATA_TOP
 
-    txtDispatchMailType.Left = 370
+    txtDispatchMailType.Visible = False
 
-    txtDispatchMailType.Top = METADATA_TOP + 22
+    cmbDispatchMailType.Left = 370
 
-    txtDispatchMailType.Width = 140
+    cmbDispatchMailType.Top = METADATA_TOP + 22
+
+    cmbDispatchMailType.Width = 170
 
 
 
@@ -437,7 +441,7 @@ Private Sub ApplyLocalizedCaptions()
 
 
 
-    txtDispatchMailType.ControlTipText = t("form.mail_dispatch.tip.mail_type", "Например: заказное, простое, с уведомлением")
+    cmbDispatchMailType.ControlTipText = t("form.mail_dispatch.tip.mail_type", "Select mail type for the envelope mark")
 
     txtDispatchSearch.ControlTipText = t("form.mail_dispatch.tip.search_letters", "Введите номер, дату, адресата или текст письма для фильтрации списка")
 
@@ -464,6 +468,7 @@ Private Sub ConfigureLists()
     txtDispatchPreview.MultiLine = True
 
     txtDispatchPreview.ScrollBars = fmScrollBarsVertical
+    cmbDispatchMailType.Style = fmStyleDropDownList
 
 End Sub
 
@@ -476,6 +481,7 @@ Private Sub LoadDispatchData()
     LoadSendersList
 
     LoadEnvelopeFormatList
+    LoadMailTypeList
 
 End Sub
 
@@ -588,6 +594,12 @@ Private Sub LoadEnvelopeFormatList()
 
 End Sub
 
+Private Sub LoadMailTypeList()
+
+    DispatchRepositoryPopulateMailTypeOptions cmbDispatchMailType
+
+End Sub
+
 
 
 Private Sub SelectDefaultValues()
@@ -616,11 +628,7 @@ Private Sub SelectDefaultValues()
 
 
 
-    If Len(Trim$(txtDispatchMailType.Text)) = 0 Then
-
-        txtDispatchMailType.Text = t("form.mail_dispatch.default.mail_type", "заказное")
-
-    End If
+    If cmbDispatchMailType.ListCount > 0 Then cmbDispatchMailType.listIndex = 0
 
     ApplyWorkingRegistryDefaults
 
@@ -806,7 +814,7 @@ Private Sub btnDispatchCreate_Click()
     selectedRegistryDate = txtDispatchRegistryDate.Text
 
     Dim selectedMailType As String
-    selectedMailType = txtDispatchMailType.Text
+    selectedMailType = GetSelectedMailTypeKey()
 
     Dim selectedComment As String
     selectedComment = txtDispatchComment.Text
@@ -1261,6 +1269,12 @@ Private Function GetSelectedEnvelopeFormatKey() As String
 
 End Function
 
+Private Function GetSelectedMailTypeKey() As String
+
+    GetSelectedMailTypeKey = DispatchRepositoryNormalizeMailTypeKey(cmbDispatchMailType.Text)
+
+End Function
+
 
 
 Private Sub SelectComboValue(targetCombo As ComboBox, expectedValue As String)
@@ -1317,6 +1331,8 @@ Private Sub EnsureDynamicControls()
 
     Set txtDispatchRegistryDate = EnsureDynamicTextBox("txtDispatchRegistryDate")
 
+    Set cmbDispatchMailType = EnsureDynamicComboBox("cmbDispatchMailType")
+
     BindDynamicButtonHandlers
 
 End Sub
@@ -1332,6 +1348,20 @@ Private Function EnsureDynamicLabel(controlName As String) As MSForms.Label
     Else
 
         Set EnsureDynamicLabel = Me.Controls.Add("Forms.Label.1", controlName, True)
+
+    End If
+
+End Function
+
+Private Function EnsureDynamicComboBox(controlName As String) As MSForms.ComboBox
+
+    If ControlExists(controlName) Then
+
+        Set EnsureDynamicComboBox = Me.Controls(controlName)
+
+    Else
+
+        Set EnsureDynamicComboBox = Me.Controls.Add("Forms.ComboBox.1", controlName, True)
 
     End If
 

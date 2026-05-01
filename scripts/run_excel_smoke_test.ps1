@@ -554,6 +554,9 @@ try {
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCountAvailableUnpackedLetters(*") -and
                                                  ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryUpdateBatchRegistryState(*") -and
                                                  ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryMarkRegistryPrintedFromRegistryTable()*") -and
+                                                 ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryPopulateMailTypeOptions(*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryNormalizeMailTypeKey(*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetMailTypeDisplay(*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCountLegacyDispatchItems()*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCleanupLegacyDispatchItems()*")
 
@@ -572,7 +575,7 @@ try {
 
             if (Test-Path -LiteralPath $dispatchJournalPath) {
                 $dispatchJournalText = Get-Content -Path $dispatchJournalPath -Raw
-                $hasDispatchJournalContract = ($dispatchJournalText -like "*Public Function BuildDispatchJournal()*") -and ($dispatchJournalText -like "*Public Sub OpenDispatchJournal()*") -and ($dispatchJournalText -like "*Public Sub PromptReturnDispatchPackageToWork()*") -and ($dispatchJournalText -like "*Public Function ReturnDispatchPackageToWork(*") -and ($dispatchJournalText -like "*DispatchStatusRegistryPrinted*")
+                $hasDispatchJournalContract = ($dispatchJournalText -like "*Public Function BuildDispatchJournal()*") -and ($dispatchJournalText -like "*Public Sub OpenDispatchJournal()*") -and ($dispatchJournalText -like "*Public Sub PromptReturnDispatchPackageToWork()*") -and ($dispatchJournalText -like "*Public Function ReturnDispatchPackageToWork(*") -and ($dispatchJournalText -like "*DispatchStatusRegistryPrinted*") -and ($dispatchJournalText -like "*DispatchRepositoryGetMailTypeDisplay*")
 
                 if ($hasDispatchJournalContract) {
                     Add-Result -Results $results -Name "DispatchJournalContract" -Status "PASS" -Details "Dispatch journal and safe package-return functions are present."
@@ -659,6 +662,7 @@ try {
                 $hasPostalRegistryPrintContract = ($postalRegistryPrintText -like "*Public Function BuildPostalRegistryPrintSheet()*") -and
                                                   ($postalRegistryPrintText -like "*Public Function ExportPostalRegistryPrintPdf()*") -and
                                                   ($postalRegistryPrintText -like "*Public Sub ConfigurePostalRegistryPrintSettings()*") -and
+                                                  ($postalRegistryPrintText -like "*DispatchRepositoryGetMailTypeDisplay*") -and
                                                   ($postalRegistryPrintText -like "*PostalRegistryPrintSheetName*")
 
                 if ($hasPostalRegistryPrintContract) {
@@ -687,6 +691,9 @@ try {
                                              ($mailDispatchFormText -like "*lstDispatchPackage*") -and
                                              ($mailDispatchFormText -like "*txtDispatchRegistryNumber*") -and
                                              ($mailDispatchFormText -like "*txtDispatchRegistryDate*") -and
+                                             ($mailDispatchFormText -like "*cmbDispatchMailType*") -and
+                                             ($mailDispatchFormText -like "*LoadMailTypeList*") -and
+                                             ($mailDispatchFormText -like "*GetSelectedMailTypeKey*") -and
                                              ($mailDispatchFormText -like "*ApplyWorkingRegistryDefaults*") -and
                                              ($mailDispatchFormText -like "*registryRows = BuildDispatchRegistry()*") -and
                                              ($mailDispatchFormText -like "*preparedEnvelopes = PrepareEnvelopePrintForBatch(batchId)*") -and

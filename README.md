@@ -85,6 +85,7 @@ scripts/                      # Local automation helpers
 | [Architecture](docs/architecture.md) | Module boundaries and dependency rules |
 | [Configuration](docs/configuration.md) | Worksheets, templates, and MCP/agent context |
 | [Development Workflow](docs/development-workflow.md) | AI Factory pipeline, branching, restore points, and manual module sync |
+| [Mail Dispatch Pipeline](docs/mail-dispatch-pipeline.md) | Postal package, registry, envelope, and PDF status workflow |
 | [Maintenance](docs/maintenance.md) | VBA export/import, backup, and safe updates |
 | [GitHub Publishing](docs/github-publishing.md) | Public-repo hygiene and release checklist |
 

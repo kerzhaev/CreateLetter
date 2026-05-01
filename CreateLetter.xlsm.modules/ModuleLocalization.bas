@@ -6,7 +6,7 @@ Attribute VB_Name = "ModuleLocalization"
 
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
 
-' Version: 1.5.0 - 01.05.2026
+' Version: 1.5.1 - 01.05.2026
 
 ' Notes:
 
@@ -1220,9 +1220,29 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.button.close", "Close"
 
-    AddTranslation "ru", "form.mail_dispatch.tip.mail_type", "Например: заказное, простое, с уведомлением"
+    AddTranslation "ru", "form.mail_dispatch.tip.mail_type", "Выберите вид отправления для отметки на конверте"
 
-    AddTranslation "en", "form.mail_dispatch.tip.mail_type", "Example: registered, regular, with notice"
+    AddTranslation "en", "form.mail_dispatch.tip.mail_type", "Select mail type for the envelope mark"
+
+    AddTranslation "ru", "dispatch.mail_type.registered", "Заказное"
+
+    AddTranslation "en", "dispatch.mail_type.registered", "Registered"
+
+    AddTranslation "ru", "dispatch.mail_type.simple", "Простое"
+
+    AddTranslation "en", "dispatch.mail_type.simple", "Simple"
+
+    AddTranslation "ru", "dispatch.mail_type.registered_notice", "Заказное с уведомлением"
+
+    AddTranslation "en", "dispatch.mail_type.registered_notice", "Registered with notice"
+
+    AddTranslation "ru", "dispatch.mail_type.declared_value", "С объявленной ценностью"
+
+    AddTranslation "en", "dispatch.mail_type.declared_value", "Declared value"
+
+    AddTranslation "ru", "dispatch.mail_type.declared_value_notice", "С объявленной ценностью и уведомлением"
+
+    AddTranslation "en", "dispatch.mail_type.declared_value_notice", "Declared value with notice"
 
     AddTranslation "ru", "form.mail_dispatch.tip.search_letters", "Введите номер, дату, адресата или текст письма для фильтрации списка"
 
@@ -1539,12 +1559,12 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "en", "dispatch.journal.msg.no_items", "No dispatch packages found."
     AddTranslation "ru", "dispatch.journal.status.draft", "Черновик"
     AddTranslation "en", "dispatch.journal.status.draft", "Draft"
-    AddTranslation "ru", "dispatch.journal.status.packed", "Упаковано"
-    AddTranslation "en", "dispatch.journal.status.packed", "Packed"
-    AddTranslation "ru", "dispatch.journal.status.registered", "В реестре"
-    AddTranslation "en", "dispatch.journal.status.registered", "Registered"
-    AddTranslation "ru", "dispatch.journal.status.registry_printed", "Реестр напечатан"
-    AddTranslation "en", "dispatch.journal.status.registry_printed", "Printed"
+    AddTranslation "ru", "dispatch.journal.status.packed", "В работе"
+    AddTranslation "en", "dispatch.journal.status.packed", "In work"
+    AddTranslation "ru", "dispatch.journal.status.registered", "Открыт реестр"
+    AddTranslation "en", "dispatch.journal.status.registered", "Open registry"
+    AddTranslation "ru", "dispatch.journal.status.registry_printed", "Закрыт PDF"
+    AddTranslation "en", "dispatch.journal.status.registry_printed", "Closed PDF"
     AddTranslation "ru", "dispatch.journal.column.batch_id", "Пакет"
     AddTranslation "en", "dispatch.journal.column.batch_id", "Batch ID"
     AddTranslation "ru", "dispatch.journal.column.status", "Статус"

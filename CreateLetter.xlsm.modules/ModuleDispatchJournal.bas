@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleDispatchJournal"
 ' Module: ModuleDispatchJournal
 ' Author: CreateLetter contributors
 ' Purpose: Build a dispatch package journal and safely return non-printed packages to work
-' Version: 1.0.0 - 28.04.2026
+' Version: 1.1.0 - 01.05.2026
 ' ======================================================================
 
 Option Explicit
@@ -204,7 +204,7 @@ Private Sub WriteDispatchJournalRow(targetSheet As Worksheet, ByVal targetRow As
     targetSheet.Cells(targetRow, 7).value = BuildDispatchJournalOutgoingNumbers(batchItems)
     targetSheet.Cells(targetRow, 8).value = CStr(firstItem(DispatchItemColumnSenderName))
     targetSheet.Cells(targetRow, 9).value = UCase$(CStr(firstItem(DispatchItemColumnEnvelopeFormatKey)))
-    targetSheet.Cells(targetRow, 10).value = CStr(firstItem(DispatchItemColumnMailType))
+    targetSheet.Cells(targetRow, 10).value = DispatchRepositoryGetMailTypeDisplay(CStr(firstItem(DispatchItemColumnMailType)))
     targetSheet.Cells(targetRow, 11).value = CStr(firstItem(DispatchItemColumnCreatedAt))
     targetSheet.Cells(targetRow, 12).value = CStr(firstItem(DispatchItemColumnComment))
 End Sub
@@ -306,11 +306,11 @@ End Function
 Private Function FormatDispatchJournalStatus(ByVal status As String) As String
     Select Case LCase$(Trim$(status))
     Case DispatchStatusPacked
-        FormatDispatchJournalStatus = t("dispatch.journal.status.packed", "Packed")
+        FormatDispatchJournalStatus = t("dispatch.journal.status.packed", "In work")
     Case DispatchStatusRegistered
-        FormatDispatchJournalStatus = t("dispatch.journal.status.registered", "Registered")
+        FormatDispatchJournalStatus = t("dispatch.journal.status.registered", "Open registry")
     Case DispatchStatusRegistryPrinted
-        FormatDispatchJournalStatus = t("dispatch.journal.status.registry_printed", "Printed")
+        FormatDispatchJournalStatus = t("dispatch.journal.status.registry_printed", "Closed PDF")
     Case Else
         FormatDispatchJournalStatus = t("dispatch.journal.status.draft", "Draft")
     End Select

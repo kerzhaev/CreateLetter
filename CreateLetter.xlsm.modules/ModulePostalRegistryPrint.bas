@@ -3,7 +3,7 @@ Attribute VB_Name = "ModulePostalRegistryPrint"
 ' Module: ModulePostalRegistryPrint
 ' Author: CreateLetter contributors
 ' Purpose: Build a printable postal registry sheet from the internal dispatch registry
-' Version: 1.1.1 - 27.04.2026
+' Version: 1.1.2 - 01.05.2026
 ' ======================================================================
 
 Option Explicit
@@ -215,7 +215,7 @@ Private Sub WritePostalRegistryTable(targetSheet As Worksheet, registryData As V
             .Cells(targetRow, 3).Value = CStr(registryData(sourceRow, DispatchRegistryColumnAddressLine))
             .Cells(targetRow, 4).Value = CStr(registryData(sourceRow, DispatchRegistryColumnAddressee))
             .Cells(targetRow, 5).Value = BuildPostalRegistryOutgoingCell(CStr(registryData(sourceRow, DispatchRegistryColumnOutgoingNumbers)))
-            .Cells(targetRow, 6).Value = UCase$(CStr(registryData(sourceRow, DispatchRegistryColumnMailType)))
+            .Cells(targetRow, 6).Value = UCase$(DispatchRepositoryGetMailTypeDisplay(CStr(registryData(sourceRow, DispatchRegistryColumnMailType))))
 
             With .Range(.Cells(targetRow, 1), .Cells(targetRow, 6))
                 .WrapText = True
