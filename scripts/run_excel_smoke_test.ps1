@@ -551,6 +551,7 @@ try {
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetCurrentWorkingRegistryNumber()*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetCurrentWorkingRegistryDate()*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryGetSenderAddressBlock(senderName As String)*") -and
+                                                 ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCountAvailableUnpackedLetters(*") -and
                                                  ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryUpdateBatchRegistryState(*") -and
                                                  ($dispatchRepositoryText -like "*Public Sub DispatchRepositoryMarkRegistryPrintedFromRegistryTable()*") -and
                                                  ($dispatchRepositoryText -like "*Public Function DispatchRepositoryCountLegacyDispatchItems()*") -and
@@ -774,12 +775,15 @@ try {
         if ($RequirePostalRegistryPrintSheet) {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonConfigurePostalRegistry(control As IRibbonControl)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*ConfirmPostalRegistryPdfWithUnpackedLetters*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*grpCreateLetterRegistry*")
         }
 
         if ($RequireEnvelopeLayoutSheets) {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonPrepareEnvelopePrint(control As IRibbonControl)*")
             $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*btnRibbonPrepareEnvelopePrint*")
             $hasRibbonModule = $hasRibbonModule -and ($customUiText -notlike "*btnRibbonPrepareEnvelopePreviewGrid*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*grpCreateLetterEnvelopes*")
         }
 
         $hasCustomUiPart = $null -ne $customUiEntry

@@ -3,7 +3,7 @@
   <ribbon>
     <tabs>
       <tab id="tabCreateLetter" label="Формирование писем">
-        <group id="grpCreateLetterMain" label="Команды">
+        <group id="grpCreateLetterLetters" label="1. Письма">
           <button id="btnRibbonOpenForm"
                   label="Сделать письмо"
                   size="large"
@@ -18,19 +18,21 @@
                   onAction="RibbonOpenHistoryForm"
                   screentip="Поиск писем"
                   supertip="Открывает форму поиска и просмотра истории писем." />
+        </group>
+        <group id="grpCreateLetterPackages" label="2. Пакеты">
           <button id="btnRibbonOpenMailDispatch"
-                  label="Почтовые отправления"
+                  label="Добавить в пакет"
                   size="large"
                   imageMso="FileSendAsAttachment"
                   onAction="RibbonOpenMailDispatch"
-                  screentip="Почтовые отправления"
-                  supertip="Открывает контур подготовки конвертов и почтового реестра." />
+                  screentip="Добавить письма в почтовый пакет"
+                  supertip="Открывает форму подготовки почтового пакета: выбор писем, адресата, реестра и конверта." />
           <button id="btnRibbonOpenDispatchJournal"
-                  label="Журнал отправлений"
+                  label="Журнал пакетов"
                   size="large"
                   imageMso="TableOfContentsGallery"
                   onAction="RibbonOpenDispatchJournal"
-                  screentip="Журнал отправлений"
+                  screentip="Журнал пакетов"
                   supertip="Открывает журнал почтовых пакетов со статусами и номерами реестров." />
           <button id="btnRibbonReturnDispatchPackage"
                   label="Вернуть пакет"
@@ -46,34 +48,40 @@
                   onAction="RibbonCleanupDispatchLegacy"
                   screentip="Диагностика отправлений"
                   supertip="Находит старые строки почтовых отправлений без статуса и реестра, затем по подтверждению возвращает связанные письма в работу." />
+        </group>
+        <group id="grpCreateLetterRegistry" label="3. Реестр">
           <button id="btnRibbonBuildDispatchRegistry"
-                  label="Сформировать реестр"
+                  label="Обновить реестр"
                   size="large"
                   imageMso="TableInsertExcelSpreadsheet"
                   onAction="RibbonBuildDispatchRegistry"
-                  screentip="Сформировать реестр"
-                  supertip="Собирает внутренний Excel-реестр из подготовленных почтовых отправлений." />
+                  screentip="Обновить реестр"
+                  supertip="Собирает внутренний Excel-реестр из подготовленных почтовых пакетов." />
+          <button id="btnRibbonExportPostalRegistryPdf"
+                  label="Закрыть PDF"
+                  size="large"
+                  imageMso="FileSaveAsPdfOrXps"
+                  onAction="RibbonExportPostalRegistryPdf"
+                  screentip="Закрыть реестр в PDF"
+                  supertip="Проверяет неупакованные письма, экспортирует печатный реестр в PDF и закрывает пакеты как напечатанные." />
           <button id="btnRibbonConfigurePostalRegistry"
-                  label="Настройки реестра"
+                  label="Настройки"
                   size="large"
                   imageMso="PropertySheet"
                   onAction="RibbonConfigurePostalRegistry"
                   screentip="Настройки реестра"
                   supertip="Настраивает почтовое отделение, подписи и папку PDF для печатного реестра." />
-          <button id="btnRibbonExportPostalRegistryPdf"
-                  label="Реестр PDF"
-                  size="large"
-                  imageMso="FileSaveAsPdfOrXps"
-                  onAction="RibbonExportPostalRegistryPdf"
-                  screentip="Реестр PDF"
-                  supertip="Экспортирует печатный лист PostalRegistryPrint в PDF." />
+        </group>
+        <group id="grpCreateLetterEnvelopes" label="4. Конверты">
           <button id="btnRibbonPrepareEnvelopePrint"
                   label="Подготовить конверты"
                   size="large"
                   imageMso="PrintPreviewAndPrint"
                   onAction="RibbonPrepareEnvelopePrint"
                   screentip="Подготовить конверты"
-                  supertip="Заполняет скрытые layout-листы C4, C5 и DL данными для печати конвертов." />
+                  supertip="Заполняет скрытые layout-листы C4, C5 и DL данными текущих почтовых пакетов для печати конвертов." />
+        </group>
+        <group id="grpCreateLetterSettings" label="5. Настройки">
           <button id="btnRibbonTemplateFolder"
                   label="Папка шаблонов"
                   size="large"

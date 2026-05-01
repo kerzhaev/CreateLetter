@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleDispatchRepository"
 
 ' Purpose: Workbook repository helpers for envelope formats, senders, dispatch packages, and registry metadata
 
-' Version: 1.2.1 - 30.04.2026
+' Version: 1.2.2 - 01.05.2026
 
 ' ======================================================================
 
@@ -736,6 +736,72 @@ LoadError:
 
     Debug.Print "DispatchRepositoryLoadDispatchItems error: " & Err.description
 
+End Function
+
+Public Function DispatchRepositoryCountAvailableUnpackedLetters(Optional ByRef sampleText As String = "") As Long
+    On Error GoTo CountError
+
+    sampleText = ""
+
+    Dim rawLetters As Collection
+    Set rawLetters = RepositoryLoadLetterHistoryData()
+
+    Dim queuedKeys As Object
+    Set queuedKeys = DispatchRepositoryGetQueuedLetterKeySet()
+
+    Dim i As Long
+    For i = 1 To rawLetters.count
+        Dim record As clsLetterHistoryRecord
+        Set record = rawLetters(i)
+
+        If DispatchRepositoryIsLetterAvailableForPackage(record, queuedKeys) Then
+            DispatchRepositoryCountAvailableUnpackedLetters = DispatchRepositoryCountAvailableUnpackedLetters + 1
+            If DispatchRepositoryCountAvailableUnpackedLetters <= 10 Then sampleText = AppendDispatchWarningLine(sampleText, record)
+        End If
+    Next i
+
+    Exit Function
+
+CountError:
+
+    Debug.Print "DispatchRepositoryCountAvailableUnpackedLetters error: " & Err.description
+    DispatchRepositoryCountAvailableUnpackedLetters = 0
+    sampleText = ""
+End Function
+
+Private Function DispatchRepositoryIsLetterAvailableForPackage(record As clsLetterHistoryRecord, queuedKeys As Object) As Boolean
+    If record Is Nothing Then Exit Function
+
+    If Not queuedKeys Is Nothing Then
+        If queuedKeys.Exists(DispatchRepositoryBuildHistoryKey(record.Addressee, record.OutgoingNumber, record.OutgoingDate)) Then Exit Function
+    End If
+
+    Dim packedFlag As String
+    packedFlag = UCase$(Trim$(record.DispatchPackedFlag))
+
+    If Len(packedFlag) > 0 Then
+        If packedFlag <> UCase$(t("history.dispatch_status.not_packed", "Нет")) And packedFlag <> "NO" Then Exit Function
+    End If
+
+    If Len(Trim$(record.DispatchBatchId)) > 0 Then Exit Function
+    If Len(Trim$(record.DispatchRegistryNumber)) > 0 Then Exit Function
+    If Len(Trim$(record.DispatchRegistryDate)) > 0 Then Exit Function
+
+    DispatchRepositoryIsLetterAvailableForPackage = True
+End Function
+
+Private Function AppendDispatchWarningLine(ByVal currentText As String, record As clsLetterHistoryRecord) As String
+    Dim lineText As String
+    lineText = Trim$(record.OutgoingNumber)
+
+    If Len(Trim$(record.OutgoingDate)) > 0 Then lineText = lineText & " " & t("common.preposition.from", "from") & " " & Trim$(record.OutgoingDate)
+    If Len(Trim$(record.Addressee)) > 0 Then lineText = lineText & " - " & Trim$(record.Addressee)
+
+    If Len(Trim$(currentText)) = 0 Then
+        AppendDispatchWarningLine = lineText
+    Else
+        AppendDispatchWarningLine = currentText & vbCrLf & lineText
+    End If
 End Function
 
 Public Function DispatchRepositoryGetCurrentWorkingRegistryNumber() As String

@@ -1212,9 +1212,9 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.button.create", "Add to dispatch"
 
-    AddTranslation "ru", "form.mail_dispatch.button.create_package", "Сохранить пакет"
+    AddTranslation "ru", "form.mail_dispatch.button.create_package", "Добавить пакет в реестр"
 
-    AddTranslation "en", "form.mail_dispatch.button.create_package", "Save package"
+    AddTranslation "en", "form.mail_dispatch.button.create_package", "Add package to registry"
 
     AddTranslation "ru", "form.mail_dispatch.button.close", "Закрыть"
 
@@ -1500,6 +1500,10 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "en", "postal.registry.pdf.msg.exported", "Postal registry PDF exported:"
     AddTranslation "ru", "postal.registry.pdf.msg.not_exported", "PDF реестра не был сохранён."
     AddTranslation "en", "postal.registry.pdf.msg.not_exported", "Postal registry PDF was not exported."
+    AddTranslation "ru", "postal.registry.pdf.confirm.unpacked_letters", "В истории есть письма, которые ещё не добавлены в почтовые пакеты. Если продолжить, они не попадут в текущий PDF-реестр."
+    AddTranslation "en", "postal.registry.pdf.confirm.unpacked_letters", "There are letters in history that have not been added to dispatch packages. If you continue, they will not be included in the current PDF registry."
+    AddTranslation "ru", "postal.registry.pdf.confirm.continue", "Продолжить печать PDF-реестра?"
+    AddTranslation "en", "postal.registry.pdf.confirm.continue", "Continue printing the PDF registry?"
     AddTranslation "ru", "postal.registry.pdf.msg.error", "Не удалось сохранить PDF реестра: "
     AddTranslation "en", "postal.registry.pdf.msg.error", "Failed to export postal registry PDF: "
 

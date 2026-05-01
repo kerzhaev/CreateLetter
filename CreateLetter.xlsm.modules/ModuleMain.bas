@@ -10,7 +10,7 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.8.3 - 01.05.2026
+' Version: 1.8.4 - 01.05.2026
 
 ' ======================================================================
 
@@ -3089,7 +3089,7 @@ Public Sub OpenMailDispatch()
     Set dispatchForm = New frmMailDispatch
     RegisterActiveMailDispatchForm dispatchForm
     dispatchForm.Show vbModal
-    UnregisterActiveMailDispatchForm dispatchForm
+    UnregisterActiveMailDispatchForm Nothing
     Exit Sub
 
 OpenDispatchError:
@@ -3103,7 +3103,9 @@ End Sub
 
 Public Sub RegisterActiveMailDispatchForm(formInstance As Object)
 
+    On Error Resume Next
     Set activeMailDispatchForm = formInstance
+    On Error GoTo 0
 
 End Sub
 
@@ -3111,14 +3113,9 @@ End Sub
 
 Public Sub UnregisterActiveMailDispatchForm(formInstance As Object)
 
-    If formInstance Is Nothing Then
-        Set activeMailDispatchForm = Nothing
-        Exit Sub
-    End If
-
-    If activeMailDispatchForm Is Nothing Then Exit Sub
-
-    If activeMailDispatchForm Is formInstance Then Set activeMailDispatchForm = Nothing
+    On Error Resume Next
+    Set activeMailDispatchForm = Nothing
+    On Error GoTo 0
 
 End Sub
 

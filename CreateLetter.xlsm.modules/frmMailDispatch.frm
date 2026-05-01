@@ -34,7 +34,7 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.2.6
+' Form: frmMailDispatch v1.2.7
 
 ' Author: CreateLetter contributors
 
@@ -135,8 +135,11 @@ End Sub
 
 Private Sub UserForm_Terminate()
 
+    On Error Resume Next
+
     CancelPendingDoubleClickSchedule
     UnregisterActiveMailDispatchForm Me
+    On Error GoTo 0
 
 End Sub
 
@@ -146,7 +149,7 @@ Private Sub ApplyFormSettings()
 
     With Me
 
-        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.6"
+        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.2.7"
 
         .backColor = RGB(248, 248, 248)
 
@@ -158,15 +161,15 @@ End Sub
 
 Private Sub ApplyResponsiveLayout()
 
-    Const FORM_WIDTH As Single = 920
+    Const FORM_WIDTH As Single = 980
 
-    Const FORM_HEIGHT As Single = 700
+    Const FORM_HEIGHT As Single = 740
 
     Const LEFT_COLUMN_LEFT As Single = 18
 
-    Const PACKAGE_COLUMN_LEFT As Single = 472
+    Const PACKAGE_COLUMN_LEFT As Single = 492
 
-    Const LIST_WIDTH As Single = 330
+    Const LIST_WIDTH As Single = 360
 
     Const CONTENT_TOP As Single = 36
 
@@ -176,15 +179,15 @@ Private Sub ApplyResponsiveLayout()
 
     Const LIST_HEIGHT As Single = 264
 
-    Const MIDDLE_BUTTON_LEFT As Single = 380
+    Const MIDDLE_BUTTON_LEFT As Single = 428
 
     Const BUTTON_TOP As Single = 180
 
     Const METADATA_TOP As Single = 402
 
-    Const COMMENT_TOP As Single = 522
+    Const COMMENT_TOP As Single = 536
 
-    Const PREVIEW_TOP As Single = 522
+    Const PREVIEW_TOP As Single = 536
 
     Const PREVIEW_HEIGHT As Single = 126
 
@@ -238,7 +241,7 @@ Private Sub ApplyResponsiveLayout()
 
     btnDispatchRefresh.Left = LEFT_COLUMN_LEFT
 
-    btnDispatchRefresh.Top = COMMENT_TOP + 116
+    btnDispatchRefresh.Top = COMMENT_TOP + 124
 
     btnDispatchRefresh.Width = 118
 
@@ -266,7 +269,7 @@ Private Sub ApplyResponsiveLayout()
 
     btnDispatchAddToPackage.Top = BUTTON_TOP
 
-    btnDispatchAddToPackage.Width = 44
+    btnDispatchAddToPackage.Width = 36
 
     btnDispatchAddToPackage.Height = 28
 
@@ -276,7 +279,7 @@ Private Sub ApplyResponsiveLayout()
 
     btnDispatchRemoveFromPackage.Top = BUTTON_TOP + 40
 
-    btnDispatchRemoveFromPackage.Width = 44
+    btnDispatchRemoveFromPackage.Width = 36
 
     btnDispatchRemoveFromPackage.Height = 28
 
@@ -360,37 +363,37 @@ Private Sub ApplyResponsiveLayout()
 
     txtDispatchComment.Top = COMMENT_TOP
 
-    txtDispatchComment.Width = 360
+    txtDispatchComment.Width = 382
 
     txtDispatchComment.Height = 48
 
 
 
-    lblDispatchPreview.Left = 400
+    lblDispatchPreview.Left = 420
 
     lblDispatchPreview.Top = PREVIEW_TOP - 22
 
-    txtDispatchPreview.Left = 400
+    txtDispatchPreview.Left = 420
 
     txtDispatchPreview.Top = PREVIEW_TOP
 
-    txtDispatchPreview.Width = 360
+    txtDispatchPreview.Width = 382
 
-    txtDispatchPreview.Height = PREVIEW_HEIGHT
-
-
-
-    btnDispatchCreate.Left = 400
-
-    btnDispatchCreate.Top = 620
-
-    btnDispatchCreate.Width = 160
+    txtDispatchPreview.Height = 110
 
 
 
-    btnDispatchClose.Left = 580
+    btnDispatchCreate.Left = 420
 
-    btnDispatchClose.Top = 620
+    btnDispatchCreate.Top = 654
+
+    btnDispatchCreate.Width = 178
+
+
+
+    btnDispatchClose.Left = 620
+
+    btnDispatchClose.Top = 654
 
     btnDispatchClose.Width = 140
 
@@ -424,7 +427,7 @@ Private Sub ApplyLocalizedCaptions()
 
     btnDispatchRefresh.Caption = t("form.mail_dispatch.button.refresh", "Обновить")
 
-    btnDispatchCreate.Caption = t("form.mail_dispatch.button.create_package", "Сохранить пакет")
+    btnDispatchCreate.Caption = t("form.mail_dispatch.button.create_package", "Add package to registry")
 
     btnDispatchClose.Caption = t("form.mail_dispatch.button.close", "Закрыть")
 

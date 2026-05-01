@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks, dispatch actions, and user-configurable folder settings
 
-' Version: 1.3.1 - 01.05.2026
+' Version: 1.3.2 - 01.05.2026
 
 ' ======================================================================
 
@@ -163,6 +163,8 @@ Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)
 
     On Error GoTo ExportError
 
+    If Not ConfirmPostalRegistryPdfWithUnpackedLetters() Then Exit Sub
+
     Dim pdfPath As String
     pdfPath = ExportPostalRegistryPrint()
 
@@ -177,6 +179,23 @@ Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)
 ExportError:
     MsgBox t("postal.registry.pdf.msg.error", "Failed to export postal registry PDF: ") & Err.description, vbCritical, t("postal.registry.pdf.title", "Postal registry PDF")
 End Sub
+
+Private Function ConfirmPostalRegistryPdfWithUnpackedLetters() As Boolean
+    ConfirmPostalRegistryPdfWithUnpackedLetters = True
+
+    Dim sampleText As String
+    Dim unpackedCount As Long
+    unpackedCount = DispatchRepositoryCountAvailableUnpackedLetters(sampleText)
+
+    If unpackedCount = 0 Then Exit Function
+
+    Dim promptText As String
+    promptText = t("postal.registry.pdf.confirm.unpacked_letters", "There are letters in history that have not been added to dispatch packages. If you continue, they will not be included in the current PDF registry.") & vbCrLf & CStr(unpackedCount)
+    If Len(Trim$(sampleText)) > 0 Then promptText = promptText & vbCrLf & vbCrLf & sampleText
+    promptText = promptText & vbCrLf & vbCrLf & t("postal.registry.pdf.confirm.continue", "Continue printing the PDF registry?")
+
+    If MsgBox(promptText, vbQuestion + vbYesNo, t("postal.registry.pdf.title", "Почтовый реестр PDF")) <> vbYes Then ConfirmPostalRegistryPdfWithUnpackedLetters = False
+End Function
 
 
 
