@@ -35,6 +35,12 @@ Workbook worksheets act as persistence:
 - Core modules should not depend on specific form control state.
 - Backup/audit helpers should remain reusable and side-effect explicit.
 
+## UserForm Screen Fit
+
+Excel VBA forms must be usable on smaller executor screens. A form may keep a fixed designed canvas for readability, but before display it must compare that canvas with `Application.UsableWidth` and `Application.UsableHeight`. If the visible workspace is smaller, the form must shrink to the visible bounds and enable scrollbars so command buttons and required fields remain reachable.
+
+Do not rely only on `StartUpPosition = CenterOwner`: centering does not prevent the lower edge of a UserForm from leaving the screen.
+
 ## Source of Truth
 
 - Runtime artifact: `CreateLetter.xlsm`

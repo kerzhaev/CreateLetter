@@ -706,6 +706,10 @@ try {
                                              ($mailDispatchFormText -like "*HandleDynamicButtonClick*") -and
                                              ($mailDispatchFormText -like "*QueueMailDispatchDoubleClick*") -and
                                              ($mailDispatchFormText -like "*CancelPendingDoubleClickSchedule*") -and
+                                             ($mailDispatchFormText -like "*FitFormToVisibleScreen*") -and
+                                             ($mailDispatchFormText -like "*Application.UsableWidth*") -and
+                                             ($mailDispatchFormText -like "*Application.UsableHeight*") -and
+                                             ($mailDispatchFormText -like "*fmScrollBarsBoth*") -and
                                              ($mailDispatchFormText -like "*Public Sub RunDeferredDoubleClickAction()*") -and
                                              ($moduleMainText -like "*Public Sub RunMailDispatchDeferredDoubleClick()*") -and
                                              ($moduleMainText -like "*Public Sub RegisterActiveMailDispatchForm(formInstance As Object)*") -and
