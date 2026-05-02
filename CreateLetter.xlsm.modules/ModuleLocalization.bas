@@ -6,7 +6,7 @@ Attribute VB_Name = "ModuleLocalization"
 
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
 
-' Version: 1.5.1 - 01.05.2026
+' Version: 1.5.2 - 02.05.2026
 
 ' Notes:
 
@@ -1092,9 +1092,45 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "ribbon.about.output_folder", "Output folder: "
 
+    AddTranslation "ru", "ribbon.about.pipeline.title", "Краткий пайплайн:"
+
+    AddTranslation "en", "ribbon.about.pipeline.title", "Workflow:"
+
+    AddTranslation "ru", "ribbon.about.pipeline.step1", "1. Сделать письмо"
+
+    AddTranslation "en", "ribbon.about.pipeline.step1", "1. Create a letter"
+
+    AddTranslation "ru", "ribbon.about.pipeline.step2", "2. Добавить письма в пакет"
+
+    AddTranslation "en", "ribbon.about.pipeline.step2", "2. Add letters to a package"
+
+    AddTranslation "ru", "ribbon.about.pipeline.step3", "3. Собрать реестр ОПС"
+
+    AddTranslation "en", "ribbon.about.pipeline.step3", "3. Build the OPS registry"
+
+    AddTranslation "ru", "ribbon.about.pipeline.step4", "4. Подготовить конверты"
+
+    AddTranslation "en", "ribbon.about.pipeline.step4", "4. Prepare envelopes"
+
+    AddTranslation "ru", "ribbon.about.pipeline.step5", "5. Сформировать реестр ОПС"
+
+    AddTranslation "en", "ribbon.about.pipeline.step5", "5. Export the OPS registry"
+
+    AddTranslation "ru", "ribbon.about.version", "Версия программы: "
+
+    AddTranslation "en", "ribbon.about.version", "Version: "
+
     AddTranslation "ru", "ribbon.about.open_form_hint", "Используйте ленту Excel для открытия формы и настройки папок."
 
     AddTranslation "en", "ribbon.about.open_form_hint", "Use the Excel ribbon to open the form and configure folders."
+
+    AddTranslation "ru", "ribbon.settings.title", "Настройки программы"
+
+    AddTranslation "en", "ribbon.settings.title", "Program settings"
+
+    AddTranslation "ru", "ribbon.settings.msg", "Общие настройки разделены по задачам: папки шаблонов и писем выбираются отдельными кнопками, а поля реестра ОПС задаются в шаблоне листа PostalRegistryPrint."
+
+    AddTranslation "en", "ribbon.settings.msg", "Program settings are split by task: use folder buttons for templates and output, and edit registry template cells directly on PostalRegistryPrint."
 
     AddTranslation "ru", "ribbon.msg.folder_unavailable", "Путь недоступен, использован путь книги:"
 
@@ -1356,7 +1392,7 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.preview.registry", "Registry:"
 
-    AddTranslation "ru", "dispatch.registry.title", "Почтовый реестр"
+    AddTranslation "ru", "dispatch.registry.title", "Реестр ОПС"
 
     AddTranslation "en", "dispatch.registry.title", "Dispatch registry"
 
@@ -1514,17 +1550,17 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "en", "postal.registry.settings.msg.saved", "Postal registry settings saved."
     AddTranslation "ru", "postal.registry.settings.msg.error", "Не удалось сохранить настройки печатного реестра: "
     AddTranslation "en", "postal.registry.settings.msg.error", "Failed to save postal registry settings: "
-    AddTranslation "ru", "postal.registry.pdf.title", "PDF реестра"
-    AddTranslation "en", "postal.registry.pdf.title", "Postal registry PDF"
-    AddTranslation "ru", "postal.registry.pdf.msg.exported", "PDF реестра сохранён:"
+    AddTranslation "ru", "postal.registry.pdf.title", "Реестр ОПС"
+    AddTranslation "en", "postal.registry.pdf.title", "OPS registry"
+    AddTranslation "ru", "postal.registry.pdf.msg.exported", "Реестр ОПС сохранён:"
     AddTranslation "en", "postal.registry.pdf.msg.exported", "Postal registry PDF exported:"
-    AddTranslation "ru", "postal.registry.pdf.msg.not_exported", "PDF реестра не был сохранён."
+    AddTranslation "ru", "postal.registry.pdf.msg.not_exported", "Реестр ОПС не был сохранён."
     AddTranslation "en", "postal.registry.pdf.msg.not_exported", "Postal registry PDF was not exported."
-    AddTranslation "ru", "postal.registry.pdf.confirm.unpacked_letters", "В истории есть письма, которые ещё не добавлены в почтовые пакеты. Если продолжить, они не попадут в текущий PDF-реестр."
+    AddTranslation "ru", "postal.registry.pdf.confirm.unpacked_letters", "В истории есть письма, которые ещё не добавлены в почтовые пакеты. Если продолжить, они не попадут в текущий реестр ОПС."
     AddTranslation "en", "postal.registry.pdf.confirm.unpacked_letters", "There are letters in history that have not been added to dispatch packages. If you continue, they will not be included in the current PDF registry."
-    AddTranslation "ru", "postal.registry.pdf.confirm.continue", "Продолжить печать PDF-реестра?"
+    AddTranslation "ru", "postal.registry.pdf.confirm.continue", "Продолжить формирование реестра ОПС?"
     AddTranslation "en", "postal.registry.pdf.confirm.continue", "Continue printing the PDF registry?"
-    AddTranslation "ru", "postal.registry.pdf.msg.error", "Не удалось сохранить PDF реестра: "
+    AddTranslation "ru", "postal.registry.pdf.msg.error", "Не удалось сохранить реестр ОПС: "
     AddTranslation "en", "postal.registry.pdf.msg.error", "Failed to export postal registry PDF: "
 
     AddTranslation "ru", "history.dispatch_status.not_packed", "Нет"

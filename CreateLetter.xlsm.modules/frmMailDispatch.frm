@@ -34,7 +34,7 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.3.0
+' Form: frmMailDispatch v1.3.1
 
 ' Author: CreateLetter contributors
 
@@ -151,7 +151,7 @@ Private Sub ApplyFormSettings()
 
     With Me
 
-        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v1.3.0"
+        .Caption = t("form.mail_dispatch.title", "Mail dispatch") & " v" & CreateLetterApplicationVersion
 
         .backColor = RGB(248, 248, 248)
 
@@ -604,10 +604,8 @@ End Sub
 
 Private Sub SelectDefaultValues()
 
-    If cmbDispatchEnvelopeFormat.ListCount > 0 Then
-
-        cmbDispatchEnvelopeFormat.listIndex = 0
-
+    If Not SelectEnvelopeFormatByKey("c5") Then
+        If cmbDispatchEnvelopeFormat.ListCount > 0 Then cmbDispatchEnvelopeFormat.listIndex = 0
     End If
 
 
@@ -1266,6 +1264,24 @@ Private Function GetSelectedEnvelopeFormatKey() As String
 
 
     GetSelectedEnvelopeFormatKey = CStr(envelopeFormats(cmbDispatchEnvelopeFormat.listIndex + 1)(EnvelopeFormatColumnKey))
+
+End Function
+
+Private Function SelectEnvelopeFormatByKey(envelopeFormatKey As String) As Boolean
+
+    If envelopeFormats Is Nothing Then Exit Function
+
+    Dim normalizedKey As String
+    normalizedKey = LCase$(Trim$(envelopeFormatKey))
+
+    Dim i As Long
+    For i = 1 To envelopeFormats.count
+        If LCase$(Trim$(CStr(envelopeFormats(i)(EnvelopeFormatColumnKey)))) = normalizedKey Then
+            cmbDispatchEnvelopeFormat.listIndex = i - 1
+            SelectEnvelopeFormatByKey = True
+            Exit Function
+        End If
+    Next i
 
 End Function
 

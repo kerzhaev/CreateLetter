@@ -83,7 +83,8 @@ function Test-EnvelopeSheet {
     param(
         [object]$Workbook,
         [string]$FormatKey,
-        [string]$ExpectedOutgoing
+        [string]$ExpectedOutgoing,
+        [int]$ExpectedPages
     )
 
     $sheetName = "DispatchLayout_" + $FormatKey.ToUpperInvariant()
@@ -122,6 +123,7 @@ function Test-EnvelopeSheet {
         HasDigitOneSlant = $hasDigitOneSlant
         PrintArea = $printArea
         Visible = [int]$sheet.Visible
+        ExpectedPostalBarCount = $ExpectedPages * 7
     }
 }
 
@@ -227,34 +229,65 @@ try {
             RegistryNumber = $registryNumber
             RegistryDate = $registryDate
         }
+
+        if ($formatKey -eq "c5") {
+            $secondBatchId = "aif-envelope-smoke-c5-second"
+            Add-TableRow -Table $dispatchItemsTable -Values @{
+                DispatchId = $secondBatchId + "-1"
+                LetterNumber = "7/201"
+                LetterDate = "02.05.2026"
+                LetterRowNumber = "201"
+                Addressee = "AIF Addressee C5 Second"
+                AddressLine = "Second recipient street, Second city, 355017"
+                PostalCode = "355017"
+                SenderName = "AIF Sender"
+                EnvelopeFormatKey = $formatKey
+                MailType = "registered"
+                Mass = ""
+                DeclaredValue = ""
+                Comment = ""
+                Phone = ""
+                BatchId = $secondBatchId
+                Status = "packed"
+                CreatedAt = $registryDate
+                RegistryNumber = $registryNumber
+                RegistryDate = $registryDate
+            }
+        }
     }
 
     $macroPrefix = "'" + $workbook.Name + "'!"
     $registryRows = [int]$excel.Run($macroPrefix + "BuildDispatchRegistry")
-    if ($registryRows -eq 3) {
-        Add-SmokeResult -Results $results -Name "BuildDispatchRegistry" -Status "PASS" -Details "Built 3 grouped registry rows."
+    if ($registryRows -eq 4) {
+        Add-SmokeResult -Results $results -Name "BuildDispatchRegistry" -Status "PASS" -Details "Built 4 grouped registry rows."
     }
     else {
-        Add-SmokeResult -Results $results -Name "BuildDispatchRegistry" -Status "FAIL" -Details ("Expected 3 rows, got " + $registryRows)
+        Add-SmokeResult -Results $results -Name "BuildDispatchRegistry" -Status "FAIL" -Details ("Expected 4 rows, got " + $registryRows)
         $failed = $true
     }
 
     $preparedCount = [int]$excel.Run($macroPrefix + "PrepareEnvelopePrint")
-    if ($preparedCount -eq 3) {
-        Add-SmokeResult -Results $results -Name "PrepareEnvelopePrint" -Status "PASS" -Details "Prepared C4, C5, and DL envelope sheets."
+    if ($preparedCount -eq 4) {
+        Add-SmokeResult -Results $results -Name "PrepareEnvelopePrint" -Status "PASS" -Details "Prepared C4, two C5, and DL envelope pages."
     }
     else {
-        Add-SmokeResult -Results $results -Name "PrepareEnvelopePrint" -Status "FAIL" -Details ("Expected 3 prepared envelopes, got " + $preparedCount)
+        Add-SmokeResult -Results $results -Name "PrepareEnvelopePrint" -Status "FAIL" -Details ("Expected 4 prepared envelopes, got " + $preparedCount)
         $failed = $true
     }
 
+    $expectedPagesByFormat = @{
+        c4 = 1
+        c5 = 2
+        dl = 1
+    }
+
     foreach ($formatKey in $formats) {
-        $sheetCheck = Test-EnvelopeSheet -Workbook $workbook -FormatKey $formatKey -ExpectedOutgoing "7/102"
-        if ($sheetCheck.PostalBarCount -ge 7 -and $sheetCheck.HasOutgoingText -and $sheetCheck.HasDigitOneSlant -and -not [string]::IsNullOrWhiteSpace($sheetCheck.PrintArea)) {
+        $sheetCheck = Test-EnvelopeSheet -Workbook $workbook -FormatKey $formatKey -ExpectedOutgoing "7/102" -ExpectedPages $expectedPagesByFormat[$formatKey]
+        if ($sheetCheck.PostalBarCount -eq $sheetCheck.ExpectedPostalBarCount -and $sheetCheck.HasOutgoingText -and $sheetCheck.HasDigitOneSlant -and -not [string]::IsNullOrWhiteSpace($sheetCheck.PrintArea)) {
             Add-SmokeResult -Results $results -Name ("EnvelopeSheet:" + $formatKey) -Status "PASS" -Details ("bars=" + $sheetCheck.PostalBarCount + "; slantOne=" + $sheetCheck.HasDigitOneSlant + "; printArea=" + $sheetCheck.PrintArea)
         }
         else {
-            Add-SmokeResult -Results $results -Name ("EnvelopeSheet:" + $formatKey) -Status "FAIL" -Details ("bars=" + $sheetCheck.PostalBarCount + "; outgoing=" + $sheetCheck.HasOutgoingText + "; slantOne=" + $sheetCheck.HasDigitOneSlant + "; printArea=" + $sheetCheck.PrintArea)
+            Add-SmokeResult -Results $results -Name ("EnvelopeSheet:" + $formatKey) -Status "FAIL" -Details ("bars=" + $sheetCheck.PostalBarCount + "; expectedBars=" + $sheetCheck.ExpectedPostalBarCount + "; outgoing=" + $sheetCheck.HasOutgoingText + "; slantOne=" + $sheetCheck.HasDigitOneSlant + "; printArea=" + $sheetCheck.PrintArea)
             $failed = $true
         }
     }
