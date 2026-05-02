@@ -34,7 +34,7 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.4.0
+' Form: frmMailDispatch v1.4.1
 
 ' Author: CreateLetter contributors
 
@@ -166,22 +166,23 @@ End Sub
 Private Sub ApplyResponsiveLayout()
 
     Const FORM_WIDTH As Single = 920
-    Const FORM_HEIGHT As Single = 635
+    Const FORM_HEIGHT As Single = 590
     Const LEFT_COLUMN_LEFT As Single = 12
-    Const LIST_WIDTH As Single = 370
-    Const MIDDLE_BUTTON_LEFT As Single = 392
+    Const LIST_WIDTH As Single = 376
+    Const MIDDLE_BUTTON_LEFT As Single = 400
     Const MIDDLE_BUTTON_WIDTH As Single = 70
-    Const PACKAGE_COLUMN_LEFT As Single = 472
+    Const PACKAGE_COLUMN_LEFT As Single = 482
     Const CONTENT_TOP As Single = 18
     Const SEARCH_TOP As Single = 44
     Const LIST_TOP As Single = 94
-    Const LIST_HEIGHT As Single = 246
+    Const LIST_HEIGHT As Single = 230
     Const BUTTON_TOP As Single = 176
-    Const PARAM_TOP As Single = 356
+    Const PARAM_TOP As Single = 346
     Const ROW_HEIGHT As Single = 25
-    Const COMMENT_TOP As Single = 438
-    Const PREVIEW_TOP As Single = 514
-    Const ACTION_TOP As Single = 594
+    Const PREVIEW_TOP As Single = 350
+    Const COMMENT_TOP As Single = 450
+    Const RIGHT_ACTION_TOP As Single = 445
+    Const LEFT_ACTION_TOP As Single = 532
 
 
 
@@ -233,7 +234,7 @@ Private Sub ApplyResponsiveLayout()
 
     btnDispatchRefresh.Left = LEFT_COLUMN_LEFT
 
-    btnDispatchRefresh.Top = ACTION_TOP
+    btnDispatchRefresh.Top = LEFT_ACTION_TOP
 
     btnDispatchRefresh.Width = 118
 
@@ -322,20 +323,20 @@ Private Sub ApplyResponsiveLayout()
 
     lblDispatchRegistryNumber.Top = PARAM_TOP + (ROW_HEIGHT * 2)
 
-    lblDispatchRegistryNumber.Width = 70
+    lblDispatchRegistryNumber.Width = 84
 
-    txtDispatchRegistryNumber.Left = PACKAGE_COLUMN_LEFT + 78
+    txtDispatchRegistryNumber.Left = PACKAGE_COLUMN_LEFT + 90
 
     txtDispatchRegistryNumber.Top = PARAM_TOP + (ROW_HEIGHT * 2) - 3
 
-    txtDispatchRegistryNumber.Width = 94
+    txtDispatchRegistryNumber.Width = 88
 
 
-    lblDispatchRegistryDate.Left = PACKAGE_COLUMN_LEFT + 190
+    lblDispatchRegistryDate.Left = PACKAGE_COLUMN_LEFT + 196
 
     lblDispatchRegistryDate.Top = PARAM_TOP + (ROW_HEIGHT * 2)
 
-    lblDispatchRegistryDate.Width = 58
+    lblDispatchRegistryDate.Width = 48
 
     txtDispatchRegistryDate.Left = PACKAGE_COLUMN_LEFT + 250
 
@@ -354,37 +355,41 @@ Private Sub ApplyResponsiveLayout()
 
 
 
-    lblDispatchComment.Left = PACKAGE_COLUMN_LEFT
-
-    lblDispatchComment.Top = COMMENT_TOP - 22
-
-    txtDispatchComment.Left = PACKAGE_COLUMN_LEFT
-
-    txtDispatchComment.Top = COMMENT_TOP
-
-    txtDispatchComment.Width = LIST_WIDTH
-
-    txtDispatchComment.Height = 48
-
-
-
-    lblDispatchPreview.Left = PACKAGE_COLUMN_LEFT
+    lblDispatchPreview.Left = LEFT_COLUMN_LEFT
 
     lblDispatchPreview.Top = PREVIEW_TOP - 22
 
-    txtDispatchPreview.Left = PACKAGE_COLUMN_LEFT
+    lblDispatchPreview.Width = LIST_WIDTH
+
+    txtDispatchPreview.Left = LEFT_COLUMN_LEFT
 
     txtDispatchPreview.Top = PREVIEW_TOP
 
     txtDispatchPreview.Width = LIST_WIDTH
 
-    txtDispatchPreview.Height = 60
+    txtDispatchPreview.Height = 76
+
+
+
+    lblDispatchComment.Left = LEFT_COLUMN_LEFT
+
+    lblDispatchComment.Top = COMMENT_TOP - 22
+
+    lblDispatchComment.Width = LIST_WIDTH
+
+    txtDispatchComment.Left = LEFT_COLUMN_LEFT
+
+    txtDispatchComment.Top = COMMENT_TOP
+
+    txtDispatchComment.Width = LIST_WIDTH
+
+    txtDispatchComment.Height = 56
 
 
 
     btnDispatchCreate.Left = PACKAGE_COLUMN_LEFT
 
-    btnDispatchCreate.Top = ACTION_TOP
+    btnDispatchCreate.Top = RIGHT_ACTION_TOP
 
     btnDispatchCreate.Width = 162
 
@@ -392,7 +397,7 @@ Private Sub ApplyResponsiveLayout()
 
     btnDispatchFinalizeRegistry.Left = PACKAGE_COLUMN_LEFT + 178
 
-    btnDispatchFinalizeRegistry.Top = ACTION_TOP
+    btnDispatchFinalizeRegistry.Top = RIGHT_ACTION_TOP
 
     btnDispatchFinalizeRegistry.Width = 190
 
@@ -402,7 +407,7 @@ Private Sub ApplyResponsiveLayout()
 
     btnDispatchClose.Left = 236
 
-    btnDispatchClose.Top = ACTION_TOP
+    btnDispatchClose.Top = LEFT_ACTION_TOP
 
     btnDispatchClose.Width = 120
 
