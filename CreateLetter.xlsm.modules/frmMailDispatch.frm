@@ -34,13 +34,13 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.4.1
+' Form: frmMailDispatch v1.4.2
 
 ' Author: CreateLetter contributors
 
 ' Date: 03.05.2026
 
-' Purpose: Thin-shell UI for preparing grouped dispatch packages from existing letters
+' Purpose: Thin-shell UI for preparing grouped dispatch packages from existing letters with small-screen fallback
 
 ' ======================================================================
 
@@ -188,11 +188,7 @@ Private Sub ApplyResponsiveLayout()
 
     Me.StartUpPosition = 1
 
-    Me.Width = FORM_WIDTH
-
-    Me.Height = FORM_HEIGHT
-
-    Me.ScrollBars = fmScrollBarsNone
+    FitFormToVisibleScreen FORM_WIDTH, FORM_HEIGHT
 
 
 
@@ -412,6 +408,47 @@ Private Sub ApplyResponsiveLayout()
     btnDispatchClose.Width = 120
 
     btnDispatchClose.Height = 28
+
+End Sub
+
+Private Sub FitFormToVisibleScreen(designWidth As Single, designHeight As Single)
+
+    On Error GoTo ScreenError
+
+    Dim maxWidth As Single
+    maxWidth = Application.UsableWidth - 24
+
+    Dim maxHeight As Single
+    maxHeight = Application.UsableHeight - 48
+
+    If maxWidth < 420 Then maxWidth = 420
+    If maxHeight < 360 Then maxHeight = 360
+
+    Me.Width = designWidth
+    Me.Height = designHeight
+    Me.ScrollLeft = 0
+    Me.ScrollTop = 0
+
+    If designWidth > maxWidth Or designHeight > maxHeight Then
+        If designWidth > maxWidth Then Me.Width = maxWidth
+        If designHeight > maxHeight Then Me.Height = maxHeight
+        Me.ScrollBars = fmScrollBarsBoth
+        Me.ScrollWidth = designWidth
+        Me.ScrollHeight = designHeight
+    Else
+        Me.ScrollBars = fmScrollBarsNone
+        Me.ScrollWidth = designWidth
+        Me.ScrollHeight = designHeight
+    End If
+
+    Exit Sub
+
+ScreenError:
+
+    Me.Width = designWidth
+    Me.Height = designHeight
+    Me.ScrollBars = fmScrollBarsVertical
+    Me.ScrollHeight = designHeight
 
 End Sub
 
