@@ -10,7 +10,7 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.8.6 - 02.05.2026
+' Version: 1.8.7 - 03.05.2026
 
 ' ======================================================================
 
@@ -18,7 +18,7 @@ Attribute VB_Name = "ModuleMain"
 
 Option Explicit
 
-Public Const CreateLetterApplicationVersion As String = "1.7.0"
+Public Const CreateLetterApplicationVersion As String = "1.7.1"
 
 Private activeMailDispatchForm As Object
 
@@ -699,6 +699,20 @@ Public Function ValidateCreatorPage(pageIndex As Integer, Addressee As String, c
 
             End If
 
+            If IsOutgoingNumberRequired() Then
+
+                If Not IsOutgoingNumberComplete(letterNumber) Then
+
+                    focusControlName = "txtLetterNumber"
+
+                    ValidateCreatorPage = t("validation.creator.page.letter_number_suffix_required", "Complete the outgoing letter number after the slash, for example 7/125.")
+
+                    Exit Function
+
+                End If
+
+            End If
+
             
 
             If Len(Trim(letterDateText)) = 0 Then
@@ -821,6 +835,20 @@ Public Function ValidateCreatorSubmission(Addressee As String, city As String, r
 
     End If
 
+    If IsOutgoingNumberRequired() Then
+
+        If Not IsOutgoingNumberComplete(letterNumber) Then
+
+            focusControlName = "txtLetterNumber"
+
+            ValidateCreatorSubmission = t("validation.creator.submit.letter_number_suffix_required", "Complete the outgoing letter number after the slash, for example 7/125.")
+
+            Exit Function
+
+        End If
+
+    End If
+
     
 
     If Len(Trim(letterDateText)) = 0 Then
@@ -856,6 +884,23 @@ Public Function ValidateCreatorSubmission(Addressee As String, city As String, r
         Exit Function
 
     End If
+
+End Function
+
+Private Function IsOutgoingNumberComplete(letterNumber As String) As Boolean
+
+    Dim normalizedNumber As String
+    normalizedNumber = Trim$(letterNumber)
+
+    Dim slashPosition As Long
+    slashPosition = InStr(1, normalizedNumber, "/", vbTextCompare)
+
+    If slashPosition = 0 Then Exit Function
+
+    Dim numberSuffix As String
+    numberSuffix = Trim$(Mid$(normalizedNumber, slashPosition + 1))
+
+    IsOutgoingNumberComplete = Len(numberSuffix) > 0
 
 End Function
 

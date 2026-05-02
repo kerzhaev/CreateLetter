@@ -34,7 +34,7 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.4.2
+' Form: frmMailDispatch v1.4.3
 
 ' Author: CreateLetter contributors
 
@@ -906,7 +906,7 @@ Private Sub btnDispatchCreate_Click()
 
     If preparedEnvelopes > 0 Then
         If ShouldOpenPreparedEnvelopePreview() Then
-            OpenPreparedEnvelopePreviewAndClose batchId
+            OpenPreparedEnvelopePreviewAndContinue batchId
             Exit Sub
         End If
     End If
@@ -956,20 +956,22 @@ End Function
 
 
 
-Private Sub OpenPreparedEnvelopePreviewAndClose(batchId As String)
+Private Sub OpenPreparedEnvelopePreviewAndContinue(batchId As String)
 
     On Error GoTo PreviewError
 
     Me.Hide
     DoEvents
     PreviewPreparedEnvelopeForBatch batchId
-    Unload Me
+    btnDispatchRefresh_Click
+    Me.Show
     Exit Sub
 
 PreviewError:
 
-    MsgBox t("form.mail_dispatch.error.preview_failed", "Не удалось открыть предпросмотр конверта: ") & Err.description, vbExclamation
-    Unload Me
+    MsgBox t("form.mail_dispatch.error.preview_failed", "Failed to open envelope print preview: ") & Err.description, vbExclamation
+    btnDispatchRefresh_Click
+    Me.Show
 
 End Sub
 

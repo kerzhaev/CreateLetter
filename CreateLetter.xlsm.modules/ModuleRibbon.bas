@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks, dispatch actions, and user-configurable folder settings
 
-' Version: 1.4.1 - 03.05.2026
+' Version: 1.4.2 - 03.05.2026
 
 ' ======================================================================
 
@@ -25,6 +25,10 @@ Private Const RibbonSettingsSection As String = "RibbonPaths"
 Private Const RibbonSettingTemplateFolder As String = "TemplateFolder"
 
 Private Const RibbonSettingOutputFolder As String = "OutputFolder"
+
+Private Const RibbonProgramSettingsSection As String = "ProgramSettings"
+
+Private Const RibbonSettingRequireOutgoingNumber As String = "RequireOutgoingNumber"
 
 Private Const msoFileDialogFolderPicker As Long = 4
 
@@ -161,9 +165,62 @@ End Sub
 
 Public Sub RibbonShowProgramSettings(control As IRibbonControl)
 
-    MsgBox t("ribbon.settings.msg", "Program settings are split by task: use folder buttons for templates and output, and edit registry template cells directly on PostalRegistryPrint."), vbInformation, t("ribbon.settings.title", "Program settings")
+    ConfigureProgramSettings
 
 End Sub
+
+Public Sub ConfigureProgramSettings()
+
+    On Error GoTo SettingsError
+
+    Dim currentState As Boolean
+    currentState = IsOutgoingNumberRequired()
+
+    Dim currentStateText As String
+    If currentState Then
+        currentStateText = t("ribbon.settings.value.enabled", "Enabled")
+    Else
+        currentStateText = t("ribbon.settings.value.disabled", "Disabled")
+    End If
+
+    Dim promptText As String
+    promptText = t("ribbon.settings.msg", "Program settings are split by task. Template and output folders are selected by separate Ribbon buttons.")
+    promptText = promptText & vbCrLf & vbCrLf
+    promptText = promptText & t("ribbon.settings.prompt.require_outgoing_number", "Require a completed outgoing letter number before leaving the letter step?")
+    promptText = promptText & vbCrLf
+    promptText = promptText & t("ribbon.settings.current_value", "Current value: ") & currentStateText
+
+    Dim response As VbMsgBoxResult
+    response = MsgBox(promptText, vbQuestion + vbYesNoCancel, t("ribbon.settings.title", "Program settings"))
+
+    If response = vbCancel Then Exit Sub
+
+    Dim newValue As String
+    If response = vbYes Then
+        newValue = "1"
+    Else
+        newValue = "0"
+    End If
+
+    SaveSetting RibbonSettingsAppName, RibbonProgramSettingsSection, RibbonSettingRequireOutgoingNumber, newValue
+
+    MsgBox t("ribbon.settings.msg.saved", "Program settings saved."), vbInformation, t("ribbon.settings.title", "Program settings")
+    Exit Sub
+
+SettingsError:
+
+    MsgBox t("ribbon.settings.msg.error", "Failed to save program settings: ") & Err.description, vbExclamation, t("ribbon.settings.title", "Program settings")
+
+End Sub
+
+Public Function IsOutgoingNumberRequired() As Boolean
+
+    Dim storedValue As String
+    storedValue = LCase$(Trim$(GetSetting(RibbonSettingsAppName, RibbonProgramSettingsSection, RibbonSettingRequireOutgoingNumber, "0")))
+
+    IsOutgoingNumberRequired = storedValue = "1" Or storedValue = "true" Or storedValue = "yes" Or storedValue = "on"
+
+End Function
 
 
 
