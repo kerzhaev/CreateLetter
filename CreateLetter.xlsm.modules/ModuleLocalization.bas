@@ -636,6 +636,10 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "validation.creator.page.letter_number_required", "Enter the outgoing letter number."
 
+    AddTranslation "ru", "validation.creator.page.letter_number_suffix_required", "Заполните номер исходящего после косой черты, например 7/125."
+
+    AddTranslation "en", "validation.creator.page.letter_number_suffix_required", "Complete the outgoing letter number after the slash, for example 7/125."
+
     AddTranslation "ru", "validation.creator.page.letter_date_required", "Введите дату письма."
 
     AddTranslation "en", "validation.creator.page.letter_date_required", "Enter the letter date."
@@ -671,6 +675,10 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "validation.creator.submit.letter_number_required", "Номер письма не заполнен."
 
     AddTranslation "en", "validation.creator.submit.letter_number_required", "Letter number is not filled in."
+
+    AddTranslation "ru", "validation.creator.submit.letter_number_suffix_required", "Заполните номер исходящего после косой черты, например 7/125."
+
+    AddTranslation "en", "validation.creator.submit.letter_number_suffix_required", "Complete the outgoing letter number after the slash, for example 7/125."
 
     AddTranslation "ru", "validation.creator.submit.letter_date_required", "Дата письма не заполнена."
 
@@ -1131,6 +1139,30 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "ribbon.settings.msg", "Общие настройки разделены по задачам: папки шаблонов и писем выбираются отдельными кнопками, а поля реестра ОПС задаются в шаблоне листа PostalRegistryPrint."
 
     AddTranslation "en", "ribbon.settings.msg", "Program settings are split by task: use folder buttons for templates and output, and edit registry template cells directly on PostalRegistryPrint."
+
+    AddTranslation "ru", "ribbon.settings.prompt.require_outgoing_number", "Требовать заполненный номер исходящего письма перед переходом дальше?"
+
+    AddTranslation "en", "ribbon.settings.prompt.require_outgoing_number", "Require a completed outgoing letter number before leaving the letter step?"
+
+    AddTranslation "ru", "ribbon.settings.current_value", "Сейчас: "
+
+    AddTranslation "en", "ribbon.settings.current_value", "Current value: "
+
+    AddTranslation "ru", "ribbon.settings.value.enabled", "включено"
+
+    AddTranslation "en", "ribbon.settings.value.enabled", "enabled"
+
+    AddTranslation "ru", "ribbon.settings.value.disabled", "выключено"
+
+    AddTranslation "en", "ribbon.settings.value.disabled", "disabled"
+
+    AddTranslation "ru", "ribbon.settings.msg.saved", "Настройки программы сохранены."
+
+    AddTranslation "en", "ribbon.settings.msg.saved", "Program settings saved."
+
+    AddTranslation "ru", "ribbon.settings.msg.error", "Не удалось сохранить настройки программы: "
+
+    AddTranslation "en", "ribbon.settings.msg.error", "Failed to save program settings: "
 
     AddTranslation "ru", "ribbon.msg.folder_unavailable", "Путь недоступен, использован путь книги:"
 

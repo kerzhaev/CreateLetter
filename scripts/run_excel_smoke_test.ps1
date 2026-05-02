@@ -701,8 +701,9 @@ try {
                                              ($mailDispatchFormText -like "*registryRows = BuildDispatchRegistry()*") -and
                                              ($mailDispatchFormText -like "*preparedEnvelopes = PrepareEnvelopePrintForBatch(batchId)*") -and
                                              ($mailDispatchFormText -like "*ShouldOpenPreparedEnvelopePreview*") -and
-                                             ($mailDispatchFormText -like "*OpenPreparedEnvelopePreviewAndClose batchId*") -and
+                                             ($mailDispatchFormText -like "*OpenPreparedEnvelopePreviewAndContinue batchId*") -and
                                              ($mailDispatchFormText -like "*Me.Hide*") -and
+                                             ($mailDispatchFormText -like "*Me.Show*") -and
                                              ($mailDispatchFormText -like "*HandleDynamicButtonClick*") -and
                                              ($mailDispatchFormText -like "*QueueMailDispatchDoubleClick*") -and
                                              ($mailDispatchFormText -like "*CancelPendingDoubleClickSchedule*") -and
@@ -794,6 +795,9 @@ try {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonConfigurePostalRegistry(control As IRibbonControl)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonShowProgramSettings(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub ConfigureProgramSettings()*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Function IsOutgoingNumberRequired()*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleMainText -like "*IsOutgoingNumberComplete(letterNumber)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*ribbon.about.pipeline.step5*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*ConfirmPostalRegistryPdfWithUnpackedLetters*")
             $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*grpCreateLetterRegistry*")
