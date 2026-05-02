@@ -21,12 +21,12 @@
         </group>
         <group id="grpCreateLetterPackages" label="2. Пакеты">
           <button id="btnRibbonOpenMailDispatch"
-                  label="Добавить в пакет"
+                  label="Упаковать письма"
                   size="large"
                   imageMso="FileSendAsAttachment"
                   onAction="RibbonOpenMailDispatch"
-                  screentip="Добавить письма в почтовый пакет"
-                  supertip="Открывает форму подготовки почтового пакета: выбор писем, адресата, реестра и конверта." />
+                  screentip="Упаковать письма в конверт"
+                  supertip="Открывает форму упаковки исходящих писем: слева письма ожидают отправки, справа собирается содержимое одного конверта." />
           <button id="btnRibbonOpenDispatchJournal"
                   label="Журнал/возврат"
                   size="large"
@@ -51,11 +51,11 @@
         </group>
         <group id="grpCreateLetterRegistry" label="3. Реестр">
           <button id="btnRibbonBuildDispatchRegistry"
-                  label="Собрать реестр"
+                  label="Подготовить реестр"
                   size="large"
                   imageMso="TableInsertExcelSpreadsheet"
                   onAction="RibbonBuildDispatchRegistry"
-                  screentip="Собрать реестр из пакетов"
+                  screentip="Подготовить реестр из пакетов"
                   supertip="Собирает внутренний Excel-реестр из подготовленных почтовых пакетов." />
           <button id="btnRibbonExportPostalRegistryPdf"
                   label="Реестр ОПС"
