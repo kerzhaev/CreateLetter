@@ -785,7 +785,7 @@ try {
 
         if ($RequirePostalRegistryPrintSheet) {
             $opsRegistryLabel = -join ([char]0x0420, [char]0x0435, [char]0x0435, [char]0x0441, [char]0x0442, [char]0x0440, [char]0x0020, [char]0x041E, [char]0x041F, [char]0x0421)
-            $buildRegistryLabel = -join ([char]0x0421, [char]0x043E, [char]0x0431, [char]0x0440, [char]0x0430, [char]0x0442, [char]0x044C, [char]0x0020, [char]0x0440, [char]0x0435, [char]0x0435, [char]0x0441, [char]0x0442, [char]0x0440)
+            $buildRegistryLabel = -join ([char]0x041F, [char]0x043E, [char]0x0434, [char]0x0433, [char]0x043E, [char]0x0442, [char]0x043E, [char]0x0432, [char]0x0438, [char]0x0442, [char]0x044C, [char]0x0020, [char]0x0440, [char]0x0435, [char]0x0435, [char]0x0441, [char]0x0442, [char]0x0440)
             $checkDataLabel = -join ([char]0x041F, [char]0x0440, [char]0x043E, [char]0x0432, [char]0x0435, [char]0x0440, [char]0x0438, [char]0x0442, [char]0x044C, [char]0x0020, [char]0x0434, [char]0x0430, [char]0x043D, [char]0x043D, [char]0x044B, [char]0x0435)
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonConfigurePostalRegistry(control As IRibbonControl)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)*")

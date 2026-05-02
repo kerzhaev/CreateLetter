@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks, dispatch actions, and user-configurable folder settings
 
-' Version: 1.4.0 - 02.05.2026
+' Version: 1.4.1 - 03.05.2026
 
 ' ======================================================================
 
@@ -188,7 +188,7 @@ ExportError:
     MsgBox t("postal.registry.pdf.msg.error", "Failed to export postal registry PDF: ") & Err.description, vbCritical, t("postal.registry.pdf.title", "Postal registry PDF")
 End Sub
 
-Private Function ConfirmPostalRegistryPdfWithUnpackedLetters() As Boolean
+Public Function ConfirmPostalRegistryPdfWithUnpackedLetters() As Boolean
     ConfirmPostalRegistryPdfWithUnpackedLetters = True
 
     Dim sampleText As String

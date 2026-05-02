@@ -34,11 +34,11 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.3.1
+' Form: frmMailDispatch v1.4.0
 
 ' Author: CreateLetter contributors
 
-' Date: 01.05.2026
+' Date: 03.05.2026
 
 ' Purpose: Thin-shell UI for preparing grouped dispatch packages from existing letters
 
@@ -71,6 +71,8 @@ Private lstDispatchPackage As MSForms.ListBox
 Private btnDispatchAddToPackage As MSForms.CommandButton
 
 Private btnDispatchRemoveFromPackage As MSForms.CommandButton
+
+Private btnDispatchFinalizeRegistry As MSForms.CommandButton
 
 Private lblDispatchRegistryNumber As MSForms.Label
 
@@ -163,35 +165,23 @@ End Sub
 
 Private Sub ApplyResponsiveLayout()
 
-    Const FORM_WIDTH As Single = 980
-
-    Const FORM_HEIGHT As Single = 740
-
-    Const LEFT_COLUMN_LEFT As Single = 18
-
-    Const PACKAGE_COLUMN_LEFT As Single = 492
-
-    Const LIST_WIDTH As Single = 360
-
-    Const CONTENT_TOP As Single = 36
-
-    Const SEARCH_TOP As Single = 66
-
-    Const LIST_TOP As Single = 116
-
-    Const LIST_HEIGHT As Single = 264
-
-    Const MIDDLE_BUTTON_LEFT As Single = 428
-
-    Const BUTTON_TOP As Single = 180
-
-    Const METADATA_TOP As Single = 402
-
-    Const COMMENT_TOP As Single = 536
-
-    Const PREVIEW_TOP As Single = 536
-
-    Const PREVIEW_HEIGHT As Single = 126
+    Const FORM_WIDTH As Single = 920
+    Const FORM_HEIGHT As Single = 635
+    Const LEFT_COLUMN_LEFT As Single = 12
+    Const LIST_WIDTH As Single = 370
+    Const MIDDLE_BUTTON_LEFT As Single = 392
+    Const MIDDLE_BUTTON_WIDTH As Single = 70
+    Const PACKAGE_COLUMN_LEFT As Single = 472
+    Const CONTENT_TOP As Single = 18
+    Const SEARCH_TOP As Single = 44
+    Const LIST_TOP As Single = 94
+    Const LIST_HEIGHT As Single = 246
+    Const BUTTON_TOP As Single = 176
+    Const PARAM_TOP As Single = 356
+    Const ROW_HEIGHT As Single = 25
+    Const COMMENT_TOP As Single = 438
+    Const PREVIEW_TOP As Single = 514
+    Const ACTION_TOP As Single = 594
 
 
 
@@ -217,7 +207,7 @@ Private Sub ApplyResponsiveLayout()
 
     lblDispatchSearch.Top = SEARCH_TOP
 
-    lblDispatchSearch.Width = 200
+    lblDispatchSearch.Width = LIST_WIDTH
 
 
 
@@ -243,7 +233,7 @@ Private Sub ApplyResponsiveLayout()
 
     btnDispatchRefresh.Left = LEFT_COLUMN_LEFT
 
-    btnDispatchRefresh.Top = COMMENT_TOP + 124
+    btnDispatchRefresh.Top = ACTION_TOP
 
     btnDispatchRefresh.Width = 118
 
@@ -271,82 +261,87 @@ Private Sub ApplyResponsiveLayout()
 
     btnDispatchAddToPackage.Top = BUTTON_TOP
 
-    btnDispatchAddToPackage.Width = 36
+    btnDispatchAddToPackage.Width = MIDDLE_BUTTON_WIDTH
 
-    btnDispatchAddToPackage.Height = 28
+    btnDispatchAddToPackage.Height = 30
 
 
 
     btnDispatchRemoveFromPackage.Left = MIDDLE_BUTTON_LEFT
 
-    btnDispatchRemoveFromPackage.Top = BUTTON_TOP + 40
+    btnDispatchRemoveFromPackage.Top = BUTTON_TOP + 42
 
-    btnDispatchRemoveFromPackage.Width = 36
+    btnDispatchRemoveFromPackage.Width = MIDDLE_BUTTON_WIDTH
 
-    btnDispatchRemoveFromPackage.Height = 28
-
-
-
-    lblDispatchSender.Left = LEFT_COLUMN_LEFT
-
-    lblDispatchSender.Top = METADATA_TOP
-
-    cmbDispatchSender.Left = LEFT_COLUMN_LEFT
-
-    cmbDispatchSender.Top = METADATA_TOP + 22
-
-    cmbDispatchSender.Width = 220
+    btnDispatchRemoveFromPackage.Height = 30
 
 
 
-    lblDispatchEnvelopeFormat.Left = 260
+    lblDispatchSender.Left = PACKAGE_COLUMN_LEFT
 
-    lblDispatchEnvelopeFormat.Top = METADATA_TOP
+    lblDispatchSender.Top = PARAM_TOP
 
-    cmbDispatchEnvelopeFormat.Left = 260
+    lblDispatchSender.Width = 70
 
-    cmbDispatchEnvelopeFormat.Top = METADATA_TOP + 22
+    cmbDispatchSender.Left = PACKAGE_COLUMN_LEFT + 78
 
-    cmbDispatchEnvelopeFormat.Width = 86
+    cmbDispatchSender.Top = PARAM_TOP - 3
+
+    cmbDispatchSender.Width = 190
 
 
+    lblDispatchEnvelopeFormat.Left = PACKAGE_COLUMN_LEFT
 
-    lblDispatchMailType.Left = 370
+    lblDispatchEnvelopeFormat.Top = PARAM_TOP + ROW_HEIGHT
 
-    lblDispatchMailType.Top = METADATA_TOP
+    lblDispatchEnvelopeFormat.Width = 50
+
+    cmbDispatchEnvelopeFormat.Left = PACKAGE_COLUMN_LEFT + 58
+
+    cmbDispatchEnvelopeFormat.Top = PARAM_TOP + ROW_HEIGHT - 3
+
+    cmbDispatchEnvelopeFormat.Width = 68
+
+
+    lblDispatchMailType.Left = PACKAGE_COLUMN_LEFT + 146
+
+    lblDispatchMailType.Top = PARAM_TOP + ROW_HEIGHT
 
     txtDispatchMailType.Visible = False
 
-    cmbDispatchMailType.Left = 370
+    lblDispatchMailType.Width = 35
 
-    cmbDispatchMailType.Top = METADATA_TOP + 22
+    cmbDispatchMailType.Left = PACKAGE_COLUMN_LEFT + 188
 
-    cmbDispatchMailType.Width = 170
+    cmbDispatchMailType.Top = PARAM_TOP + ROW_HEIGHT - 3
 
-
-
-    lblDispatchRegistryNumber.Left = LEFT_COLUMN_LEFT
-
-    lblDispatchRegistryNumber.Top = METADATA_TOP + 62
-
-    txtDispatchRegistryNumber.Left = LEFT_COLUMN_LEFT
-
-    txtDispatchRegistryNumber.Top = METADATA_TOP + 84
-
-    txtDispatchRegistryNumber.Width = 120
+    cmbDispatchMailType.Width = 182
 
 
+    lblDispatchRegistryNumber.Left = PACKAGE_COLUMN_LEFT
 
-    lblDispatchRegistryDate.Left = 160
+    lblDispatchRegistryNumber.Top = PARAM_TOP + (ROW_HEIGHT * 2)
 
-    lblDispatchRegistryDate.Top = METADATA_TOP + 62
+    lblDispatchRegistryNumber.Width = 70
 
-    txtDispatchRegistryDate.Left = 160
+    txtDispatchRegistryNumber.Left = PACKAGE_COLUMN_LEFT + 78
 
-    txtDispatchRegistryDate.Top = METADATA_TOP + 84
+    txtDispatchRegistryNumber.Top = PARAM_TOP + (ROW_HEIGHT * 2) - 3
+
+    txtDispatchRegistryNumber.Width = 94
+
+
+    lblDispatchRegistryDate.Left = PACKAGE_COLUMN_LEFT + 190
+
+    lblDispatchRegistryDate.Top = PARAM_TOP + (ROW_HEIGHT * 2)
+
+    lblDispatchRegistryDate.Width = 58
+
+    txtDispatchRegistryDate.Left = PACKAGE_COLUMN_LEFT + 250
+
+    txtDispatchRegistryDate.Top = PARAM_TOP + (ROW_HEIGHT * 2) - 3
 
     txtDispatchRegistryDate.Width = 120
-
 
 
     lblDispatchMass.Visible = False
@@ -359,47 +354,59 @@ Private Sub ApplyResponsiveLayout()
 
 
 
-    lblDispatchComment.Left = LEFT_COLUMN_LEFT
+    lblDispatchComment.Left = PACKAGE_COLUMN_LEFT
 
     lblDispatchComment.Top = COMMENT_TOP - 22
 
-    txtDispatchComment.Left = LEFT_COLUMN_LEFT
+    txtDispatchComment.Left = PACKAGE_COLUMN_LEFT
 
     txtDispatchComment.Top = COMMENT_TOP
 
-    txtDispatchComment.Width = 382
+    txtDispatchComment.Width = LIST_WIDTH
 
     txtDispatchComment.Height = 48
 
 
 
-    lblDispatchPreview.Left = 420
+    lblDispatchPreview.Left = PACKAGE_COLUMN_LEFT
 
     lblDispatchPreview.Top = PREVIEW_TOP - 22
 
-    txtDispatchPreview.Left = 420
+    txtDispatchPreview.Left = PACKAGE_COLUMN_LEFT
 
     txtDispatchPreview.Top = PREVIEW_TOP
 
-    txtDispatchPreview.Width = 382
+    txtDispatchPreview.Width = LIST_WIDTH
 
-    txtDispatchPreview.Height = 110
-
-
-
-    btnDispatchCreate.Left = 420
-
-    btnDispatchCreate.Top = 654
-
-    btnDispatchCreate.Width = 178
+    txtDispatchPreview.Height = 60
 
 
 
-    btnDispatchClose.Left = 620
+    btnDispatchCreate.Left = PACKAGE_COLUMN_LEFT
 
-    btnDispatchClose.Top = 654
+    btnDispatchCreate.Top = ACTION_TOP
 
-    btnDispatchClose.Width = 140
+    btnDispatchCreate.Width = 162
+
+
+
+    btnDispatchFinalizeRegistry.Left = PACKAGE_COLUMN_LEFT + 178
+
+    btnDispatchFinalizeRegistry.Top = ACTION_TOP
+
+    btnDispatchFinalizeRegistry.Width = 190
+
+    btnDispatchFinalizeRegistry.Height = 28
+
+
+
+    btnDispatchClose.Left = 236
+
+    btnDispatchClose.Top = ACTION_TOP
+
+    btnDispatchClose.Width = 120
+
+    btnDispatchClose.Height = 28
 
 End Sub
 
@@ -407,49 +414,57 @@ End Sub
 
 Private Sub ApplyLocalizedCaptions()
 
-    SetLocalizedCaption "lblDispatchLetters", "form.mail_dispatch.label.available_letters", "Доступные письма"
+    SetLocalizedCaption "lblDispatchLetters", "form.mail_dispatch.label.available_letters", "Awaiting dispatch"
 
-    lblDispatchSearch.Caption = t("form.mail_dispatch.label.search_letters", "Поиск писем")
+    lblDispatchSearch.Caption = t("form.mail_dispatch.label.search_letters", "Search letters")
 
-    SetLocalizedCaption "lblDispatchSender", "form.mail_dispatch.label.sender", "Отправитель"
+    SetLocalizedCaption "lblDispatchSender", "form.mail_dispatch.label.sender", "Sender"
 
-    SetLocalizedCaption "lblDispatchEnvelopeFormat", "form.mail_dispatch.label.envelope_format", "Формат конверта"
+    SetLocalizedCaption "lblDispatchEnvelopeFormat", "form.mail_dispatch.label.envelope_format_short", "Format"
 
-    SetLocalizedCaption "lblDispatchMailType", "form.mail_dispatch.label.mail_type", "Вид отправления"
+    SetLocalizedCaption "lblDispatchMailType", "form.mail_dispatch.label.mail_type_short", "Type"
 
-    SetLocalizedCaption "lblDispatchRegistryNumber", "form.mail_dispatch.label.registry_number", "Номер реестра"
+    SetLocalizedCaption "lblDispatchRegistryNumber", "form.mail_dispatch.label.registry_number_short", "Registry"
 
-    SetLocalizedCaption "lblDispatchRegistryDate", "form.mail_dispatch.label.registry_date", "Дата реестра"
+    SetLocalizedCaption "lblDispatchRegistryDate", "form.mail_dispatch.label.registry_date_short", "Date"
 
-    SetLocalizedCaption "lblDispatchComment", "form.mail_dispatch.label.comment", "Комментарий"
+    SetLocalizedCaption "lblDispatchComment", "form.mail_dispatch.label.comment", "Comment"
 
-    SetLocalizedCaption "lblDispatchPreview", "form.mail_dispatch.label.preview", "Предпросмотр"
+    SetLocalizedCaption "lblDispatchPreview", "form.mail_dispatch.label.preview", "Preview"
 
-    lblDispatchPackage.Caption = t("form.mail_dispatch.label.package_letters", "Пакет отправки")
+    lblDispatchPackage.Caption = t("form.mail_dispatch.label.package_letters", "Envelope package contents")
 
 
 
-    btnDispatchRefresh.Caption = t("form.mail_dispatch.button.refresh", "Обновить")
+    btnDispatchRefresh.Caption = t("form.mail_dispatch.button.refresh", "Refresh")
 
-    btnDispatchCreate.Caption = t("form.mail_dispatch.button.create_package", "Add package to registry")
+    btnDispatchCreate.Caption = t("form.mail_dispatch.button.create_package", "Prepare envelope")
 
-    btnDispatchClose.Caption = t("form.mail_dispatch.button.close", "Закрыть")
+    btnDispatchClose.Caption = t("form.mail_dispatch.button.close", "Close")
 
-    btnDispatchAddToPackage.Caption = ">>"
+    btnDispatchFinalizeRegistry.Caption = t("form.mail_dispatch.button.finalize_registry", "Finalize batch")
 
-    btnDispatchRemoveFromPackage.Caption = "<<"
+    btnDispatchAddToPackage.Caption = t("form.mail_dispatch.button.add_to_package", "Put in")
+
+    btnDispatchRemoveFromPackage.Caption = t("form.mail_dispatch.button.remove_from_package", "Return")
+
+    btnDispatchAddToPackage.ControlTipText = t("form.mail_dispatch.tip.add_to_package", "Put selected letters into the envelope package")
+
+    btnDispatchRemoveFromPackage.ControlTipText = t("form.mail_dispatch.tip.remove_from_package", "Return selected letters from the package")
+
+    btnDispatchFinalizeRegistry.ControlTipText = t("form.mail_dispatch.tip.finalize_registry", "Export the OPS registry PDF and close the mail batch")
 
 
 
     cmbDispatchMailType.ControlTipText = t("form.mail_dispatch.tip.mail_type", "Select mail type for the envelope mark")
 
-    txtDispatchSearch.ControlTipText = t("form.mail_dispatch.tip.search_letters", "Введите номер, дату, адресата или текст письма для фильтрации списка")
+    txtDispatchSearch.ControlTipText = t("form.mail_dispatch.tip.search_letters", "Type number, date, addressee, or letter text to filter the list")
 
-    txtDispatchComment.ControlTipText = t("form.mail_dispatch.tip.comment", "Короткий служебный комментарий для отправления")
+    txtDispatchComment.ControlTipText = t("form.mail_dispatch.tip.comment", "Short operational comment for the dispatch item")
 
-    txtDispatchRegistryNumber.ControlTipText = t("form.mail_dispatch.tip.registry_number", "Номер внутреннего реестра для этого пакета")
+    txtDispatchRegistryNumber.ControlTipText = t("form.mail_dispatch.tip.registry_number", "Internal registry number for this package")
 
-    txtDispatchRegistryDate.ControlTipText = t("form.mail_dispatch.tip.registry_date", "Дата внутреннего реестра в формате дд.мм.гггг")
+    txtDispatchRegistryDate.ControlTipText = t("form.mail_dispatch.tip.registry_date", "Internal registry date in dd.mm.yyyy format")
 
 End Sub
 
@@ -750,7 +765,7 @@ Private Sub btnDispatchCreate_Click()
 
     If packageLettersData Is Nothing Or packageLettersData.count = 0 Then
 
-        MsgBox t("form.mail_dispatch.error.no_package_items", "Добавьте хотя бы одно письмо в пакет отправки."), vbExclamation
+        MsgBox t("form.mail_dispatch.error.no_package_items", "Put at least one letter into the envelope package."), vbExclamation
 
         Exit Sub
 
@@ -760,7 +775,7 @@ Private Sub btnDispatchCreate_Click()
 
     If cmbDispatchSender.listIndex < 0 Then
 
-        MsgBox t("form.mail_dispatch.error.no_sender", "Выберите отправителя."), vbExclamation
+        MsgBox t("form.mail_dispatch.error.no_sender", "Select a sender."), vbExclamation
 
         Exit Sub
 
@@ -774,7 +789,7 @@ Private Sub btnDispatchCreate_Click()
 
     If Len(envelopeFormatKey) = 0 Then
 
-        MsgBox t("form.mail_dispatch.error.no_envelope_format", "Выберите формат конверта."), vbExclamation
+        MsgBox t("form.mail_dispatch.error.no_envelope_format", "Select an envelope format."), vbExclamation
 
         Exit Sub
 
@@ -784,7 +799,7 @@ Private Sub btnDispatchCreate_Click()
 
     If Len(Trim$(txtDispatchRegistryNumber.Text)) = 0 Then
 
-        MsgBox t("form.mail_dispatch.error.no_registry_number", "Укажите номер реестра для пакета."), vbExclamation
+        MsgBox t("form.mail_dispatch.error.no_registry_number", "Enter a registry number for the package."), vbExclamation
 
         Exit Sub
 
@@ -794,7 +809,7 @@ Private Sub btnDispatchCreate_Click()
 
     If Not IsDateStringValid(txtDispatchRegistryDate.Text) Then
 
-        MsgBox t("form.mail_dispatch.error.invalid_registry_date", "Укажите корректную дату реестра в формате дд.мм.гггг."), vbExclamation
+        MsgBox t("form.mail_dispatch.error.invalid_registry_date", "Enter a valid registry date in dd.mm.yyyy format."), vbExclamation
 
         Exit Sub
 
@@ -824,7 +839,7 @@ Private Sub btnDispatchCreate_Click()
 
     If Len(batchId) = 0 Then
 
-        MsgBox t("form.mail_dispatch.error.create_failed", "Не удалось добавить отправление в рабочую таблицу."), vbCritical
+        MsgBox t("form.mail_dispatch.error.create_failed", "Failed to add the dispatch package to the worksheet."), vbCritical
 
         Exit Sub
 
@@ -862,7 +877,34 @@ Private Sub btnDispatchCreate_Click()
 
 CreateError:
 
-    MsgBox t("form.mail_dispatch.error.runtime", "Ошибка подготовки почтового отправления: ") & Err.description, vbCritical
+    MsgBox t("form.mail_dispatch.error.runtime", "Mail dispatch preparation error: ") & Err.description, vbCritical
+
+End Sub
+
+Private Sub FinalizeCurrentRegistry()
+
+    On Error GoTo FinalizeError
+
+    If Not ConfirmPostalRegistryPdfWithUnpackedLetters() Then Exit Sub
+
+    BuildDispatchRegistry
+    BuildPostalRegistryPrintSheet
+
+    Dim pdfPath As String
+    pdfPath = ExportPostalRegistryPrint()
+
+    If Len(Trim$(pdfPath)) > 0 Then
+        MsgBox t("form.mail_dispatch.msg.registry_finalized", "OPS registry exported and the mail batch was finalized.") & vbCrLf & pdfPath, vbInformation, t("postal.registry.pdf.title", "OPS registry")
+        Unload Me
+    Else
+        MsgBox t("form.mail_dispatch.error.registry_finalize_failed", "OPS registry was not exported."), vbExclamation, t("postal.registry.pdf.title", "OPS registry")
+    End If
+
+    Exit Sub
+
+FinalizeError:
+
+    MsgBox t("form.mail_dispatch.error.registry_finalize_runtime", "OPS registry finalization error: ") & Err.description, vbCritical, t("postal.registry.pdf.title", "OPS registry")
 
 End Sub
 
@@ -1339,6 +1381,8 @@ Private Sub EnsureDynamicControls()
 
     Set btnDispatchRemoveFromPackage = EnsureDynamicButton("btnDispatchRemoveFromPackage")
 
+    Set btnDispatchFinalizeRegistry = EnsureDynamicButton("btnDispatchFinalizeRegistry")
+
     Set lblDispatchRegistryNumber = EnsureDynamicLabel("lblDispatchRegistryNumber")
 
     Set txtDispatchRegistryNumber = EnsureDynamicTextBox("txtDispatchRegistryNumber")
@@ -1468,6 +1512,16 @@ Private Sub BindDynamicButtonHandlers()
     removeHandler.BindButton btnDispatchRemoveFromPackage, Me
 
     dynamicButtonHandlers.Add removeHandler
+
+
+
+    Dim finalizeHandler As clsDispatchDynamicButtonHandler
+
+    Set finalizeHandler = New clsDispatchDynamicButtonHandler
+
+    finalizeHandler.BindButton btnDispatchFinalizeRegistry, Me
+
+    dynamicButtonHandlers.Add finalizeHandler
 
 
 
@@ -1757,6 +1811,10 @@ Public Sub HandleDynamicButtonClick(controlName As String)
     Case "btnDispatchRemoveFromPackage"
 
         RemoveSelectedLettersFromPackage
+
+    Case "btnDispatchFinalizeRegistry"
+
+        FinalizeCurrentRegistry
 
     End Select
 

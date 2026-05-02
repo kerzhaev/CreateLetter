@@ -6,7 +6,7 @@ Attribute VB_Name = "ModuleLocalization"
 
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
 
-' Version: 1.5.2 - 02.05.2026
+' Version: 1.5.3 - 03.05.2026
 
 ' Notes:
 
@@ -1104,7 +1104,7 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "ribbon.about.pipeline.step2", "2. Add letters to a package"
 
-    AddTranslation "ru", "ribbon.about.pipeline.step3", "3. Собрать реестр ОПС"
+    AddTranslation "ru", "ribbon.about.pipeline.step3", "3. Подготовить реестр ОПС"
 
     AddTranslation "en", "ribbon.about.pipeline.step3", "3. Build the OPS registry"
 
@@ -1192,9 +1192,17 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.label.envelope_format", "Envelope format"
 
+    AddTranslation "ru", "form.mail_dispatch.label.envelope_format_short", "Формат"
+
+    AddTranslation "en", "form.mail_dispatch.label.envelope_format_short", "Format"
+
     AddTranslation "ru", "form.mail_dispatch.label.mail_type", "Вид отправления"
 
     AddTranslation "en", "form.mail_dispatch.label.mail_type", "Mail type"
+
+    AddTranslation "ru", "form.mail_dispatch.label.mail_type_short", "Вид"
+
+    AddTranslation "en", "form.mail_dispatch.label.mail_type_short", "Type"
 
     AddTranslation "ru", "form.mail_dispatch.label.registry", "Реестр"
 
@@ -1204,17 +1212,17 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.label.letters", "Letters"
 
-    AddTranslation "ru", "form.mail_dispatch.label.available_letters", "Доступные письма"
+    AddTranslation "ru", "form.mail_dispatch.label.available_letters", "Ожидают отправки"
 
-    AddTranslation "en", "form.mail_dispatch.label.available_letters", "Available letters"
+    AddTranslation "en", "form.mail_dispatch.label.available_letters", "Awaiting dispatch"
 
     AddTranslation "ru", "form.mail_dispatch.label.search_letters", "Поиск писем"
 
     AddTranslation "en", "form.mail_dispatch.label.search_letters", "Search letters"
 
-    AddTranslation "ru", "form.mail_dispatch.label.package_letters", "Пакет отправки"
+    AddTranslation "ru", "form.mail_dispatch.label.package_letters", "Содержимое пакета (конверта)"
 
-    AddTranslation "en", "form.mail_dispatch.label.package_letters", "Dispatch package"
+    AddTranslation "en", "form.mail_dispatch.label.package_letters", "Envelope package contents"
 
     AddTranslation "ru", "form.mail_dispatch.label.preview", "Предпросмотр"
 
@@ -1224,9 +1232,17 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.label.registry_number", "Registry number"
 
+    AddTranslation "ru", "form.mail_dispatch.label.registry_number_short", "Реестр"
+
+    AddTranslation "en", "form.mail_dispatch.label.registry_number_short", "Registry"
+
     AddTranslation "ru", "form.mail_dispatch.label.registry_date", "Дата реестра"
 
     AddTranslation "en", "form.mail_dispatch.label.registry_date", "Registry date"
+
+    AddTranslation "ru", "form.mail_dispatch.label.registry_date_short", "Дата"
+
+    AddTranslation "en", "form.mail_dispatch.label.registry_date_short", "Date"
 
     AddTranslation "ru", "form.mail_dispatch.label.mass", "Масса"
 
@@ -1248,9 +1264,21 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.button.create", "Add to dispatch"
 
-    AddTranslation "ru", "form.mail_dispatch.button.create_package", "Добавить пакет в реестр"
+    AddTranslation "ru", "form.mail_dispatch.button.create_package", "Подготовить конверт"
 
-    AddTranslation "en", "form.mail_dispatch.button.create_package", "Add package to registry"
+    AddTranslation "en", "form.mail_dispatch.button.create_package", "Prepare envelope"
+
+    AddTranslation "ru", "form.mail_dispatch.button.add_to_package", "Вложить"
+
+    AddTranslation "en", "form.mail_dispatch.button.add_to_package", "Put in"
+
+    AddTranslation "ru", "form.mail_dispatch.button.remove_from_package", "Вернуть"
+
+    AddTranslation "en", "form.mail_dispatch.button.remove_from_package", "Return"
+
+    AddTranslation "ru", "form.mail_dispatch.button.finalize_registry", "Завершить партию писем"
+
+    AddTranslation "en", "form.mail_dispatch.button.finalize_registry", "Finalize mail batch"
 
     AddTranslation "ru", "form.mail_dispatch.button.close", "Закрыть"
 
@@ -1259,6 +1287,18 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "form.mail_dispatch.tip.mail_type", "Выберите вид отправления для отметки на конверте"
 
     AddTranslation "en", "form.mail_dispatch.tip.mail_type", "Select mail type for the envelope mark"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.add_to_package", "Вложить выбранные письма в конверт"
+
+    AddTranslation "en", "form.mail_dispatch.tip.add_to_package", "Put selected letters into the envelope package"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.remove_from_package", "Вернуть выбранные письма из пакета"
+
+    AddTranslation "en", "form.mail_dispatch.tip.remove_from_package", "Return selected letters from the package"
+
+    AddTranslation "ru", "form.mail_dispatch.tip.finalize_registry", "Выгрузить реестр ОПС в PDF и закрыть партию писем"
+
+    AddTranslation "en", "form.mail_dispatch.tip.finalize_registry", "Export the OPS registry PDF and close the mail batch"
 
     AddTranslation "ru", "dispatch.mail_type.registered", "Заказное"
 
@@ -1312,9 +1352,9 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.mail_dispatch.error.no_letter", "Select a letter before creating a dispatch item."
 
-    AddTranslation "ru", "form.mail_dispatch.error.no_package_items", "Добавьте хотя бы одно письмо в пакет отправки."
+    AddTranslation "ru", "form.mail_dispatch.error.no_package_items", "Вложите хотя бы одно письмо в конверт."
 
-    AddTranslation "en", "form.mail_dispatch.error.no_package_items", "Add at least one letter to the dispatch package."
+    AddTranslation "en", "form.mail_dispatch.error.no_package_items", "Put at least one letter into the envelope package."
 
     AddTranslation "ru", "form.mail_dispatch.error.no_sender", "Выберите отправителя."
 
@@ -1359,6 +1399,18 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "form.mail_dispatch.msg.package_created", "Пакет отправлений сохранен в рабочую таблицу."
 
     AddTranslation "en", "form.mail_dispatch.msg.package_created", "Dispatch package saved into the worksheet."
+
+    AddTranslation "ru", "form.mail_dispatch.msg.registry_finalized", "Реестр ОПС выгружен в PDF, партия писем закрыта."
+
+    AddTranslation "en", "form.mail_dispatch.msg.registry_finalized", "OPS registry exported and the mail batch was finalized."
+
+    AddTranslation "ru", "form.mail_dispatch.error.registry_finalize_failed", "Реестр ОПС не был выгружен."
+
+    AddTranslation "en", "form.mail_dispatch.error.registry_finalize_failed", "OPS registry was not exported."
+
+    AddTranslation "ru", "form.mail_dispatch.error.registry_finalize_runtime", "Ошибка завершения партии писем: "
+
+    AddTranslation "en", "form.mail_dispatch.error.registry_finalize_runtime", "OPS registry finalization error: "
 
     AddTranslation "ru", "form.mail_dispatch.msg.letters_in_package", "Писем в пакете: "
 
@@ -1599,7 +1651,7 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "en", "dispatch.journal.status.packed", "In work"
     AddTranslation "ru", "dispatch.journal.status.registered", "Открыт реестр"
     AddTranslation "en", "dispatch.journal.status.registered", "Open registry"
-    AddTranslation "ru", "dispatch.journal.status.registry_printed", "Закрыт PDF"
+    AddTranslation "ru", "dispatch.journal.status.registry_printed", "Реестр ОПС выгружен"
     AddTranslation "en", "dispatch.journal.status.registry_printed", "Closed PDF"
     AddTranslation "ru", "dispatch.journal.column.batch_id", "Пакет"
     AddTranslation "en", "dispatch.journal.column.batch_id", "Batch ID"
