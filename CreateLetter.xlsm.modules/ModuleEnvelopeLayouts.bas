@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleEnvelopeLayouts"
 ' Module: ModuleEnvelopeLayouts
 ' Author: CreateLetter contributors
 ' Purpose: Prepare printable workbook layout sheets for grouped C4, C5, and DL envelope batches
-' Version: 1.5.5 - 02.05.2026
+' Version: 1.5.6 - 02.05.2026
 ' ======================================================================
 
 Option Explicit
@@ -370,6 +370,35 @@ Private Sub SetTemplateValue(ws As Worksheet, topRow As Long, cellAddress As Str
     End If
 End Sub
 
+Private Sub SetEnvelopeTemplateTextBox(ws As Worksheet, topRow As Long, envelopeFormatKey As String, cellAddress As String, cellValue As String, shapeWidth As Double, shapeHeight As Double, fontSize As Double, italicText As Boolean)
+    If Len(cellAddress) = 0 Then Exit Sub
+
+    ClearTemplateCell ws, envelopeFormatKey, topRow, cellAddress
+    If Len(Trim$(cellValue)) = 0 Then Exit Sub
+
+    Dim anchorRange As Range
+    Set anchorRange = ws.Range(GetOffsetCellAddress(ws, cellAddress, topRow)).MergeArea
+
+    Dim textShape As Shape
+    Set textShape = ws.Shapes.AddTextbox(msoTextOrientationHorizontal, anchorRange.Left + 1, anchorRange.Top + 1, shapeWidth, shapeHeight)
+    textShape.Name = EnvelopeDynamicShapePrefix & "Text_" & envelopeFormatKey & "_" & CStr(topRow) & "_" & Replace(cellAddress, "$", "")
+    textShape.TextFrame.Characters.Text = cellValue
+    textShape.TextFrame.Characters.Font.Name = "Times New Roman"
+    textShape.TextFrame.Characters.Font.Size = fontSize
+    textShape.TextFrame.Characters.Font.Italic = italicText
+    textShape.TextFrame.Characters.Font.Color = RGB(0, 0, 0)
+    textShape.TextFrame.HorizontalAlignment = xlHAlignLeft
+    textShape.TextFrame.VerticalAlignment = xlVAlignCenter
+    textShape.TextFrame.AutoSize = False
+    textShape.TextFrame.MarginLeft = 0
+    textShape.TextFrame.MarginRight = 0
+    textShape.TextFrame.MarginTop = 0
+    textShape.TextFrame.MarginBottom = 0
+    textShape.Line.Visible = msoFalse
+    textShape.Fill.Visible = msoFalse
+    textShape.Placement = xlMoveAndSize
+End Sub
+
 Private Function GetOffsetCellAddress(ws As Worksheet, cellAddress As String, topRow As Long) As String
     Dim baseRange As Range
     Set baseRange = ws.Range(cellAddress)
@@ -688,21 +717,21 @@ Private Sub RenderEnvelopeTemplateBlock(ws As Worksheet, topRow As Long, envelop
     recipientPostalCode = Trim$(CStr(firstItem(DispatchItemColumnPostalCode)))
 
     Dim senderLines As Variant
-    senderLines = BuildEnvelopeAddressLines(DispatchRepositoryGetSenderAddressBlock(senderName), senderPostalCode, 3)
+    senderLines = BuildEnvelopeAddressLines(DispatchRepositoryGetSenderAddressBlock(senderName), senderPostalCode, 3, GetEnvelopeAddressLineLimit(envelopeFormatKey))
 
     Dim recipientLines As Variant
-    recipientLines = BuildEnvelopeAddressLines(CStr(firstItem(DispatchItemColumnAddressLine)), recipientPostalCode, 3)
+    recipientLines = BuildEnvelopeAddressLines(CStr(firstItem(DispatchItemColumnAddressLine)), recipientPostalCode, 3, GetEnvelopeAddressLineLimit(envelopeFormatKey))
 
-    SetTemplateValue ws, topRow, GetSenderNameCell(envelopeFormatKey), senderName
-    SetTemplateValue ws, topRow, GetSenderAddressCell(envelopeFormatKey, 1), CStr(senderLines(1))
-    SetTemplateValue ws, topRow, GetSenderAddressCell(envelopeFormatKey, 2), CStr(senderLines(2))
-    SetTemplateValue ws, topRow, GetSenderAddressCell(envelopeFormatKey, 3), CStr(senderLines(3))
+    SetEnvelopeTemplateTextBox ws, topRow, envelopeFormatKey, GetSenderNameCell(envelopeFormatKey), senderName, GetEnvelopeSenderTextWidth(envelopeFormatKey), GetEnvelopeLineTextHeight(envelopeFormatKey), GetEnvelopeSmallFontSize(envelopeFormatKey), True
+    SetEnvelopeTemplateTextBox ws, topRow, envelopeFormatKey, GetSenderAddressCell(envelopeFormatKey, 1), CStr(senderLines(1)), GetEnvelopeSenderTextWidth(envelopeFormatKey), GetEnvelopeLineTextHeight(envelopeFormatKey), GetEnvelopeSmallFontSize(envelopeFormatKey), True
+    SetEnvelopeTemplateTextBox ws, topRow, envelopeFormatKey, GetSenderAddressCell(envelopeFormatKey, 2), CStr(senderLines(2)), GetEnvelopeSenderTextWidth(envelopeFormatKey), GetEnvelopeLineTextHeight(envelopeFormatKey), GetEnvelopeSmallFontSize(envelopeFormatKey), True
+    SetEnvelopeTemplateTextBox ws, topRow, envelopeFormatKey, GetSenderAddressCell(envelopeFormatKey, 3), CStr(senderLines(3)), GetEnvelopeSenderTextWidth(envelopeFormatKey), GetEnvelopeLineTextHeight(envelopeFormatKey), GetEnvelopeSmallFontSize(envelopeFormatKey), True
     SetTemplateValue ws, topRow, GetSenderPostalCell(envelopeFormatKey), senderPostalCode
     SetEnvelopeOutgoingNumbers ws, topRow, envelopeFormatKey, BuildBatchOutgoingNumbersText(batchItems)
-    SetTemplateValue ws, topRow, GetRecipientNameCell(envelopeFormatKey), Trim$(CStr(firstItem(DispatchItemColumnAddressee)))
-    SetTemplateValue ws, topRow, GetRecipientAddressCell(envelopeFormatKey, 1), CStr(recipientLines(1))
-    SetTemplateValue ws, topRow, GetRecipientAddressCell(envelopeFormatKey, 2), CStr(recipientLines(2))
-    SetTemplateValue ws, topRow, GetRecipientAddressCell(envelopeFormatKey, 3), CStr(recipientLines(3))
+    SetEnvelopeTemplateTextBox ws, topRow, envelopeFormatKey, GetRecipientNameCell(envelopeFormatKey), Trim$(CStr(firstItem(DispatchItemColumnAddressee))), GetEnvelopeRecipientTextWidth(envelopeFormatKey), GetEnvelopeLineTextHeight(envelopeFormatKey), GetEnvelopeBaseFontSize(envelopeFormatKey), True
+    SetEnvelopeTemplateTextBox ws, topRow, envelopeFormatKey, GetRecipientAddressCell(envelopeFormatKey, 1), CStr(recipientLines(1)), GetEnvelopeRecipientTextWidth(envelopeFormatKey), GetEnvelopeLineTextHeight(envelopeFormatKey), GetEnvelopeSmallFontSize(envelopeFormatKey), True
+    SetEnvelopeTemplateTextBox ws, topRow, envelopeFormatKey, GetRecipientAddressCell(envelopeFormatKey, 2), CStr(recipientLines(2)), GetEnvelopeRecipientTextWidth(envelopeFormatKey), GetEnvelopeLineTextHeight(envelopeFormatKey), GetEnvelopeSmallFontSize(envelopeFormatKey), True
+    SetEnvelopeTemplateTextBox ws, topRow, envelopeFormatKey, GetRecipientAddressCell(envelopeFormatKey, 3), CStr(recipientLines(3)), GetEnvelopeRecipientTextWidth(envelopeFormatKey), GetEnvelopeLineTextHeight(envelopeFormatKey), GetEnvelopeSmallFontSize(envelopeFormatKey), True
     SetTemplateValue ws, topRow, GetRecipientPostalCell(envelopeFormatKey), recipientPostalCode
     SetEnvelopeMailTypeMark ws, topRow, envelopeFormatKey, CStr(firstItem(DispatchItemColumnMailType))
     ClearTemplateCell ws, envelopeFormatKey, topRow, GetLargePostalCell(envelopeFormatKey)
@@ -1260,7 +1289,7 @@ Private Sub SplitEnvelopeAddressLine(addressLine As String, postalCode As String
     secondLine = Trim$(Mid$(normalizedAddress, splitPosition + 1))
 End Sub
 
-Private Function BuildEnvelopeAddressLines(addressText As String, postalCode As String, maxLines As Long) As Variant
+Private Function BuildEnvelopeAddressLines(addressText As String, postalCode As String, maxLines As Long, Optional maxLineLength As Long = 58) As Variant
     Dim result() As String
     ReDim result(1 To maxLines)
 
@@ -1280,29 +1309,81 @@ Private Function BuildEnvelopeAddressLines(addressText As String, postalCode As 
     Dim parts As Variant
     parts = Split(normalizedText, ",")
 
-    Dim lineIndex As Long
-    lineIndex = 1
-
     Dim partIndex As Long
     For partIndex = LBound(parts) To UBound(parts)
         Dim partText As String
         partText = Trim$(CStr(parts(partIndex)))
 
-        If Len(partText) > 0 Then
-            If Len(result(lineIndex)) = 0 Then
-                result(lineIndex) = partText
-            ElseIf Len(result(lineIndex) & ", " & partText) <= 48 Then
-                result(lineIndex) = result(lineIndex) & ", " & partText
-            ElseIf lineIndex < maxLines Then
-                lineIndex = lineIndex + 1
-                result(lineIndex) = partText
-            Else
-                result(lineIndex) = result(lineIndex) & ", " & partText
-            End If
-        End If
+        If Len(partText) > 0 Then AppendEnvelopeAddressPart result, partText, maxLines, maxLineLength
     Next partIndex
 
     BuildEnvelopeAddressLines = result
+End Function
+
+Private Sub AppendEnvelopeAddressPart(ByRef result() As String, partText As String, maxLines As Long, maxLineLength As Long)
+    Dim currentPart As String
+    currentPart = Trim$(partText)
+
+    Do While Len(currentPart) > 0
+        Dim lineIndex As Long
+        lineIndex = GetLastEnvelopeAddressLineIndex(result, maxLines)
+
+        Dim candidateText As String
+        If Len(result(lineIndex)) = 0 Then
+            candidateText = currentPart
+        Else
+            candidateText = result(lineIndex) & ", " & currentPart
+        End If
+
+        If Len(candidateText) <= maxLineLength Then
+            result(lineIndex) = candidateText
+            Exit Sub
+        End If
+
+        If Len(result(lineIndex)) > 0 And lineIndex < maxLines Then
+            lineIndex = lineIndex + 1
+            If Len(currentPart) <= maxLineLength Then
+                result(lineIndex) = currentPart
+                Exit Sub
+            End If
+        End If
+
+        If Len(currentPart) > maxLineLength And lineIndex < maxLines Then
+            Dim splitPosition As Long
+            splitPosition = FindEnvelopeLineSplitPosition(currentPart, maxLineLength)
+            result(lineIndex) = Trim$(Left$(currentPart, splitPosition))
+            currentPart = Trim$(Mid$(currentPart, splitPosition + 1))
+        Else
+            If Len(result(lineIndex)) = 0 Then
+                result(lineIndex) = currentPart
+            Else
+                result(lineIndex) = result(lineIndex) & ", " & currentPart
+            End If
+            Exit Sub
+        End If
+    Loop
+End Sub
+
+Private Function GetLastEnvelopeAddressLineIndex(ByRef result() As String, maxLines As Long) As Long
+    Dim lineIndex As Long
+    For lineIndex = 1 To maxLines
+        If Len(result(lineIndex)) = 0 Then
+            GetLastEnvelopeAddressLineIndex = lineIndex
+            Exit Function
+        End If
+    Next lineIndex
+
+    GetLastEnvelopeAddressLineIndex = maxLines
+End Function
+
+Private Function FindEnvelopeLineSplitPosition(sourceText As String, maxLineLength As Long) As Long
+    Dim splitPosition As Long
+    splitPosition = InStrRev(Left$(sourceText, maxLineLength), " ")
+
+    If splitPosition <= 0 Then splitPosition = InStrRev(Left$(sourceText, maxLineLength), ",")
+    If splitPosition <= 0 Then splitPosition = maxLineLength
+
+    FindEnvelopeLineSplitPosition = splitPosition
 End Function
 
 Private Function OnlyDigits(sourceText As String) As String
@@ -1531,6 +1612,48 @@ Private Function GetEnvelopeSmallFontSize(envelopeFormatKey As String) As Intege
         GetEnvelopeSmallFontSize = 8
     Case Else
         GetEnvelopeSmallFontSize = 10
+    End Select
+End Function
+
+Private Function GetEnvelopeLineTextHeight(envelopeFormatKey As String) As Double
+    Select Case envelopeFormatKey
+    Case "dl"
+        GetEnvelopeLineTextHeight = 15
+    Case Else
+        GetEnvelopeLineTextHeight = 18
+    End Select
+End Function
+
+Private Function GetEnvelopeSenderTextWidth(envelopeFormatKey As String) As Double
+    Select Case envelopeFormatKey
+    Case "c4"
+        GetEnvelopeSenderTextWidth = 380
+    Case "c5"
+        GetEnvelopeSenderTextWidth = 330
+    Case Else
+        GetEnvelopeSenderTextWidth = 270
+    End Select
+End Function
+
+Private Function GetEnvelopeRecipientTextWidth(envelopeFormatKey As String) As Double
+    Select Case envelopeFormatKey
+    Case "c4"
+        GetEnvelopeRecipientTextWidth = 430
+    Case "c5"
+        GetEnvelopeRecipientTextWidth = 360
+    Case Else
+        GetEnvelopeRecipientTextWidth = 300
+    End Select
+End Function
+
+Private Function GetEnvelopeAddressLineLimit(envelopeFormatKey As String) As Long
+    Select Case envelopeFormatKey
+    Case "c4"
+        GetEnvelopeAddressLineLimit = 68
+    Case "c5"
+        GetEnvelopeAddressLineLimit = 58
+    Case Else
+        GetEnvelopeAddressLineLimit = 48
     End Select
 End Function
 
