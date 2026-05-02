@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks, dispatch actions, and user-configurable folder settings
 
-' Version: 1.3.2 - 01.05.2026
+' Version: 1.4.0 - 02.05.2026
 
 ' ======================================================================
 
@@ -159,6 +159,14 @@ End Sub
 
 
 
+Public Sub RibbonShowProgramSettings(control As IRibbonControl)
+
+    MsgBox t("ribbon.settings.msg", "Program settings are split by task: use folder buttons for templates and output, and edit registry template cells directly on PostalRegistryPrint."), vbInformation, t("ribbon.settings.title", "Program settings")
+
+End Sub
+
+
+
 Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)
 
     On Error GoTo ExportError
@@ -194,7 +202,7 @@ Private Function ConfirmPostalRegistryPdfWithUnpackedLetters() As Boolean
     If Len(Trim$(sampleText)) > 0 Then promptText = promptText & vbCrLf & vbCrLf & sampleText
     promptText = promptText & vbCrLf & vbCrLf & t("postal.registry.pdf.confirm.continue", "Continue printing the PDF registry?")
 
-    If MsgBox(promptText, vbQuestion + vbYesNo, t("postal.registry.pdf.title", "Почтовый реестр PDF")) <> vbYes Then ConfirmPostalRegistryPdfWithUnpackedLetters = False
+    If MsgBox(promptText, vbQuestion + vbYesNo, t("postal.registry.pdf.title", "OPS registry")) <> vbYes Then ConfirmPostalRegistryPdfWithUnpackedLetters = False
 End Function
 
 
@@ -377,10 +385,22 @@ End Sub
 
 Private Function BuildAboutMessage() As String
 
-    BuildAboutMessage = t("ribbon.about.name", "CreateLetter") & vbCrLf & vbCrLf & _
-                        t("ribbon.about.templates_folder", GetRibbonAboutTemplatesFolderText()) & GetConfiguredTemplateFolderPath() & vbCrLf & _
-                        t("ribbon.about.output_folder", GetRibbonAboutOutputFolderText()) & GetConfiguredOutputFolderPath() & vbCrLf & vbCrLf & _
-                        t("ribbon.about.open_form_hint", GetRibbonAboutHintText())
+    Dim messageText As String
+    messageText = t("ribbon.about.name", "CreateLetter")
+    messageText = messageText & vbCrLf & vbCrLf
+    messageText = messageText & t("ribbon.about.pipeline.title", "Workflow:")
+    messageText = messageText & vbCrLf & t("ribbon.about.pipeline.step1", "1. Create a letter")
+    messageText = messageText & vbCrLf & t("ribbon.about.pipeline.step2", "2. Add letters to a package")
+    messageText = messageText & vbCrLf & t("ribbon.about.pipeline.step3", "3. Build the OPS registry")
+    messageText = messageText & vbCrLf & t("ribbon.about.pipeline.step4", "4. Prepare envelopes")
+    messageText = messageText & vbCrLf & t("ribbon.about.pipeline.step5", "5. Export the OPS registry")
+    messageText = messageText & vbCrLf & vbCrLf
+    messageText = messageText & t("ribbon.about.templates_folder", GetRibbonAboutTemplatesFolderText()) & GetConfiguredTemplateFolderPath()
+    messageText = messageText & vbCrLf & t("ribbon.about.output_folder", GetRibbonAboutOutputFolderText()) & GetConfiguredOutputFolderPath()
+    messageText = messageText & vbCrLf & vbCrLf
+    messageText = messageText & t("ribbon.about.version", "Version: ") & CreateLetterApplicationVersion
+
+    BuildAboutMessage = messageText
 
 End Function
 

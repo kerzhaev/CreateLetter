@@ -630,6 +630,8 @@ try {
                                              ($envelopeLayoutsText -like "*Public Function ResolveEnvelopeLayoutSheetName(envelopeFormatKey As String)*") -and
                                              ($envelopeLayoutsText -like "*Private Function GetCurrentRegistryBatchIdSet()*") -and
                                              ($envelopeLayoutsText -like "*Private Function FilterDispatchItemsByBatchIdSet(dispatchItems As Collection, registryBatchIds As Object)*") -and
+                                             ($envelopeLayoutsText -like "*Private Sub ClearEnvelopeRuntimeShapesInPage(*") -and
+                                             ($envelopeLayoutsText -like "*Private Function IsEnvelopeRuntimeShapeName(*") -and
                                              ($envelopeLayoutsText -like "*Private Sub RenderLeftPostalIndexGuide(*") -and
                                              ($envelopeLayoutsText -like "*Private Sub SetEnvelopeOutgoingNumbers(*") -and
                                              ($envelopeLayoutsText -like "*Private Sub RenderEnvelopeLayoutBlock(*") -and
@@ -694,6 +696,7 @@ try {
                                              ($mailDispatchFormText -like "*cmbDispatchMailType*") -and
                                              ($mailDispatchFormText -like "*LoadMailTypeList*") -and
                                              ($mailDispatchFormText -like "*GetSelectedMailTypeKey*") -and
+                                             ($mailDispatchFormText -like "*SelectEnvelopeFormatByKey*") -and
                                              ($mailDispatchFormText -like "*ApplyWorkingRegistryDefaults*") -and
                                              ($mailDispatchFormText -like "*registryRows = BuildDispatchRegistry()*") -and
                                              ($mailDispatchFormText -like "*preparedEnvelopes = PrepareEnvelopePrintForBatch(batchId)*") -and
@@ -765,6 +768,7 @@ try {
         }
 
         $hasRibbonModule = ($moduleRibbonText -like "*Public Sub RibbonOpenLetterForm(control As IRibbonControl)*") -and
+                           ($moduleMainText -like "*Public Const CreateLetterApplicationVersion*") -and
                            ($moduleRibbonText -like "*Public Function GetConfiguredTemplateFolderPath()*") -and
                            ($moduleRibbonText -like "*Public Function GetConfiguredOutputFolderPath()*")
 
@@ -780,10 +784,20 @@ try {
         }
 
         if ($RequirePostalRegistryPrintSheet) {
+            $opsRegistryLabel = -join ([char]0x0420, [char]0x0435, [char]0x0435, [char]0x0441, [char]0x0442, [char]0x0440, [char]0x0020, [char]0x041E, [char]0x041F, [char]0x0421)
+            $buildRegistryLabel = -join ([char]0x0421, [char]0x043E, [char]0x0431, [char]0x0440, [char]0x0430, [char]0x0442, [char]0x044C, [char]0x0020, [char]0x0440, [char]0x0435, [char]0x0435, [char]0x0441, [char]0x0442, [char]0x0440)
+            $checkDataLabel = -join ([char]0x041F, [char]0x0440, [char]0x043E, [char]0x0432, [char]0x0435, [char]0x0440, [char]0x0438, [char]0x0442, [char]0x044C, [char]0x0020, [char]0x0434, [char]0x0430, [char]0x043D, [char]0x043D, [char]0x044B, [char]0x0435)
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonConfigurePostalRegistry(control As IRibbonControl)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonExportPostalRegistryPdf(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonShowProgramSettings(control As IRibbonControl)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*ribbon.about.pipeline.step5*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*ConfirmPostalRegistryPdfWithUnpackedLetters*")
             $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*grpCreateLetterRegistry*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*$opsRegistryLabel*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*$buildRegistryLabel*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*$checkDataLabel*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*RibbonShowProgramSettings*")
+            $hasRibbonModule = $hasRibbonModule -and ($customUiText -notlike "*btnRibbonConfigurePostalRegistry*")
         }
 
         if ($RequireEnvelopeLayoutSheets) {

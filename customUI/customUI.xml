@@ -28,12 +28,12 @@
                   screentip="Добавить письма в почтовый пакет"
                   supertip="Открывает форму подготовки почтового пакета: выбор писем, адресата, реестра и конверта." />
           <button id="btnRibbonOpenDispatchJournal"
-                  label="Журнал пакетов"
+                  label="Журнал/возврат"
                   size="large"
                   imageMso="TableOfContentsGallery"
                   onAction="RibbonOpenDispatchJournal"
-                  screentip="Журнал пакетов"
-                  supertip="Открывает журнал почтовых пакетов со статусами и номерами реестров." />
+                  screentip="Журнал и возврат пакетов"
+                  supertip="Открывает журнал почтовых пакетов. Если пакет ещё не закрыт в реестре ОПС, его можно вернуть отдельной командой «Вернуть пакет»." />
           <button id="btnRibbonReturnDispatchPackage"
                   label="Вернуть пакет"
                   size="large"
@@ -42,35 +42,28 @@
                   screentip="Вернуть пакет"
                   supertip="Возвращает ошибочно упакованный пакет в работу, если он ещё не был напечатан в PDF-реестре." />
           <button id="btnRibbonCleanupDispatchLegacy"
-                  label="Диагностика"
+                  label="Проверить данные"
                   size="large"
                   imageMso="Info"
                   onAction="RibbonCleanupDispatchLegacy"
-                  screentip="Диагностика отправлений"
+                  screentip="Проверить данные пакетов"
                   supertip="Находит старые строки почтовых отправлений без статуса и реестра, затем по подтверждению возвращает связанные письма в работу." />
         </group>
         <group id="grpCreateLetterRegistry" label="3. Реестр">
           <button id="btnRibbonBuildDispatchRegistry"
-                  label="Обновить реестр"
+                  label="Собрать реестр"
                   size="large"
                   imageMso="TableInsertExcelSpreadsheet"
                   onAction="RibbonBuildDispatchRegistry"
-                  screentip="Обновить реестр"
+                  screentip="Собрать реестр из пакетов"
                   supertip="Собирает внутренний Excel-реестр из подготовленных почтовых пакетов." />
           <button id="btnRibbonExportPostalRegistryPdf"
-                  label="Закрыть PDF"
+                  label="Реестр ОПС"
                   size="large"
                   imageMso="FileSaveAsPdfOrXps"
                   onAction="RibbonExportPostalRegistryPdf"
-                  screentip="Закрыть реестр в PDF"
-                  supertip="Проверяет неупакованные письма, экспортирует печатный реестр в PDF и закрывает пакеты как напечатанные." />
-          <button id="btnRibbonConfigurePostalRegistry"
-                  label="Настройки"
-                  size="large"
-                  imageMso="PropertySheet"
-                  onAction="RibbonConfigurePostalRegistry"
-                  screentip="Настройки реестра"
-                  supertip="Настраивает почтовое отделение, подписи и папку PDF для печатного реестра." />
+                  screentip="Сформировать реестр ОПС"
+                  supertip="Проверяет неупакованные письма, экспортирует печатный реестр для отделения почтовой связи и закрывает пакеты как напечатанные." />
         </group>
         <group id="grpCreateLetterEnvelopes" label="4. Конверты">
           <button id="btnRibbonPrepareEnvelopePrint"
@@ -81,7 +74,7 @@
                   screentip="Подготовить конверты"
                   supertip="Заполняет скрытые layout-листы C4, C5 и DL данными текущих почтовых пакетов для печати конвертов." />
         </group>
-        <group id="grpCreateLetterSettings" label="5. Настройки">
+        <group id="grpCreateLetterSettings" label="5. Сервис">
           <button id="btnRibbonTemplateFolder"
                   label="Папка шаблонов"
                   size="large"
@@ -103,6 +96,13 @@
                   onAction="RibbonShowAbout"
                   screentip="О программе"
                   supertip="Показывает сведения о CreateLetter и текущих папках шаблонов и выгрузки." />
+          <button id="btnRibbonProgramSettings"
+                  label="Настройки"
+                  size="large"
+                  imageMso="PropertySheet"
+                  onAction="RibbonShowProgramSettings"
+                  screentip="Настройки программы"
+                  supertip="Показывает, где настраиваются общие параметры программы. Настройки реестра ОПС больше не привязаны к этой кнопке." />
         </group>
       </tab>
     </tabs>

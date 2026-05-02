@@ -3,7 +3,7 @@ Attribute VB_Name = "ModuleEnvelopeLayouts"
 ' Module: ModuleEnvelopeLayouts
 ' Author: CreateLetter contributors
 ' Purpose: Prepare printable workbook layout sheets for grouped C4, C5, and DL envelope batches
-' Version: 1.5.4 - 01.05.2026
+' Version: 1.5.5 - 02.05.2026
 ' ======================================================================
 
 Option Explicit
@@ -286,6 +286,33 @@ ClearShapesError:
     Debug.Print "ClearEnvelopePreviewShapes error: " & Err.description
 End Sub
 
+Private Sub ClearEnvelopeRuntimeShapesInPage(ws As Worksheet, topRow As Long, rowsPerPage As Long)
+    On Error GoTo ClearPageShapesError
+
+    Dim pageTop As Double
+    pageTop = ws.Rows(topRow).Top - 2
+
+    Dim pageBottom As Double
+    pageBottom = ws.Rows(topRow + rowsPerPage - 1).Top + ws.Rows(topRow + rowsPerPage - 1).Height + 2
+
+    Dim shapeIndex As Long
+    For shapeIndex = ws.Shapes.count To 1 Step -1
+        If IsEnvelopeRuntimeShapeName(ws.Shapes.item(shapeIndex).Name) Then
+            If ws.Shapes.item(shapeIndex).Top >= pageTop And ws.Shapes.item(shapeIndex).Top <= pageBottom Then ws.Shapes.item(shapeIndex).Delete
+        End If
+    Next shapeIndex
+
+    Exit Sub
+
+ClearPageShapesError:
+    Debug.Print "ClearEnvelopeRuntimeShapesInPage error: " & Err.description
+End Sub
+
+Private Function IsEnvelopeRuntimeShapeName(shapeName As String) As Boolean
+    If Left$(shapeName, Len(EnvelopePreviewShapePrefix)) = EnvelopePreviewShapePrefix Then IsEnvelopeRuntimeShapeName = True
+    If Left$(shapeName, Len(EnvelopeDynamicShapePrefix)) = EnvelopeDynamicShapePrefix Then IsEnvelopeRuntimeShapeName = True
+End Function
+
 Private Function ResolveEnvelopeFormatKeyFromSheetName(sheetName As String) As String
     Select Case sheetName
     Case EnvelopeLayoutSheetC4
@@ -524,8 +551,11 @@ Private Sub EnsureEnvelopeTemplatePageAt(ws As Worksheet, envelopeFormatKey As S
         For rowOffset = 0 To rowsPerPage - 1
             ws.Rows(topRow + rowOffset).RowHeight = ws.Rows(1 + rowOffset).RowHeight
         Next rowOffset
+
+        ClearEnvelopeRuntimeShapesInPage ws, topRow, rowsPerPage
     End If
 
+    ClearEnvelopeRuntimeShapesInPage ws, topRow, rowsPerPage
     ClearEnvelopeTemplateDynamicCells ws, envelopeFormatKey, topRow
 End Sub
 

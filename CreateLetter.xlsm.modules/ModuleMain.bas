@@ -10,13 +10,15 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.8.5 - 01.05.2026
+' Version: 1.8.6 - 02.05.2026
 
 ' ======================================================================
 
 
 
 Option Explicit
+
+Public Const CreateLetterApplicationVersion As String = "1.7.0"
 
 Private activeMailDispatchForm As Object
 
