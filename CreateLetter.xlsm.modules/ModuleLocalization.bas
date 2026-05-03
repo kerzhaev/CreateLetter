@@ -1164,6 +1164,42 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "ribbon.settings.msg.error", "Failed to save program settings: "
 
+    AddTranslation "ru", "form.program_settings.title", "Настройки программы"
+
+    AddTranslation "en", "form.program_settings.title", "Program settings"
+
+    AddTranslation "ru", "form.program_settings.intro", "Общие настройки хранятся в этой книге и действуют для всех исполнителей."
+
+    AddTranslation "en", "form.program_settings.intro", "Shared settings are stored in this workbook and apply to all users."
+
+    AddTranslation "ru", "form.program_settings.require_outgoing_number", "Требовать заполненный номер исходящего письма"
+
+    AddTranslation "en", "form.program_settings.require_outgoing_number", "Require completed outgoing letter number"
+
+    AddTranslation "ru", "form.program_settings.tip.require_outgoing_number", "Если включено, форма письма не пропустит дальше без номера после косой черты, например 7/125."
+
+    AddTranslation "en", "form.program_settings.tip.require_outgoing_number", "When enabled, the letter form blocks navigation without a number after the slash, for example 7/125."
+
+    AddTranslation "ru", "form.program_settings.save", "Сохранить"
+
+    AddTranslation "en", "form.program_settings.save", "Save"
+
+    AddTranslation "ru", "form.program_settings.cancel", "Отмена"
+
+    AddTranslation "en", "form.program_settings.cancel", "Cancel"
+
+    AddTranslation "ru", "form.program_settings.saved", "Настройки сохранены в книге."
+
+    AddTranslation "en", "form.program_settings.saved", "Program settings saved in this workbook."
+
+    AddTranslation "ru", "form.program_settings.error.open_failed", "Не удалось открыть настройки программы: "
+
+    AddTranslation "en", "form.program_settings.error.open_failed", "Failed to open program settings: "
+
+    AddTranslation "ru", "form.program_settings.error.save_failed", "Не удалось сохранить настройки программы: "
+
+    AddTranslation "en", "form.program_settings.error.save_failed", "Failed to save program settings: "
+
     AddTranslation "ru", "ribbon.msg.folder_unavailable", "Путь недоступен, использован путь книги:"
 
     AddTranslation "en", "ribbon.msg.folder_unavailable", "Configured path is unavailable, using workbook path:"

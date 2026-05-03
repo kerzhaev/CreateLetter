@@ -199,6 +199,15 @@ def sync_component(project, source_file: Path, is_document_module: bool) -> str:
         code_module.AddFromString(sanitize_module_source(read_source_text(source_file)))
         return class_component.Name
 
+    if suffix == ".frm":
+        form_component = project.VBComponents.Add(3)
+        form_component.Name = component_name
+        code_module = form_component.CodeModule
+        if code_module.CountOfLines > 0:
+            code_module.DeleteLines(1, code_module.CountOfLines)
+        code_module.AddFromString(extract_existing_userform_code(read_source_text(source_file)))
+        return form_component.Name
+
     imported_component = project.VBComponents.Import(str(source_file.resolve()))
     return imported_component.Name
 
