@@ -14,7 +14,7 @@ It provides a guided user form workflow for address selection, attachment compos
 ## Tech Stack
 - **Language:** VBA (Visual Basic for Applications)
 - **Framework:** Excel UserForms + Workbook/Object Model
-- **Database:** Excel worksheets (`Адреса`, `Письма`, `Настройки`)
+- **Database:** Excel worksheets (`Addresses`, `Letters`, `Settings`, hidden `ProgramSettings`, dispatch tables)
 - **ORM:** N/A
 - **Integrations:** Local DOCX templates and file-system based archives
 - **Developer Tooling:** AI Factory pipeline + manual modified `VbaModuleManager`

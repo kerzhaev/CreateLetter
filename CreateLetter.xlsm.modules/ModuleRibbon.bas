@@ -6,9 +6,9 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Author: CreateLetter contributors
 
-' Purpose: Excel Ribbon callbacks, dispatch actions, and user-configurable folder settings
+' Purpose: Excel Ribbon callbacks, dispatch actions, and workbook-backed program settings
 
-' Version: 1.4.2 - 03.05.2026
+' Version: 1.4.3 - 03.05.2026
 
 ' ======================================================================
 
@@ -26,9 +26,17 @@ Private Const RibbonSettingTemplateFolder As String = "TemplateFolder"
 
 Private Const RibbonSettingOutputFolder As String = "OutputFolder"
 
-Private Const RibbonProgramSettingsSection As String = "ProgramSettings"
+Private Const ProgramSettingsSheetName As String = "ProgramSettings"
 
-Private Const RibbonSettingRequireOutgoingNumber As String = "RequireOutgoingNumber"
+Private Const ProgramSettingsTableName As String = "tblProgramSettings"
+
+Private Const ProgramSettingsColumnKey As Long = 1
+
+Private Const ProgramSettingsColumnValue As Long = 2
+
+Private Const ProgramSettingsColumnDescription As Long = 3
+
+Private Const ProgramSettingRequireOutgoingNumber As String = "RequireOutgoingNumber"
 
 Private Const msoFileDialogFolderPicker As Long = 4
 
@@ -173,38 +181,7 @@ Public Sub ConfigureProgramSettings()
 
     On Error GoTo SettingsError
 
-    Dim currentState As Boolean
-    currentState = IsOutgoingNumberRequired()
-
-    Dim currentStateText As String
-    If currentState Then
-        currentStateText = t("ribbon.settings.value.enabled", "Enabled")
-    Else
-        currentStateText = t("ribbon.settings.value.disabled", "Disabled")
-    End If
-
-    Dim promptText As String
-    promptText = t("ribbon.settings.msg", "Program settings are split by task. Template and output folders are selected by separate Ribbon buttons.")
-    promptText = promptText & vbCrLf & vbCrLf
-    promptText = promptText & t("ribbon.settings.prompt.require_outgoing_number", "Require a completed outgoing letter number before leaving the letter step?")
-    promptText = promptText & vbCrLf
-    promptText = promptText & t("ribbon.settings.current_value", "Current value: ") & currentStateText
-
-    Dim response As VbMsgBoxResult
-    response = MsgBox(promptText, vbQuestion + vbYesNoCancel, t("ribbon.settings.title", "Program settings"))
-
-    If response = vbCancel Then Exit Sub
-
-    Dim newValue As String
-    If response = vbYes Then
-        newValue = "1"
-    Else
-        newValue = "0"
-    End If
-
-    SaveSetting RibbonSettingsAppName, RibbonProgramSettingsSection, RibbonSettingRequireOutgoingNumber, newValue
-
-    MsgBox t("ribbon.settings.msg.saved", "Program settings saved."), vbInformation, t("ribbon.settings.title", "Program settings")
+    frmProgramSettings.Show
     Exit Sub
 
 SettingsError:
@@ -215,12 +192,175 @@ End Sub
 
 Public Function IsOutgoingNumberRequired() As Boolean
 
-    Dim storedValue As String
-    storedValue = LCase$(Trim$(GetSetting(RibbonSettingsAppName, RibbonProgramSettingsSection, RibbonSettingRequireOutgoingNumber, "0")))
-
-    IsOutgoingNumberRequired = storedValue = "1" Or storedValue = "true" Or storedValue = "yes" Or storedValue = "on"
+    IsOutgoingNumberRequired = IsWorkbookProgramSettingEnabled(ProgramSettingRequireOutgoingNumber, False)
 
 End Function
+
+Public Sub SetOutgoingNumberRequired(required As Boolean)
+
+    Dim storedValue As String
+    If required Then
+        storedValue = "1"
+    Else
+        storedValue = "0"
+    End If
+
+    SaveWorkbookProgramSetting ProgramSettingRequireOutgoingNumber, storedValue, "Require completed outgoing letter number before leaving the letter step"
+
+End Sub
+
+Private Function IsWorkbookProgramSettingEnabled(settingKey As String, defaultValue As Boolean) As Boolean
+
+    Dim defaultText As String
+    If defaultValue Then
+        defaultText = "1"
+    Else
+        defaultText = "0"
+    End If
+
+    Dim storedValue As String
+    storedValue = LCase$(Trim$(GetWorkbookProgramSetting(settingKey, defaultText)))
+
+    IsWorkbookProgramSettingEnabled = storedValue = "1" Or storedValue = "true" Or storedValue = "yes" Or storedValue = "on"
+
+End Function
+
+Private Function GetWorkbookProgramSetting(settingKey As String, defaultValue As String) As String
+
+    On Error GoTo SettingError
+
+    Dim settingsTable As ListObject
+    Set settingsTable = GetProgramSettingsTable()
+
+    Dim settingRow As ListRow
+    Set settingRow = FindProgramSettingRow(settingsTable, settingKey)
+
+    If settingRow Is Nothing Then
+        GetWorkbookProgramSetting = defaultValue
+    Else
+        GetWorkbookProgramSetting = CStr(settingRow.Range.Cells(1, ProgramSettingsColumnValue).Value)
+    End If
+
+    Exit Function
+
+SettingError:
+    Debug.Print "GetWorkbookProgramSetting error: " & Err.description
+    GetWorkbookProgramSetting = defaultValue
+
+End Function
+
+Private Sub SaveWorkbookProgramSetting(settingKey As String, settingValue As String, description As String)
+
+    On Error GoTo SaveError
+
+    Dim settingsTable As ListObject
+    Set settingsTable = GetProgramSettingsTable()
+
+    Dim settingRow As ListRow
+    Set settingRow = FindProgramSettingRow(settingsTable, settingKey)
+
+    If settingRow Is Nothing Then
+        Set settingRow = settingsTable.ListRows.Add
+    End If
+
+    settingRow.Range.Cells(1, ProgramSettingsColumnKey).Value = settingKey
+    settingRow.Range.Cells(1, ProgramSettingsColumnValue).Value = settingValue
+    settingRow.Range.Cells(1, ProgramSettingsColumnDescription).Value = description
+    settingsTable.Parent.Visible = xlSheetVeryHidden
+
+    Exit Sub
+
+SaveError:
+    Err.Raise Err.Number, "SaveWorkbookProgramSetting", Err.description
+
+End Sub
+
+Private Function FindProgramSettingRow(settingsTable As ListObject, settingKey As String) As ListRow
+
+    If settingsTable.DataBodyRange Is Nothing Then Exit Function
+
+    Dim rowIndex As Long
+    For rowIndex = 1 To settingsTable.DataBodyRange.Rows.count
+        If StrComp(CStr(settingsTable.DataBodyRange.Cells(rowIndex, ProgramSettingsColumnKey).Value), settingKey, vbTextCompare) = 0 Then
+            Set FindProgramSettingRow = settingsTable.ListRows(rowIndex)
+            Exit Function
+        End If
+    Next rowIndex
+
+End Function
+
+Private Function GetProgramSettingsTable() As ListObject
+
+    Dim settingsSheet As Worksheet
+    Set settingsSheet = GetOrCreateProgramSettingsSheet()
+
+    Dim tableIndex As Long
+    For tableIndex = 1 To settingsSheet.ListObjects.count
+        If settingsSheet.ListObjects(tableIndex).Name = ProgramSettingsTableName Then
+            Set GetProgramSettingsTable = settingsSheet.ListObjects(tableIndex)
+            EnsureProgramSettingsSeed GetProgramSettingsTable
+            settingsSheet.Visible = xlSheetVeryHidden
+            Exit Function
+        End If
+    Next tableIndex
+
+    PrepareProgramSettingsHeaders settingsSheet
+
+    Dim settingsRange As Range
+    Set settingsRange = settingsSheet.Range(settingsSheet.Cells(1, 1), settingsSheet.Cells(2, ProgramSettingsColumnDescription))
+
+    Dim settingsTable As ListObject
+    Set settingsTable = settingsSheet.ListObjects.Add(xlSrcRange, settingsRange, , xlYes)
+    settingsTable.Name = ProgramSettingsTableName
+
+    Set GetProgramSettingsTable = settingsTable
+    EnsureProgramSettingsSeed settingsTable
+    settingsSheet.Visible = xlSheetVeryHidden
+
+End Function
+
+Private Function GetOrCreateProgramSettingsSheet() As Worksheet
+
+    On Error Resume Next
+    Set GetOrCreateProgramSettingsSheet = ThisWorkbook.Worksheets(ProgramSettingsSheetName)
+    On Error GoTo 0
+
+    If GetOrCreateProgramSettingsSheet Is Nothing Then
+        Set GetOrCreateProgramSettingsSheet = ThisWorkbook.Worksheets.Add(After:=ThisWorkbook.Worksheets(ThisWorkbook.Worksheets.count))
+        GetOrCreateProgramSettingsSheet.Name = ProgramSettingsSheetName
+    End If
+
+    GetOrCreateProgramSettingsSheet.Visible = xlSheetVisible
+
+End Function
+
+Private Sub PrepareProgramSettingsHeaders(settingsSheet As Worksheet)
+
+    settingsSheet.Cells(1, ProgramSettingsColumnKey).Value = "SettingKey"
+    settingsSheet.Cells(1, ProgramSettingsColumnValue).Value = "SettingValue"
+    settingsSheet.Cells(1, ProgramSettingsColumnDescription).Value = "Description"
+
+    If Len(Trim$(CStr(settingsSheet.Cells(2, ProgramSettingsColumnKey).Value))) = 0 Then
+        settingsSheet.Cells(2, ProgramSettingsColumnKey).Value = ProgramSettingRequireOutgoingNumber
+        settingsSheet.Cells(2, ProgramSettingsColumnValue).Value = "0"
+        settingsSheet.Cells(2, ProgramSettingsColumnDescription).Value = "Require completed outgoing letter number before leaving the letter step"
+    End If
+
+End Sub
+
+Private Sub EnsureProgramSettingsSeed(settingsTable As ListObject)
+
+    Dim settingRow As ListRow
+    Set settingRow = FindProgramSettingRow(settingsTable, ProgramSettingRequireOutgoingNumber)
+
+    If settingRow Is Nothing Then
+        Set settingRow = settingsTable.ListRows.Add
+        settingRow.Range.Cells(1, ProgramSettingsColumnKey).Value = ProgramSettingRequireOutgoingNumber
+        settingRow.Range.Cells(1, ProgramSettingsColumnValue).Value = "0"
+        settingRow.Range.Cells(1, ProgramSettingsColumnDescription).Value = "Require completed outgoing letter number before leaving the letter step"
+    End If
+
+End Sub
 
 
 

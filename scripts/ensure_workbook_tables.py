@@ -28,6 +28,7 @@ TABLE_SPECS = (
     ("DispatchItems", "tblDispatchItems", ("DispatchId", "LetterNumber", "LetterDate", "LetterRowNumber", "Addressee", "AddressLine", "PostalCode", "SenderName", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Comment", "Phone", "BatchId", "Status", "CreatedAt", "RegistryNumber", "RegistryDate")),
     ("DispatchRegistry", "tblDispatchRegistry", ("RegistryNumber", "RegistryDate", "BatchId", "Addressee", "AddressLine", "EnvelopeFormatKey", "MailType", "Mass", "DeclaredValue", "Payment", "Comment", "Phone", "IndexFrom", "SenderName", "OutgoingNumbers", "CreatedAt", "PostalCode")),
     ("DispatchJournal", "tblDispatchJournal", ("BatchId", "Status", "RegistryNumber", "RegistryDate", "Addressee", "LetterCount", "OutgoingNumbers", "SenderName", "EnvelopeFormatKey", "MailType", "CreatedAt", "Comment")),
+    ("ProgramSettings", "tblProgramSettings", ("SettingKey", "SettingValue", "Description")),
 )
 
 LAYOUT_SHEET_SPECS = (
@@ -45,6 +46,9 @@ ENVELOPE_FORMAT_DEFAULT_ROWS = (
     ("c4", "C4", True, 10),
     ("c5", "C5", True, 20),
     ("dl", "DL", True, 30),
+)
+PROGRAM_SETTINGS_DEFAULT_ROWS = (
+    ("RequireOutgoingNumber", "0", "Require completed outgoing letter number before leaving the letter step"),
 )
 
 XL_SRC_RANGE = 1
@@ -160,6 +164,30 @@ def ensure_envelope_formats_seed(ws) -> str:
         next_row += 1
         created += 1
 
+    return "created" if created > 0 else "existing"
+
+
+def ensure_program_settings_seed(ws) -> str:
+    existing_keys: set[str] = set()
+    last_row = ws.Cells(ws.Rows.Count, 1).End(-4162).Row  # xlUp
+
+    for row_index in range(2, last_row + 1):
+        key_value = ws.Cells(row_index, 1).Value
+        if key_value is not None and str(key_value).strip():
+            existing_keys.add(str(key_value).strip().lower())
+
+    next_row = max(2, last_row + 1)
+    created = 0
+    for setting_key, setting_value, description in PROGRAM_SETTINGS_DEFAULT_ROWS:
+        if setting_key.lower() in existing_keys:
+            continue
+        ws.Cells(next_row, 1).Value = setting_key
+        ws.Cells(next_row, 2).Value = setting_value
+        ws.Cells(next_row, 3).Value = description
+        next_row += 1
+        created += 1
+
+    ws.Visible = 2  # xlSheetVeryHidden
     return "created" if created > 0 else "existing"
 
 
@@ -337,6 +365,10 @@ def main() -> int:
 
             if table_name == "tblEnvelopeFormats":
                 seed_status = ensure_envelope_formats_seed(ws)
+                print(f"{sheet_name}:seed:{seed_status}")
+
+            if table_name == "tblProgramSettings":
+                seed_status = ensure_program_settings_seed(ws)
                 print(f"{sheet_name}:seed:{seed_status}")
 
         for sheet_name, headers in LAYOUT_SHEET_SPECS:

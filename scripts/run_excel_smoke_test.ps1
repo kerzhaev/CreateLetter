@@ -215,7 +215,8 @@ try {
     $structuredTableRequirements = @(
         @{ Sheet = "Addresses"; Table = "tblAddresses" },
         @{ Sheet = "Letters"; Table = "tblLetters" },
-        @{ Sheet = "Settings"; Table = "tblLetterTexts" }
+        @{ Sheet = "Settings"; Table = "tblLetterTexts" },
+        @{ Sheet = "ProgramSettings"; Table = "tblProgramSettings" }
     )
 
     if ($RequireEnvelopeTables) {
@@ -253,6 +254,24 @@ try {
             Add-Result -Results $results -Name ("StructuredTable:" + $tableRequirement.Sheet) -Status "FAIL" -Details $_.Exception.Message
             $failed = $true
         }
+    }
+
+    try {
+        $programSettingsSheet = $workbook.Worksheets.Item("ProgramSettings")
+        if ($programSettingsSheet.Visible -ne -1) {
+            Add-Result -Results $results -Name "Worksheet:ProgramSettings.Hidden" -Status "PASS" -Details "ProgramSettings worksheet is hidden."
+        }
+        elseif ($RequireStructuredTables) {
+            Add-Result -Results $results -Name "Worksheet:ProgramSettings.Hidden" -Status "FAIL" -Details "ProgramSettings worksheet should not be visible to end users."
+            $failed = $true
+        }
+        else {
+            Add-Result -Results $results -Name "Worksheet:ProgramSettings.Hidden" -Status "WARN" -Details "ProgramSettings worksheet is visible."
+        }
+    }
+    catch {
+        Add-Result -Results $results -Name "Worksheet:ProgramSettings.Hidden" -Status "FAIL" -Details $_.Exception.Message
+        $failed = $true
     }
 
     try {
@@ -797,6 +816,10 @@ try {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub RibbonShowProgramSettings(control As IRibbonControl)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub ConfigureProgramSettings()*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Function IsOutgoingNumberRequired()*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub SetOutgoingNumberRequired(required As Boolean)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*tblProgramSettings*")
+            $programSettingsFormPath = Join-Path $modulesDirectory "frmProgramSettings.frm"
+            $hasRibbonModule = $hasRibbonModule -and (Test-Path -LiteralPath $programSettingsFormPath)
             $hasRibbonModule = $hasRibbonModule -and ($moduleMainText -like "*IsOutgoingNumberComplete(letterNumber)*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*ribbon.about.pipeline.step5*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*ConfirmPostalRegistryPdfWithUnpackedLetters*")
