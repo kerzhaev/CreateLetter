@@ -34,13 +34,13 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmMailDispatch v1.4.3
+' Form: frmMailDispatch v1.4.4
 
 ' Author: CreateLetter contributors
 
-' Date: 03.05.2026
+' Date: 04.05.2026
 
-' Purpose: Thin-shell UI for preparing grouped dispatch packages from existing letters with small-screen fallback
+' Purpose: Thin-shell UI for preparing RPBS-aware dispatch packages from existing letters with small-screen fallback
 
 ' ======================================================================
 
@@ -1001,11 +1001,11 @@ Private Sub TransferSelectedLettersToPackage()
 
 
 
-    Dim targetAddressee As String
+    Dim targetPackageKey As String
 
     If packageLettersData.count > 0 Then
 
-        targetAddressee = packageLettersData(1).Addressee
+        targetPackageKey = BuildPackageGroupingKey(packageLettersData(1))
 
     End If
 
@@ -1027,11 +1027,11 @@ Private Sub TransferSelectedLettersToPackage()
 
 
 
-        If Len(targetAddressee) > 0 Then
+        If Len(targetPackageKey) > 0 Then
 
-            If StrComp(Trim$(record.Addressee), Trim$(targetAddressee), vbTextCompare) <> 0 Then
+            If StrComp(BuildPackageGroupingKey(record), targetPackageKey, vbTextCompare) <> 0 Then
 
-                MsgBox t("form.mail_dispatch.error.mixed_addressee", "В один пакет можно добавлять только письма одному адресату."), vbExclamation
+                MsgBox t("form.mail_dispatch.error.mixed_rpbs", "Letters in one envelope must have the same RPBS. If RPBS is empty, the addressee must match."), vbExclamation
 
                 Exit Sub
 
@@ -1039,7 +1039,7 @@ Private Sub TransferSelectedLettersToPackage()
 
         Else
 
-            targetAddressee = record.Addressee
+            targetPackageKey = BuildPackageGroupingKey(record)
 
         End If
 
@@ -1147,19 +1147,19 @@ Private Function CanAddRecordToCurrentPackage(record As clsLetterHistoryRecord) 
 
     CanAddRecordToCurrentPackage = False
 
-    Dim targetAddressee As String
+    Dim targetPackageKey As String
 
     If packageLettersData.count > 0 Then
 
-        targetAddressee = packageLettersData(1).Addressee
+        targetPackageKey = BuildPackageGroupingKey(packageLettersData(1))
 
     End If
 
-    If Len(targetAddressee) > 0 Then
+    If Len(targetPackageKey) > 0 Then
 
-        If StrComp(Trim$(record.Addressee), Trim$(targetAddressee), vbTextCompare) <> 0 Then
+        If StrComp(BuildPackageGroupingKey(record), targetPackageKey, vbTextCompare) <> 0 Then
 
-            MsgBox t("form.mail_dispatch.error.mixed_addressee", "В один пакет можно добавлять только письма одному адресату."), vbExclamation
+            MsgBox t("form.mail_dispatch.error.mixed_rpbs", "Letters in one envelope must have the same RPBS. If RPBS is empty, the addressee must match."), vbExclamation
 
             Exit Function
 
@@ -1168,6 +1168,14 @@ Private Function CanAddRecordToCurrentPackage(record As clsLetterHistoryRecord) 
     End If
 
     CanAddRecordToCurrentPackage = True
+
+End Function
+
+Private Function BuildPackageGroupingKey(record As clsLetterHistoryRecord) As String
+
+    If record Is Nothing Then Exit Function
+
+    BuildPackageGroupingKey = DispatchRepositoryResolvePackageGroupingKey(record.Addressee)
 
 End Function
 
@@ -1785,6 +1793,16 @@ Private Function BuildPackagePreviewText() As String
 
 
     BuildPackagePreviewText = DispatchRepositoryBuildRecipientPreviewByAddressee(firstRecord.Addressee)
+
+    Dim rpbsCode As String
+
+    rpbsCode = DispatchRepositoryGetRpbsByAddressee(firstRecord.Addressee)
+
+    If Len(rpbsCode) > 0 Then
+
+        BuildPackagePreviewText = BuildPackagePreviewText & vbCrLf & t("form.letter_creator.label.rpbs", "RPBS") & ": " & rpbsCode
+
+    End If
 
     BuildPackagePreviewText = BuildPackagePreviewText & vbCrLf & vbCrLf & BuildOutgoingNumbersText(packageLettersData)
 

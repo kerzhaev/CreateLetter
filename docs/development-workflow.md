@@ -167,6 +167,8 @@ Use `-RequireStructuredTables` after workbook schema stages that depend on `tblA
 Use `-RequireLocalizationSheet` after workbook-backed localization becomes part of the expected schema.
 Use `-RequireRibbonCustomization` after source-managed Ribbon changes or package customization work.
 Use `-RequireAddressGroupColumn` after address-schema stages that depend on the optional `AddressGroup` column in `tblAddresses`.
+
+Use `-RequireRpbsColumn` after address-schema stages that depend on the optional `RPBS` column in `tblAddresses`.
 The smoke harness also verifies that source files exist for all workbook and worksheet document modules in `CreateLetter.xlsm.document-modules/`.
 
 For mail-dispatch envelope changes, run the dedicated temp-workbook COM smoke:
@@ -176,6 +178,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_dispatch_envelope_smoke.p
 ```
 
 This script copies the workbook into `filesarchive/temp-com-tests/`, seeds C4/C5/DL test packages, rebuilds the dispatch registry, prepares envelope layouts, and verifies printable dynamic postal-index bars plus outgoing-number text without mutating the live workbook.
+
+Excel COM automation should open workbook paths through `file:///...` URI form rather than relying only on the normal absolute Windows path. This avoids a class of Excel path-cache failures where a valid workbook opens by URI or short path but `Workbooks.Open("C:\...")` fails.
 
 ## Reusable COM Pattern
 
@@ -197,4 +201,4 @@ Use it as the baseline for future workbook projects when you want:
 - [Maintenance](maintenance.md) - Recovery and safe update checklist
 - [Architecture](architecture.md) - Module boundaries and migration constraints
 - Create restore points with `powershell -ExecutionPolicy Bypass -File .\scripts\create_restore_point.ps1 -Label "<feature-name>"`.
-- The `Addresses` schema supports an optional `AddressGroup` field for scenarios where different recipients share one postal address but must stay separate as named addressees.
+- The `Addresses` schema supports optional `AddressGroup` and `RPBS` fields. `AddressGroup` is descriptive/search-only; `RPBS` is the current operational grouping key that lets several named recipients be packed together when they are served by the same financial body.

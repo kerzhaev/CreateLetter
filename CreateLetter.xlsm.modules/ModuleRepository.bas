@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRepository"
 
 ' Purpose: Workbook CRUD/search/export helpers with typed history DTO support
 
-' Version: 1.0.5 - 29.03.2026
+' Version: 1.0.6 - 04.05.2026
 
 ' ======================================================================
 
@@ -36,7 +36,7 @@ Public Function RepositorySearchAddresses(searchTerm As String) As Collection
 
     Dim addressData As Variant
 
-    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnGroup, AddressesTableName)
+    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnRpbs, AddressesTableName)
 
     If IsEmpty(addressData) Then Exit Function
 
@@ -44,7 +44,7 @@ Public Function RepositorySearchAddresses(searchTerm As String) As Collection
 
     Dim startRow As Long
 
-    startRow = RepositoryGetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnGroup, AddressesTableName)
+    startRow = RepositoryGetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnRpbs, AddressesTableName)
 
 
 
@@ -106,7 +106,7 @@ Public Function RepositoryTryParseAddressSearchResult(addressSearchResult As Var
 
     If IsAddressSearchResultArray(addressSearchResult) Then
 
-        Dim parsedAddress(AddressIndexGroup) As String
+        Dim parsedAddress(AddressIndexRpbs) As String
 
 
 
@@ -125,6 +125,8 @@ Public Function RepositoryTryParseAddressSearchResult(addressSearchResult As Var
         parsedAddress(AddressIndexPhone) = CStr(addressSearchResult(AddressSearchResultPhone))
 
         parsedAddress(AddressIndexGroup) = CStr(addressSearchResult(AddressSearchResultGroup))
+
+        parsedAddress(AddressIndexRpbs) = CStr(addressSearchResult(AddressSearchResultRpbs))
 
 
 
@@ -156,7 +158,7 @@ Public Function RepositoryTryParseAddressSearchResult(addressSearchResult As Var
 
         If TryParseAddressListItem(CStr(addressSearchResult), legacyParts, legacyRow, legacyErrorMessage) Then
 
-            Dim legacyAddress(AddressIndexGroup) As String
+            Dim legacyAddress(AddressIndexRpbs) As String
 
 
 
@@ -175,6 +177,8 @@ Public Function RepositoryTryParseAddressSearchResult(addressSearchResult As Var
             legacyAddress(AddressIndexPhone) = CStr(legacyParts(AddressPartPhone))
 
             legacyAddress(AddressIndexGroup) = ""
+
+            legacyAddress(AddressIndexRpbs) = ""
 
 
 
@@ -212,7 +216,7 @@ Public Function RepositoryTryLoadAddressRow(rowNumber As Long, ByRef addressArra
 
 
 
-    Dim loadedAddress(AddressIndexGroup) As String
+    Dim loadedAddress(AddressIndexRpbs) As String
 
     loadedAddress(AddressIndexAddressee) = CStr(ws.Cells(rowNumber, AddressColumnAddressee).value)
 
@@ -229,6 +233,8 @@ Public Function RepositoryTryLoadAddressRow(rowNumber As Long, ByRef addressArra
     loadedAddress(AddressIndexPhone) = CStr(ws.Cells(rowNumber, AddressColumnPhone).value)
 
     loadedAddress(AddressIndexGroup) = CStr(ws.Cells(rowNumber, AddressColumnGroup).value)
+
+    loadedAddress(AddressIndexRpbs) = CStr(ws.Cells(rowNumber, AddressColumnRpbs).value)
 
 
 
@@ -514,7 +520,7 @@ Public Function RepositoryIsAddressDuplicate(addressArray As Variant, Optional e
 
     Dim addressData As Variant
 
-    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnGroup, AddressesTableName)
+    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnRpbs, AddressesTableName)
 
     If IsEmpty(addressData) Then Exit Function
 
@@ -522,7 +528,7 @@ Public Function RepositoryIsAddressDuplicate(addressArray As Variant, Optional e
 
     Dim startRow As Long
 
-    startRow = RepositoryGetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnGroup, AddressesTableName)
+    startRow = RepositoryGetStructuredDataStartRow(ws, AddressColumnAddressee, AddressColumnRpbs, AddressesTableName)
 
 
 
@@ -1146,7 +1152,8 @@ Private Function BuildAddressSearchLineFromMatrix(addressData As Variant, rowInd
                                        RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnRegion) & " " & _
                                        RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPostalCode) & " " & _
                                        RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnPhone) & " " & _
-                                       RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnGroup)
+                                       RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnGroup) & " " & _
+                                       RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnRpbs)
 
 End Function
 
@@ -1154,7 +1161,7 @@ End Function
 
 Private Function CreateAddressSearchResultFromMatrix(addressData As Variant, rowIndex As Long, worksheetRowNumber As Long) As Variant
 
-    Dim searchResult(AddressSearchResultGroup) As Variant
+    Dim searchResult(AddressSearchResultRpbs) As Variant
 
 
 
@@ -1178,6 +1185,8 @@ Private Function CreateAddressSearchResultFromMatrix(addressData As Variant, row
 
     searchResult(AddressSearchResultGroup) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnGroup)
 
+    searchResult(AddressSearchResultRpbs) = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnRpbs)
+
 
 
     CreateAddressSearchResultFromMatrix = searchResult
@@ -1194,6 +1203,8 @@ Private Function BuildAddressSearchDisplayTextFromMatrix(addressData As Variant,
 
     Dim groupText As String
 
+    Dim rpbsText As String
+
 
 
     displayText = RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnAddressee)
@@ -1202,11 +1213,19 @@ Private Function BuildAddressSearchDisplayTextFromMatrix(addressData As Variant,
 
     groupText = Trim$(RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnGroup))
 
+    rpbsText = Trim$(RepositoryMatrixValueOrEmpty(addressData, rowIndex, AddressColumnRpbs))
+
 
 
     If Len(groupText) > 0 Then
 
         displayText = displayText & " [" & groupText & "]"
+
+    End If
+
+    If Len(rpbsText) > 0 Then
+
+        displayText = displayText & " [" & t("form.letter_creator.label.rpbs", "RPBS") & ": " & rpbsText & "]"
 
     End If
 
@@ -1336,6 +1355,8 @@ Private Sub WriteAddressRow(ws As Worksheet, rowNumber As Long, addressArray As 
 
     ws.Cells(rowNumber, AddressColumnGroup).value = addressArray(AddressIndexGroup)
 
+    ws.Cells(rowNumber, AddressColumnRpbs).value = addressArray(AddressIndexRpbs)
+
 End Sub
 
 
@@ -1348,7 +1369,7 @@ Private Function IsAddressSearchResultArray(addressSearchResult As Variant) As B
 
     If Not IsArray(addressSearchResult) Then Exit Function
 
-    If UBound(addressSearchResult) < AddressSearchResultGroup Then Exit Function
+    If UBound(addressSearchResult) < AddressSearchResultRpbs Then Exit Function
 
 
 

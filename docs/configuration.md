@@ -9,7 +9,7 @@ Key sheets are initialized/managed by `mdlInicialize.bas`:
 - Address sheet: recipient address fields
 - Letters sheet: generated/outgoing letter records
 - Settings sheet: static texts, executors, and helper values
-- `tblAddresses` can include an optional `AddressGroup` column for scenarios where several named recipients share the same postal address.
+- `tblAddresses` can include optional `AddressGroup` and `RPBS` columns. `AddressGroup` is a human hint/search field for shared postal addresses; `RPBS` is the stable code used by mail dispatch to allow different named recipients in one package when they belong to the same servicing financial body.
 
 ## Template Configuration
 

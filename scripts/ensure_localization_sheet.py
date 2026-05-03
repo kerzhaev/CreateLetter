@@ -40,6 +40,11 @@ def reset_excel_gen_cache() -> None:
             child.unlink(missing_ok=True)
 
 
+def get_excel_open_path(workbook_path: Path) -> str:
+    resolved_path = workbook_path.resolve()
+    return resolved_path.as_uri() if sys.platform == "win32" else str(resolved_path)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Create or refresh workbook Localization sheet.")
     parser.add_argument("workbook", type=Path, help="Path to the target .xlsm workbook")
@@ -123,7 +128,7 @@ def main() -> int:
     workbook = None
 
     try:
-        workbook = excel.Workbooks.Open(str(workbook_path))
+        workbook = excel.Workbooks.Open(get_excel_open_path(workbook_path))
         ws, created = get_or_create_sheet(workbook)
         write_localization_sheet(ws, translations)
         workbook.Save()

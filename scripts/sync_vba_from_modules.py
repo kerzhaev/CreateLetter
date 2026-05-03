@@ -27,6 +27,11 @@ SUPPORTED_EXTENSIONS = (".bas", ".cls", ".frm")
 SOURCE_TEXT_ENCODINGS = ("utf-8-sig", "utf-8", "cp1251", "cp866", "mbcs")
 
 
+def get_excel_open_path(workbook_path: Path) -> str:
+    resolved_path = workbook_path.resolve()
+    return resolved_path.as_uri() if sys.platform == "win32" else str(resolved_path)
+
+
 def reset_excel_gen_cache() -> None:
     gen_path = Path(win32com.client.gencache.GetGeneratePath())
     for child in gen_path.glob("00020813-0000-0000-C000-000000000046*"):
@@ -233,7 +238,7 @@ def sync_workbook(
     synced_count = 0
 
     try:
-        workbook = excel.Workbooks.Open(str(workbook_path.resolve()))
+        workbook = excel.Workbooks.Open(get_excel_open_path(workbook_path))
         project = workbook.VBProject
 
         for source_file, is_document_module in source_files:

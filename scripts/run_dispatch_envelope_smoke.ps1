@@ -23,6 +23,18 @@ function Add-SmokeResult {
     }) | Out-Null
 }
 
+function Get-ExcelOpenPath {
+    param(
+        [string]$Path
+    )
+
+    try {
+        return ([System.Uri](Resolve-Path $Path).Path).AbsoluteUri
+    } catch {
+        return $Path
+    }
+}
+
 function Get-Table {
     param(
         [object]$Workbook,
@@ -160,7 +172,7 @@ try {
     $excel = New-Object -ComObject Excel.Application
     $excel.Visible = $false
     $excel.DisplayAlerts = $false
-    $workbook = $excel.Workbooks.Open($tempWorkbookPath)
+    $workbook = $excel.Workbooks.Open((Get-ExcelOpenPath -Path $tempWorkbookPath))
     Add-SmokeResult -Results $results -Name "WorkbookTempOpen" -Status "PASS" -Details $tempWorkbookPath
 
     $sendersTable = Get-Table -Workbook $workbook -SheetName "Senders" -TableName "tblSenders"

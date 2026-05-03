@@ -21,6 +21,9 @@ param(
     [switch]$RequireAddressGroupColumn,
 
     [Parameter(Mandatory = $false)]
+    [switch]$RequireRpbsColumn,
+
+    [Parameter(Mandatory = $false)]
     [switch]$RequireLocalTemplates,
 
     [Parameter(Mandatory = $false)]
@@ -60,6 +63,18 @@ function Add-Result {
         Status = $Status
         Details = $Details
     }) | Out-Null
+}
+
+function Get-ExcelOpenPath {
+    param(
+        [string]$Path
+    )
+
+    try {
+        return ([System.Uri](Resolve-Path $Path).Path).AbsoluteUri
+    } catch {
+        return $Path
+    }
 }
 
 function Test-WorksheetVariants {
@@ -134,6 +149,7 @@ function Test-DocumentModuleSourceCoverage {
 }
 
 $resolvedWorkbookPath = Resolve-Path $WorkbookPath
+$excelOpenPath = Get-ExcelOpenPath -Path $resolvedWorkbookPath.Path
 $workbookDirectory = Split-Path -Parent $resolvedWorkbookPath.Path
 $modulesDirectory = Join-Path (Split-Path -Parent $resolvedWorkbookPath.Path) ([System.IO.Path]::GetFileName($resolvedWorkbookPath.Path) + ".modules")
 $documentModulesDirectory = Join-Path (Split-Path -Parent $resolvedWorkbookPath.Path) ([System.IO.Path]::GetFileName($resolvedWorkbookPath.Path) + ".document-modules")
@@ -169,7 +185,7 @@ try {
     $excel.Visible = $false
     $excel.DisplayAlerts = $false
 
-    $workbook = $excel.Workbooks.Open($resolvedWorkbookPath.Path, $false, $true)
+    $workbook = $excel.Workbooks.Open($excelOpenPath, $false, $true)
     Add-Result -Results $results -Name "WorkbookOpen" -Status "PASS" -Details "Workbook opened in read-only mode."
 
     $requiredSheets = @(
@@ -288,6 +304,17 @@ try {
         }
         else {
             Add-Result -Results $results -Name "StructuredColumn:Addresses.AddressGroup" -Status "WARN" -Details "Column 'AddressGroup' is missing."
+        }
+
+        if ($addressColumnNames.Contains("RPBS")) {
+            Add-Result -Results $results -Name "StructuredColumn:Addresses.RPBS" -Status "PASS" -Details "Column 'RPBS' is present in tblAddresses."
+        }
+        elseif ($RequireRpbsColumn) {
+            Add-Result -Results $results -Name "StructuredColumn:Addresses.RPBS" -Status "FAIL" -Details ("Column 'RPBS' is missing. Found: " + (($addressColumnNames | Select-Object -First 20) -join ", "))
+            $failed = $true
+        }
+        else {
+            Add-Result -Results $results -Name "StructuredColumn:Addresses.RPBS" -Status "WARN" -Details "Column 'RPBS' is missing."
         }
     }
     catch {

@@ -10,7 +10,7 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.8.7 - 03.05.2026
+' Version: 1.8.8 - 04.05.2026
 
 ' ======================================================================
 
@@ -18,7 +18,7 @@ Attribute VB_Name = "ModuleMain"
 
 Option Explicit
 
-Public Const CreateLetterApplicationVersion As String = "1.7.1"
+Public Const CreateLetterApplicationVersion As String = "1.7.2"
 
 Private activeMailDispatchForm As Object
 
@@ -128,6 +128,8 @@ Public Enum AddressColumns
 
     AddressColumnGroup = 8
 
+    AddressColumnRpbs = 9
+
 End Enum
 
 
@@ -222,6 +224,8 @@ Public Enum AddressArrayIndexes
 
     AddressIndexGroup = 7
 
+    AddressIndexRpbs = 8
+
 End Enum
 
 
@@ -269,6 +273,8 @@ Public Enum AddressSearchResultIndexes
     AddressSearchResultPhone = 8
 
     AddressSearchResultGroup = 9
+
+    AddressSearchResultRpbs = 10
 
 End Enum
 

@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmLetterCreator 
-   Caption         =   "Letter Builder v1.6.18"
+   Caption         =   "Letter Builder v1.7.2"
    ClientHeight    =   10155
    ClientLeft      =   120
    ClientTop       =   465
@@ -32,9 +32,9 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form    : frmLetterCreator v1.6.18 - Thin-shell MultiPage wizard with workbook-backed localization, grouped address search, and explicit startup focus
+' Form    : frmLetterCreator v1.6.19 - Thin-shell MultiPage wizard with workbook-backed localization, grouped address search, RPBS editing, and explicit startup focus
 
-' Version : 1.6.18 - 17.04.2026
+' Version : 1.6.19 - 04.05.2026
 
 ' Author  : CreateLetter contributors
 
@@ -59,6 +59,10 @@ Private Const TOTAL_PAGES As Integer = 4
 Private Const ADDRESS_GROUP_LABEL_NAME As String = "lblAddressGroup"
 
 Private Const ADDRESS_GROUP_TEXTBOX_NAME As String = "txtAddressGroup"
+
+Private Const RPBS_LABEL_NAME As String = "lblRpbs"
+
+Private Const RPBS_TEXTBOX_NAME As String = "txtRpbs"
 
 Public selectedAddressRow As Long
 
@@ -538,7 +542,7 @@ Private Sub ClearAllAddressFields()
 
     
 
-    addressFields = Array("txtAddressee", "txtStreet", "txtCity", "txtDistrict", "txtRegion", "txtPostalCode", "txtAddresseePhone", ADDRESS_GROUP_TEXTBOX_NAME)
+    addressFields = Array("txtAddressee", "txtStreet", "txtCity", "txtDistrict", "txtRegion", "txtPostalCode", "txtAddresseePhone", ADDRESS_GROUP_TEXTBOX_NAME, RPBS_TEXTBOX_NAME)
 
     
 
@@ -644,7 +648,7 @@ Private Sub ConfigureFormAppearance()
 
     Me.Font.Size = 10
 
-    Me.Caption = t("form.letter_creator.title", "Letter Builder") & " v1.6.18"
+    Me.Caption = t("form.letter_creator.title", "Letter Builder") & " v" & CreateLetterApplicationVersion
 
     
 
@@ -736,6 +740,8 @@ Private Sub ConfigureFormAppearance()
 
     SetResolvedControlTip ADDRESS_GROUP_TEXTBOX_NAME, GetAddressGroupTooltipText()
 
+    SetResolvedControlTip RPBS_TEXTBOX_NAME, t("form.letter_creator.tip.rpbs", "Stable RPBS code for grouping recipients by servicing financial body")
+
 End Sub
 
 
@@ -793,6 +799,8 @@ Private Sub ApplyLocalizedStaticCaptions()
     SetLocalizedCaption "Label18", "form.letter_creator.label.addressee", "Addressee"
 
     SetResolvedControlCaption ADDRESS_GROUP_LABEL_NAME, t("form.letter_creator.label.address_group", "Address group")
+
+    SetResolvedControlCaption RPBS_LABEL_NAME, t("form.letter_creator.label.rpbs", "RPBS")
 
     SetLocalizedCaption "Label19", "form.letter_creator.label.available_attachments", "Available attachments"
 
@@ -988,7 +996,7 @@ Private Sub EnsureAddressGroupControls()
 
     With groupLabel
 
-        .Caption = GetAddressGroupLabelText()
+        .Caption = t("form.letter_creator.label.address_group", "Address group")
 
         .Left = 30
 
@@ -1052,11 +1060,85 @@ Private Sub EnsureAddressGroupControls()
 
 
 
-    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 372
+    Dim rpbsLabel As Object
 
-    If Not btnEditAddress Is Nothing Then btnEditAddress.Top = 372
+    Set rpbsLabel = Nothing
 
-    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Top = 372
+    On Error Resume Next
+
+    Set rpbsLabel = addressFrame.Controls(RPBS_LABEL_NAME)
+
+    On Error GoTo EnsureError
+
+    If rpbsLabel Is Nothing Then
+
+        Set rpbsLabel = addressFrame.Controls.Add("Forms.Label.1", RPBS_LABEL_NAME, True)
+
+    End If
+
+    With rpbsLabel
+
+        .Caption = t("form.letter_creator.label.rpbs", "RPBS")
+
+        .Left = 30
+
+        .Top = 300
+
+        .Width = 84
+
+        .Height = 12
+
+        .BackStyle = 0
+
+        .Font.Name = "Segoe UI"
+
+        .Font.Size = 9
+
+    End With
+
+    Dim rpbsTextBox As Object
+
+    Set rpbsTextBox = Nothing
+
+    On Error Resume Next
+
+    Set rpbsTextBox = addressFrame.Controls(RPBS_TEXTBOX_NAME)
+
+    On Error GoTo EnsureError
+
+    If rpbsTextBox Is Nothing Then
+
+        Set rpbsTextBox = addressFrame.Controls.Add("Forms.TextBox.1", RPBS_TEXTBOX_NAME, True)
+
+    End If
+
+    With rpbsTextBox
+
+        .Left = 126
+
+        .Top = 294
+
+        .Width = 276
+
+        .Height = 24
+
+        .backColor = RGB(255, 255, 255)
+
+        .ControlTipText = t("form.letter_creator.tip.rpbs", "Stable RPBS code for grouping recipients by servicing financial body")
+
+        .Font.Name = "Segoe UI"
+
+        .Font.Size = 10
+
+        .MultiLine = False
+
+    End With
+
+    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 396
+
+    If Not btnEditAddress Is Nothing Then btnEditAddress.Top = 396
+
+    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Top = 396
 
     If Not mpgWizard Is Nothing Then mpgWizard.Height = 414
 
@@ -2396,7 +2478,7 @@ End Function
 
 Private Function CreateAddressArray() As Variant
 
-    Dim arr(AddressIndexGroup) As String
+    Dim arr(AddressIndexRpbs) As String
 
     
 
@@ -2415,6 +2497,8 @@ Private Function CreateAddressArray() As Variant
     arr(AddressIndexPhone) = GetControlText("txtAddresseePhone")
 
     arr(AddressIndexGroup) = GetControlText(ADDRESS_GROUP_TEXTBOX_NAME)
+
+    arr(AddressIndexRpbs) = GetControlText(RPBS_TEXTBOX_NAME)
 
     
 
@@ -2441,6 +2525,8 @@ Private Sub ApplyAddressPartsToControls(addressParts As Variant)
     SetControlValue "txtAddresseePhone", CStr(addressParts(AddressIndexPhone))
 
     SetControlValue ADDRESS_GROUP_TEXTBOX_NAME, CStr(addressParts(AddressIndexGroup))
+
+    SetControlValue RPBS_TEXTBOX_NAME, CStr(addressParts(AddressIndexRpbs))
 
 End Sub
 
@@ -2504,7 +2590,7 @@ Private Function GetPageIndexForControl(controlName As String) As Integer
 
     Select Case controlName
 
-        Case "txtAddressee", "txtCity", "txtRegion", "txtPostalCode", "txtAddresseePhone", ADDRESS_GROUP_TEXTBOX_NAME
+        Case "txtAddressee", "txtCity", "txtRegion", "txtPostalCode", "txtAddresseePhone", ADDRESS_GROUP_TEXTBOX_NAME, RPBS_TEXTBOX_NAME
 
             GetPageIndexForControl = 0
 

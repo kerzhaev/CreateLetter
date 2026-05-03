@@ -6,7 +6,7 @@ Attribute VB_Name = "ModuleLocalization"
 
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
 
-' Version: 1.5.3 - 03.05.2026
+' Version: 1.5.4 - 04.05.2026
 
 ' Notes:
 
@@ -468,6 +468,10 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "form.letter_creator.label.address_group", "Address group"
 
+    AddTranslation "ru", "form.letter_creator.label.rpbs", "РПБС"
+
+    AddTranslation "en", "form.letter_creator.label.rpbs", "RPBS"
+
     AddTranslation "ru", "form.letter_creator.label.available_attachments", "Доступные приложения"
 
     AddTranslation "en", "form.letter_creator.label.available_attachments", "Available attachments"
@@ -523,6 +527,10 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "form.letter_creator.tip.address_group", "Общая группа для адресов с одним почтовым адресом. Например: 5 ФЭО"
 
     AddTranslation "en", "form.letter_creator.tip.address_group", "Shared group for recipients using the same postal address. For example: Finance Office 5"
+
+    AddTranslation "ru", "form.letter_creator.tip.rpbs", "Код РПБС обслуживающего финансового органа. Письма с одинаковым РПБС можно вложить в один пакет."
+
+    AddTranslation "en", "form.letter_creator.tip.rpbs", "Stable RPBS code for grouping recipients by servicing financial body."
 
     AddTranslation "ru", "form.letter_creator.msg.letter_created", "Письмо успешно создано!"
 
@@ -1443,6 +1451,10 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "form.mail_dispatch.error.mixed_addressee", "В один пакет можно добавлять только письма одному адресату."
 
     AddTranslation "en", "form.mail_dispatch.error.mixed_addressee", "Only letters for one addressee can be added to one package."
+
+    AddTranslation "ru", "form.mail_dispatch.error.mixed_rpbs", "В один пакет можно добавлять письма только с одинаковым РПБС. Если РПБС пустой, адресат должен совпадать."
+
+    AddTranslation "en", "form.mail_dispatch.error.mixed_rpbs", "Letters in one envelope must have the same RPBS. If RPBS is empty, the addressee must match."
 
     AddTranslation "ru", "form.mail_dispatch.error.transfer_failed", "Не удалось переместить выбранные письма в пакет."
 
