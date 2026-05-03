@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleDispatchRepository"
 
 ' Purpose: Workbook repository helpers for envelope formats, senders, dispatch packages, and registry metadata
 
-' Version: 1.3.0 - 01.05.2026
+' Version: 1.3.1 - 04.05.2026
 
 ' ======================================================================
 
@@ -679,7 +679,7 @@ Public Function DispatchRepositoryCreatePackageFromHistoryRecords( _
 
     Dim batchId As String
 
-    batchId = DispatchRepositoryGenerateBatchId(firstRecord.Addressee)
+    batchId = DispatchRepositoryGenerateBatchId(DispatchRepositoryResolvePackageGroupingKey(firstRecord.Addressee))
 
 
 
@@ -1278,6 +1278,66 @@ Private Function DispatchRepositoryGenerateBatchId(Addressee As String) As Strin
 
 End Function
 
+Public Function DispatchRepositoryResolvePackageGroupingKey(ByVal Addressee As String) As String
+
+    Dim rpbsCode As String
+
+    rpbsCode = DispatchRepositoryGetRpbsByAddressee(Addressee)
+
+    If Len(rpbsCode) > 0 Then
+
+        DispatchRepositoryResolvePackageGroupingKey = "RPBS:" & rpbsCode
+
+    Else
+
+        DispatchRepositoryResolvePackageGroupingKey = "ADDRESSEE:" & UCase$(Trim$(Addressee))
+
+    End If
+
+End Function
+
+Public Function DispatchRepositoryGetRpbsByAddressee(ByVal Addressee As String) As String
+
+    DispatchRepositoryGetRpbsByAddressee = ""
+
+    On Error GoTo LookupError
+
+    Dim ws As Worksheet
+
+    Set ws = ThisWorkbook.Worksheets("Addresses")
+
+    Dim addressData As Variant
+
+    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnRpbs, AddressesTableName)
+
+    If IsEmpty(addressData) Then Exit Function
+
+    Dim normalizedAddressee As String
+
+    normalizedAddressee = UCase$(Trim$(Addressee))
+
+    Dim i As Long
+
+    For i = LBound(addressData, 1) To UBound(addressData, 1)
+
+        If UCase$(Trim$(CStr(addressData(i, AddressColumnAddressee)))) = normalizedAddressee Then
+
+            DispatchRepositoryGetRpbsByAddressee = Trim$(CStr(addressData(i, AddressColumnRpbs)))
+
+            Exit Function
+
+        End If
+
+    Next i
+
+    Exit Function
+
+LookupError:
+
+    DispatchRepositoryGetRpbsByAddressee = ""
+
+End Function
+
 
 
 Private Function DispatchRepositoryResolveDispatchStatus(status As String) As String
@@ -1340,7 +1400,7 @@ Private Function DispatchRepositoryTryResolveAddressByAddressee( _
 
     Dim addressData As Variant
 
-    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnGroup, AddressesTableName)
+    addressData = RepositoryReadWorksheetMatrix(ws, AddressColumnAddressee, AddressColumnRpbs, AddressesTableName)
 
     If IsEmpty(addressData) Then Exit Function
 
@@ -1358,7 +1418,7 @@ Private Function DispatchRepositoryTryResolveAddressByAddressee( _
 
         If UCase$(Trim$(CStr(addressData(i, AddressColumnAddressee)))) = normalizedAddressee Then
 
-            Dim addressParts(AddressIndexGroup) As String
+            Dim addressParts(AddressIndexRpbs) As String
 
             addressParts(AddressIndexAddressee) = CStr(addressData(i, AddressColumnAddressee))
 
@@ -1375,6 +1435,8 @@ Private Function DispatchRepositoryTryResolveAddressByAddressee( _
             addressParts(AddressIndexPhone) = CStr(addressData(i, AddressColumnPhone))
 
             addressParts(AddressIndexGroup) = CStr(addressData(i, AddressColumnGroup))
+
+            addressParts(AddressIndexRpbs) = CStr(addressData(i, AddressColumnRpbs))
 
 
 

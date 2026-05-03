@@ -4,7 +4,7 @@ Attribute VB_Name = "mdlInicialize"
 ' Module: mdlInitialize
 ' Author: CreateLetter contributors
 ' Purpose: Workbook sheet bootstrap and reset entry points with English-safe public aliases
-' Version: 1.4.8 - 29.03.2026
+' Version: 1.4.9 - 04.05.2026
 ' ======================================================================
 Option Explicit
 
@@ -51,9 +51,11 @@ Private Sub CreateAddressesSheet()
         .Cells(1, 5).value = "Region"
         .Cells(1, 6).value = "Postal Code"
         .Cells(1, 7).value = "Phone"
+        .Cells(1, 8).value = "AddressGroup"
+        .Cells(1, 9).value = "RPBS"
         
         ' Header formatting.
-        With .Range("A1:G1")
+        With .Range("A1:I1")
             .Font.Bold = True
             .Interior.ColorIndex = 37  ' Light blue
             .EntireColumn.AutoFit

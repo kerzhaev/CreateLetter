@@ -20,7 +20,7 @@ from win32com.client.dynamic import Dispatch
 
 
 TABLE_SPECS = (
-    ("Addresses", "tblAddresses", ("Наименование адресата", "Улица, дом, квартира", "Населенный пункт", "Район", "Область/край/республика", "Почтовый индекс", "Телефон", "AddressGroup")),
+    ("Addresses", "tblAddresses", ("Наименование адресата", "Улица, дом, квартира", "Населенный пункт", "Район", "Область/край/республика", "Почтовый индекс", "Телефон", "AddressGroup", "RPBS")),
     ("Letters", "tblLetters", ("Наименование адресата", "Исходящий номер", "Дата исходящего", "Наименование приложения", "Сумма документа", "Отметка о возврате", "Исполнитель", "Тип отправки", "Упаковано", "Пакет", "Номер реестра", "Дата реестра")),
     ("Settings", "tblLetterTexts", None),
     ("EnvelopeFormats", "tblEnvelopeFormats", ("FormatKey", "DisplayName", "IsActive", "SortOrder")),
@@ -42,6 +42,7 @@ PRINT_SHEET_NAMES = (
 )
 
 ADDRESS_GROUP_COLUMN_NAME = "AddressGroup"
+RPBS_COLUMN_NAME = "RPBS"
 ENVELOPE_FORMAT_DEFAULT_ROWS = (
     ("c4", "C4", True, 10),
     ("c5", "C5", True, 20),
@@ -69,6 +70,11 @@ def reset_excel_gen_cache() -> None:
             shutil.rmtree(child, ignore_errors=True)
         elif child.exists():
             child.unlink(missing_ok=True)
+
+
+def get_excel_open_path(workbook_path: Path) -> str:
+    resolved_path = workbook_path.resolve()
+    return resolved_path.as_uri() if sys.platform == "win32" else str(resolved_path)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -348,7 +354,7 @@ def main() -> int:
     workbook = None
 
     try:
-        workbook = excel.Workbooks.Open(str(workbook_path))
+        workbook = excel.Workbooks.Open(get_excel_open_path(workbook_path))
         for sheet_name, table_name, headers in TABLE_SPECS:
             ws, sheet_created = get_or_create_sheet(workbook, sheet_name)
             if headers is not None:
