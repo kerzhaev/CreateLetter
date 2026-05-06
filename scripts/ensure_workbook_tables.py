@@ -50,6 +50,7 @@ ENVELOPE_FORMAT_DEFAULT_ROWS = (
 )
 PROGRAM_SETTINGS_DEFAULT_ROWS = (
     ("RequireOutgoingNumber", "0", "Require completed outgoing letter number before leaving the letter step"),
+    ("RequireUniqueOutgoingNumber", "0", "Require unique outgoing letter numbers within the same calendar year"),
 )
 
 XL_SRC_RANGE = 1

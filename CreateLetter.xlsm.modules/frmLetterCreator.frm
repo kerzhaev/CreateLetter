@@ -32,9 +32,9 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form    : frmLetterCreator v1.6.19 - Thin-shell MultiPage wizard with workbook-backed localization, grouped address search, RPBS editing, and explicit startup focus
+' Form    : frmLetterCreator v1.6.20 - Thin-shell MultiPage wizard with visible address controls, RPBS editing, and explicit startup focus
 
-' Version : 1.6.19 - 04.05.2026
+' Version : 1.6.20 - 06.05.2026
 
 ' Author  : CreateLetter contributors
 
@@ -970,7 +970,7 @@ Private Sub EnsureAddressGroupControls()
 
 
 
-    addressFrame.Height = 324
+    addressFrame.Height = 306
 
 
 
@@ -1000,7 +1000,7 @@ Private Sub EnsureAddressGroupControls()
 
         .Left = 30
 
-        .Top = 270
+        .Top = 252
 
         .Width = 84
 
@@ -1040,7 +1040,7 @@ Private Sub EnsureAddressGroupControls()
 
         .Left = 126
 
-        .Top = 264
+        .Top = 246
 
         .Width = 276
 
@@ -1082,7 +1082,7 @@ Private Sub EnsureAddressGroupControls()
 
         .Left = 30
 
-        .Top = 300
+        .Top = 282
 
         .Width = 84
 
@@ -1116,7 +1116,7 @@ Private Sub EnsureAddressGroupControls()
 
         .Left = 126
 
-        .Top = 294
+        .Top = 276
 
         .Width = 276
 
@@ -1134,29 +1134,29 @@ Private Sub EnsureAddressGroupControls()
 
     End With
 
-    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 396
+    If Not btnSaveNewAddress Is Nothing Then btnSaveNewAddress.Top = 354
 
-    If Not btnEditAddress Is Nothing Then btnEditAddress.Top = 396
+    If Not btnEditAddress Is Nothing Then btnEditAddress.Top = 354
 
-    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Top = 396
+    If Not btnDeleteAddress Is Nothing Then btnDeleteAddress.Top = 354
 
-    If Not mpgWizard Is Nothing Then mpgWizard.Height = 414
+    If Not mpgWizard Is Nothing Then mpgWizard.Height = 444
 
     On Error Resume Next
 
-    If Not mpgWizard Is Nothing Then mpgWizard.Pages(0).Height = 390
+    If Not mpgWizard Is Nothing Then mpgWizard.Pages(0).Height = 420
 
     On Error GoTo EnsureError
 
-    If Not btnPrevious Is Nothing Then btnPrevious.Top = 468
+    If Not btnPrevious Is Nothing Then btnPrevious.Top = 492
 
-    If Not btnNext Is Nothing Then btnNext.Top = 468
+    If Not btnNext Is Nothing Then btnNext.Top = 492
 
-    If Not btnLetterHistory Is Nothing Then btnLetterHistory.Top = 516
+    If Not btnLetterHistory Is Nothing Then btnLetterHistory.Top = 540
 
-    If Not btnCancel Is Nothing Then btnCancel.Top = 516
+    If Not btnCancel Is Nothing Then btnCancel.Top = 540
 
-    Me.Height = 600
+    Me.Height = 630
 
     Exit Sub
 

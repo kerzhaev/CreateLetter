@@ -803,6 +803,8 @@ try {
         $customUiText = ""
         $moduleRibbon = $workbook.VBProject.VBComponents.Item("ModuleRibbon").CodeModule
         $moduleRibbonText = [string]$moduleRibbon.Lines(1, $moduleRibbon.CountOfLines)
+        $moduleRepository = $workbook.VBProject.VBComponents.Item("ModuleRepository").CodeModule
+        $moduleRepositoryText = [string]$moduleRepository.Lines(1, $moduleRepository.CountOfLines)
 
         if ($null -ne $customUiEntry) {
             $customUiStream = $null
@@ -844,10 +846,15 @@ try {
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub ConfigureProgramSettings()*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Function IsOutgoingNumberRequired()*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub SetOutgoingNumberRequired(required As Boolean)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Function IsOutgoingNumberUniquenessRequired()*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*Public Sub SetOutgoingNumberUniquenessRequired(required As Boolean)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*RequireUniqueOutgoingNumber*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*tblProgramSettings*")
             $programSettingsFormPath = Join-Path $modulesDirectory "frmProgramSettings.frm"
             $hasRibbonModule = $hasRibbonModule -and (Test-Path -LiteralPath $programSettingsFormPath)
             $hasRibbonModule = $hasRibbonModule -and ($moduleMainText -like "*IsOutgoingNumberComplete(letterNumber)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleMainText -like "*IsOutgoingNumberDuplicateInSelectedYear(letterNumber, parsedDate)*")
+            $hasRibbonModule = $hasRibbonModule -and ($moduleRepositoryText -like "*RepositoryOutgoingNumberExistsInYear(outgoingNumber As String, letterDate As Date*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*ribbon.about.pipeline.step5*")
             $hasRibbonModule = $hasRibbonModule -and ($moduleRibbonText -like "*ConfirmPostalRegistryPdfWithUnpackedLetters*")
             $hasRibbonModule = $hasRibbonModule -and ($customUiText -like "*grpCreateLetterRegistry*")

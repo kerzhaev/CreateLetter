@@ -37,6 +37,13 @@ The public repository does not carry these binaries; provide them locally in the
 - The localization worksheet is optional at this stage and is not required for runtime stability.
 - Built-in fallback values keep Russian user-facing output stable until string extraction is performed.
 
+## Shared Program Settings
+
+- Shared validation settings live in hidden `ProgramSettings/tblProgramSettings`, not in the Windows registry.
+- `RequireOutgoingNumber` blocks letter-step navigation and final letter creation until the outgoing number has a suffix after `/`, for example `7/125`.
+- `RequireUniqueOutgoingNumber` blocks duplicate outgoing numbers only inside the calendar year parsed from the selected letter date. The same number in a later year is valid.
+- Local folder paths may still use workstation-specific settings because template/output directories can differ per user.
+
 ## Agent and AI Context
 
 - `.ai-factory/DESCRIPTION.md`: project specification

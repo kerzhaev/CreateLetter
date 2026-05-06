@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRepository"
 
 ' Purpose: Workbook CRUD/search/export helpers with typed history DTO support
 
-' Version: 1.0.6 - 04.05.2026
+' Version: 1.0.7 - 06.05.2026
 
 ' ======================================================================
 
@@ -790,6 +790,74 @@ Public Function RepositoryTryResolveLetterRowNumber( _
 ResolveError:
     RepositoryTryResolveLetterRowNumber = False
     rowNumber = 0
+End Function
+
+Public Function RepositoryOutgoingNumberExistsInYear(outgoingNumber As String, letterDate As Date, Optional excludeRow As Long = 0) As Boolean
+
+    RepositoryOutgoingNumberExistsInYear = False
+
+    On Error GoTo CheckError
+
+    Dim normalizedNumber As String
+    normalizedNumber = NormalizeOutgoingNumberForDuplicateCheck(outgoingNumber)
+
+    If Len(normalizedNumber) = 0 Then Exit Function
+
+    Dim targetYear As Long
+    targetYear = Year(letterDate)
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("Letters")
+
+    Dim letterData As Variant
+    letterData = RepositoryReadWorksheetMatrix(ws, LetterColumnAddressee, LetterColumnDispatchRegistryDate, LettersTableName)
+    If IsEmpty(letterData) Then Exit Function
+
+    Dim startRow As Long
+    startRow = RepositoryGetStructuredDataStartRow(ws, LetterColumnAddressee, LetterColumnDispatchRegistryDate, LettersTableName)
+
+    Dim rowIndex As Long
+    For rowIndex = LBound(letterData, 1) To UBound(letterData, 1)
+
+        Dim workbookRow As Long
+        workbookRow = startRow + rowIndex - 1
+
+        If excludeRow = 0 Or workbookRow <> excludeRow Then
+
+            If NormalizeOutgoingNumberForDuplicateCheck(RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnOutgoingNumber)) = normalizedNumber Then
+
+                Dim existingDate As Date
+
+                If TryParseDate(RepositoryMatrixValueOrEmpty(letterData, rowIndex, LetterColumnOutgoingDate), existingDate) Then
+
+                    If Year(existingDate) = targetYear Then
+
+                        RepositoryOutgoingNumberExistsInYear = True
+
+                        Exit Function
+
+                    End If
+
+                End If
+
+            End If
+
+        End If
+
+    Next rowIndex
+
+    Exit Function
+
+CheckError:
+
+    RepositoryOutgoingNumberExistsInYear = False
+
+End Function
+
+Private Function NormalizeOutgoingNumberForDuplicateCheck(rawNumber As String) As String
+
+    NormalizeOutgoingNumberForDuplicateCheck = Replace$(UCase$(Trim$(rawNumber)), " ", "")
+
 End Function
 
 

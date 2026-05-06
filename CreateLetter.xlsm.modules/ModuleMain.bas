@@ -10,7 +10,7 @@ Attribute VB_Name = "ModuleMain"
 
 ' Purpose: Core shared logic for validation, data processing, Word generation, workbook persistence, and compatibility facade calls
 
-' Version: 1.8.8 - 04.05.2026
+' Version: 1.8.9 - 06.05.2026
 
 ' ======================================================================
 
@@ -18,7 +18,7 @@ Attribute VB_Name = "ModuleMain"
 
 Option Explicit
 
-Public Const CreateLetterApplicationVersion As String = "1.7.2"
+Public Const CreateLetterApplicationVersion As String = "1.7.3"
 
 Private activeMailDispatchForm As Object
 
@@ -751,7 +751,17 @@ Public Function ValidateCreatorPage(pageIndex As Integer, Addressee As String, c
 
                 focusControlName = "txtLetterDate"
 
-                ValidateCreatorPage = t("validation.creator.page.letter_date_invalid", "Неверный формат даты письма.")
+                ValidateCreatorPage = t("validation.creator.page.letter_date_invalid", "Invalid letter date format.")
+
+                Exit Function
+
+            End If
+
+            If IsOutgoingNumberDuplicateInSelectedYear(letterNumber, parsedDate) Then
+
+                focusControlName = "txtLetterNumber"
+
+                ValidateCreatorPage = t("validation.creator.page.letter_number_duplicate", "This outgoing letter number already exists in the selected calendar year.")
 
                 Exit Function
 
@@ -867,6 +877,28 @@ Public Function ValidateCreatorSubmission(Addressee As String, city As String, r
 
     End If
 
+    Dim parsedDate As Date
+
+    If Not TryParseDate(letterDateText, parsedDate) Then
+
+        focusControlName = "txtLetterDate"
+
+        ValidateCreatorSubmission = t("validation.creator.submit.letter_date_invalid", "Invalid letter date format.")
+
+        Exit Function
+
+    End If
+
+    If IsOutgoingNumberDuplicateInSelectedYear(letterNumber, parsedDate) Then
+
+        focusControlName = "txtLetterNumber"
+
+        ValidateCreatorSubmission = t("validation.creator.submit.letter_number_duplicate", "This outgoing letter number already exists in the selected calendar year.")
+
+        Exit Function
+
+    End If
+
     
 
     If Len(Trim(Executor)) = 0 Then
@@ -907,6 +939,14 @@ Private Function IsOutgoingNumberComplete(letterNumber As String) As Boolean
     numberSuffix = Trim$(Mid$(normalizedNumber, slashPosition + 1))
 
     IsOutgoingNumberComplete = Len(numberSuffix) > 0
+
+End Function
+
+Private Function IsOutgoingNumberDuplicateInSelectedYear(letterNumber As String, parsedDate As Date) As Boolean
+
+    If Not IsOutgoingNumberUniquenessRequired() Then Exit Function
+
+    IsOutgoingNumberDuplicateInSelectedYear = RepositoryOutgoingNumberExistsInYear(letterNumber, parsedDate)
 
 End Function
 

@@ -6,7 +6,7 @@ Attribute VB_Name = "ModuleLocalization"
 
 ' Purpose: Provide workbook-backed localization helpers and built-in defaults for UI/runtime messages
 
-' Version: 1.5.4 - 04.05.2026
+' Version: 1.5.5 - 06.05.2026
 
 ' Notes:
 
@@ -660,6 +660,10 @@ Private Sub LoadBuiltInLocalization()
 
     AddTranslation "en", "validation.creator.page.letter_date_invalid", "Invalid letter date format."
 
+    AddTranslation "ru", "validation.creator.page.letter_number_duplicate", "Такой исходящий номер уже есть в истории писем за выбранный год."
+
+    AddTranslation "en", "validation.creator.page.letter_number_duplicate", "This outgoing letter number already exists in the selected calendar year."
+
     AddTranslation "ru", "validation.creator.page.document_required", "Добавьте хотя бы один документ-приложение."
 
     AddTranslation "en", "validation.creator.page.document_required", "Add at least one attachment document."
@@ -691,6 +695,14 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "validation.creator.submit.letter_date_required", "Дата письма не заполнена."
 
     AddTranslation "en", "validation.creator.submit.letter_date_required", "Letter date is not filled in."
+
+    AddTranslation "ru", "validation.creator.submit.letter_date_invalid", "Неверный формат даты письма."
+
+    AddTranslation "en", "validation.creator.submit.letter_date_invalid", "Invalid letter date format."
+
+    AddTranslation "ru", "validation.creator.submit.letter_number_duplicate", "Такой исходящий номер уже есть в истории писем за выбранный год."
+
+    AddTranslation "en", "validation.creator.submit.letter_number_duplicate", "This outgoing letter number already exists in the selected calendar year."
 
     AddTranslation "ru", "validation.creator.submit.executor_required", "Исполнитель не выбран."
 
@@ -1187,6 +1199,14 @@ Private Sub LoadBuiltInLocalization()
     AddTranslation "ru", "form.program_settings.tip.require_outgoing_number", "Если включено, форма письма не пропустит дальше без номера после косой черты, например 7/125."
 
     AddTranslation "en", "form.program_settings.tip.require_outgoing_number", "When enabled, the letter form blocks navigation without a number after the slash, for example 7/125."
+
+    AddTranslation "ru", "form.program_settings.require_unique_outgoing_number", "Проверять уникальность исходящего номера в пределах года"
+
+    AddTranslation "en", "form.program_settings.require_unique_outgoing_number", "Check outgoing letter number uniqueness in the same year"
+
+    AddTranslation "ru", "form.program_settings.tip.require_unique_outgoing_number", "Если включено, форма письма не пропустит номер, который уже есть в истории за выбранный календарный год."
+
+    AddTranslation "en", "form.program_settings.tip.require_unique_outgoing_number", "When enabled, the letter form blocks a duplicate outgoing number within the selected calendar year."
 
     AddTranslation "ru", "form.program_settings.save", "Сохранить"
 

@@ -8,7 +8,7 @@ Attribute VB_Name = "ModuleRibbon"
 
 ' Purpose: Excel Ribbon callbacks, dispatch actions, and workbook-backed program settings
 
-' Version: 1.4.3 - 03.05.2026
+' Version: 1.4.4 - 06.05.2026
 
 ' ======================================================================
 
@@ -37,6 +37,8 @@ Private Const ProgramSettingsColumnValue As Long = 2
 Private Const ProgramSettingsColumnDescription As Long = 3
 
 Private Const ProgramSettingRequireOutgoingNumber As String = "RequireOutgoingNumber"
+
+Private Const ProgramSettingRequireUniqueOutgoingNumber As String = "RequireUniqueOutgoingNumber"
 
 Private Const msoFileDialogFolderPicker As Long = 4
 
@@ -209,6 +211,25 @@ Public Sub SetOutgoingNumberRequired(required As Boolean)
 
 End Sub
 
+Public Function IsOutgoingNumberUniquenessRequired() As Boolean
+
+    IsOutgoingNumberUniquenessRequired = IsWorkbookProgramSettingEnabled(ProgramSettingRequireUniqueOutgoingNumber, False)
+
+End Function
+
+Public Sub SetOutgoingNumberUniquenessRequired(required As Boolean)
+
+    Dim storedValue As String
+    If required Then
+        storedValue = "1"
+    Else
+        storedValue = "0"
+    End If
+
+    SaveWorkbookProgramSetting ProgramSettingRequireUniqueOutgoingNumber, storedValue, "Require unique outgoing letter numbers within the same calendar year"
+
+End Sub
+
 Private Function IsWorkbookProgramSettingEnabled(settingKey As String, defaultValue As Boolean) As Boolean
 
     Dim defaultText As String
@@ -350,15 +371,22 @@ End Sub
 
 Private Sub EnsureProgramSettingsSeed(settingsTable As ListObject)
 
-    Dim settingRow As ListRow
-    Set settingRow = FindProgramSettingRow(settingsTable, ProgramSettingRequireOutgoingNumber)
+    EnsureProgramSettingRow settingsTable, ProgramSettingRequireOutgoingNumber, "0", "Require completed outgoing letter number before leaving the letter step"
+    EnsureProgramSettingRow settingsTable, ProgramSettingRequireUniqueOutgoingNumber, "0", "Require unique outgoing letter numbers within the same calendar year"
 
-    If settingRow Is Nothing Then
-        Set settingRow = settingsTable.ListRows.Add
-        settingRow.Range.Cells(1, ProgramSettingsColumnKey).Value = ProgramSettingRequireOutgoingNumber
-        settingRow.Range.Cells(1, ProgramSettingsColumnValue).Value = "0"
-        settingRow.Range.Cells(1, ProgramSettingsColumnDescription).Value = "Require completed outgoing letter number before leaving the letter step"
-    End If
+End Sub
+
+Private Sub EnsureProgramSettingRow(settingsTable As ListObject, settingKey As String, settingValue As String, description As String)
+
+    Dim settingRow As ListRow
+    Set settingRow = FindProgramSettingRow(settingsTable, settingKey)
+
+    If Not settingRow Is Nothing Then Exit Sub
+
+    Set settingRow = settingsTable.ListRows.Add
+    settingRow.Range.Cells(1, ProgramSettingsColumnKey).Value = settingKey
+    settingRow.Range.Cells(1, ProgramSettingsColumnValue).Value = settingValue
+    settingRow.Range.Cells(1, ProgramSettingsColumnDescription).Value = description
 
 End Sub
 
