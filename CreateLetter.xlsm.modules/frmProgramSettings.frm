@@ -1,6 +1,7 @@
 VERSION 5.00
 
-Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmProgramSettings`n   Caption         =   "UserForm1"
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmProgramSettings
+   Caption         =   "UserForm1"
 
    ClientHeight    =   3015
 
@@ -30,11 +31,11 @@ Attribute VB_Exposed = False
 
 ' ======================================================================
 
-' Form: frmProgramSettings v1.0.0
+' Form: frmProgramSettings v1.1.0
 
 ' Author: CreateLetter contributors
 
-' Date: 03.05.2026
+' Date: 06.05.2026
 
 ' Purpose: Runtime-built workbook-backed program settings UI
 
@@ -47,6 +48,10 @@ Option Explicit
 Private WithEvents chkRequireOutgoingNumber As MSForms.CheckBox
 
 Attribute chkRequireOutgoingNumber.VB_VarHelpID = -1
+
+Private WithEvents chkRequireUniqueOutgoingNumber As MSForms.CheckBox
+
+Attribute chkRequireUniqueOutgoingNumber.VB_VarHelpID = -1
 
 Private WithEvents btnSettingsSave As MSForms.CommandButton
 
@@ -70,7 +75,7 @@ Private Sub UserForm_Initialize()
 
     Me.Width = 360
 
-    Me.Height = 190
+    Me.Height = 240
 
     Me.ScrollBars = fmScrollBarsNone
 
@@ -134,13 +139,29 @@ Private Sub BuildSettingsControls()
 
     chkRequireOutgoingNumber.ControlTipText = t("form.program_settings.tip.require_outgoing_number", "When enabled, the letter form blocks navigation without a number after the slash, for example 7/125.")
 
+    Set chkRequireUniqueOutgoingNumber = Me.Controls.Add("Forms.CheckBox.1", "chkRequireUniqueOutgoingNumber", True)
+
+    chkRequireUniqueOutgoingNumber.Left = 12
+
+    chkRequireUniqueOutgoingNumber.Top = 104
+
+    chkRequireUniqueOutgoingNumber.Width = 320
+
+    chkRequireUniqueOutgoingNumber.Height = 42
+
+    chkRequireUniqueOutgoingNumber.WordWrap = True
+
+    chkRequireUniqueOutgoingNumber.Caption = t("form.program_settings.require_unique_outgoing_number", "Check outgoing letter number uniqueness in the same year")
+
+    chkRequireUniqueOutgoingNumber.ControlTipText = t("form.program_settings.tip.require_unique_outgoing_number", "When enabled, the letter form blocks a duplicate outgoing number within the selected calendar year.")
+
 
 
     Set btnSettingsSave = Me.Controls.Add("Forms.CommandButton.1", "btnSettingsSave", True)
 
     btnSettingsSave.Left = 144
 
-    btnSettingsSave.Top = 116
+    btnSettingsSave.Top = 160
 
     btnSettingsSave.Width = 88
 
@@ -154,7 +175,7 @@ Private Sub BuildSettingsControls()
 
     btnSettingsCancel.Left = 244
 
-    btnSettingsCancel.Top = 116
+    btnSettingsCancel.Top = 160
 
     btnSettingsCancel.Width = 88
 
@@ -174,6 +195,8 @@ Private Sub LoadSettingsValues()
 
     chkRequireOutgoingNumber.value = IsOutgoingNumberRequired()
 
+    chkRequireUniqueOutgoingNumber.value = IsOutgoingNumberUniquenessRequired()
+
 
 
 End Sub
@@ -189,6 +212,8 @@ Private Sub btnSettingsSave_Click()
 
 
     SetOutgoingNumberRequired CBool(chkRequireOutgoingNumber.value)
+
+    SetOutgoingNumberUniquenessRequired CBool(chkRequireUniqueOutgoingNumber.value)
 
     MsgBox t("form.program_settings.saved", "Program settings saved in this workbook."), vbInformation, t("form.program_settings.title", "Program settings")
 
